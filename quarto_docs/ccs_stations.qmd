@@ -1,0 +1,37 @@
+---
+title: "ccs_stations"
+author: "Aaron Shavitz"
+format: html
+---
+
+# Displaying chunks of css_stations in Quarto doc test:
+
+Using knitr package to read code chunks from ccs_stations.R
+```{r}
+# Set the root directory to the current folder
+knitr::opts_knit$set(root.dir = here::here())
+
+# Read in the R script from the 'scripts' folder (relative to the root project directory)
+knitr::read_chunk("../scripts/ccs_stations.R")
+```
+
+
+Load libraries chunk
+```{r Load Libraries}
+```
+
+csv import chunk
+```{r csv import from CCS}
+```
+
+Plot All Data Over Time chunk
+```{r Plot All Data Over Time}
+```
+
+
+```{r}
+```
+
+```{r}
+```
+
