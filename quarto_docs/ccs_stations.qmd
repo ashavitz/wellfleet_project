@@ -6,7 +6,7 @@ format: html
 
 # Displaying chunks of css_stations in Quarto doc test:
 
-Using knitr package to read code chunks from ccs_stations.R
+### Using knitr package to read code chunks from ccs_stations.R
 ```{r}
 # Set the root directory to the current folder
 knitr::opts_knit$set(root.dir = here::here())
@@ -16,15 +16,19 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```
 
 
-Load Libraries
+### Load Libraries
 ```{r Load Libraries, message=FALSE, warning=FALSE}
 ```
 
-Read CCS csv data
+### Read CCS csv data
 ```{r csv import from CCS, message=FALSE, warning=FALSE}
 ```
 
-Plot All Data Over Time ~Monthly (all collection dates)
+### Set Global ggplot Themes
+```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
+```
+
+### Plot All Data Over Time ~Monthly (all collection dates)
 ```{r Plot All Data Over Time - ~Monthly (all collection dates)}
 ```
 

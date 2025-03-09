@@ -83,6 +83,17 @@ for (var in wq_variables) {
   print(p)
 }
 
+# ---- Set Global ggplot Themes ----
+
+# Set ggplot theme to minimal, rotate x axis labels, and center plot titles
+theme_set(
+  theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),  # Rotate x-axis labels
+      plot.title = element_text(hjust = 0.5)  # Center title
+    )
+)
+
 # ---- Plot All Data Over Time - ~Monthly (all collection dates) ----
 
 start_year <- min(ccs_data_wellfleet$collected_at, na.rm = TRUE)
@@ -95,8 +106,8 @@ ggplot(data = ccs_data_wellfleet,
        color = as.factor(internal_station_id))) +
   geom_point() +
   
-  # add 25 Celcius threshold line
-  geom_hline(yintercept = 25, linetype = 'dotted', color = 'red', size = 2) +
+  # add 25 Celsius threshold line
+  geom_hline(yintercept = 25, linetype = 'dotted', color = 'red', linewidth = 2) +
   labs(x = "Date",
        y = "Temperature (°C)",
        color = "CCS Station ID",
@@ -105,11 +116,50 @@ ggplot(data = ccs_data_wellfleet,
     limits = c(start_year, end_year),
     date_breaks = "2 year", 
     date_labels = "%Y",
-    labels = function(x) format(x, "%Y")) + # extract just the year for the labels
-  scale_color_brewer(palette = "Set2") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1,),
-        plot.title = element_text(hjust = 0.5))
+    labels = date_format("%Y")) + # extract just the year for the labels
+  scale_color_brewer(palette = "Set2")
+
+
+# Dissolved Oxygen
+ggplot(data = ccs_data_wellfleet,
+       mapping = aes(x = collected_at, 
+                     y = `dissolved_oxygen_mg/L`,
+                     color = as.factor(internal_station_id))) +
+  geom_point() +
+  
+  # add 6 mg/L threshold line
+  geom_hline(yintercept = 6, linetype = 'dotted', color = 'red', linewidth = 2) +
+  labs(x = "Date",
+       y = "DO (mg/L)",
+       color = "CCS Station ID",
+       title = paste("DO Time Series - CCS Wellfleet")) +
+  scale_x_datetime(
+    limits = c(start_year, end_year),
+    date_breaks = "2 year", 
+    date_labels = "%Y",
+    labels = date_format("%Y")) + # extract just the year for the labels
+  scale_color_brewer(palette = "Set2")
+
+
+# Chlorophyll a
+ggplot(data = ccs_data_wellfleet,
+       mapping = aes(x = collected_at, 
+                     y = `chlorophyll_ug/L`,
+                     color = as.factor(internal_station_id))) +
+  geom_point() +
+  
+  # add 5.1 u/L threshold line
+  geom_hline(yintercept = 5.1, linetype = 'dotted', color = 'red', linewidth = 2) +
+  labs(x = "Date",
+       y = "Chlorophyll a (ug/L)",
+       color = "CCS Station ID",
+       title = paste("Chlorophyll Time Series - CCS Wellfleet")) +
+  scale_x_datetime(
+    limits = c(start_year, end_year),
+    date_breaks = "2 year", 
+    date_labels = "%Y",
+    labels = date_format("%Y")) + # extract just the year for the labels
+  scale_color_brewer(palette = "Set2")
 
 
 # ---- Plot Annual Medians ----
