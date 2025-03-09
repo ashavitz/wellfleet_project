@@ -21,6 +21,7 @@ library(lubridate) # for date time formats
 library(dplyr) # for data manipulation and transformation
 library(tidyr) # for tidying and reshaping data
 library(ggplot2) # for data visualization
+library(RColorBrewer) # for data viz color palettes
 
 # ---- csv import from CCS ----
 
@@ -68,7 +69,6 @@ wq_variables <- names(ccs_data_all)[-c(1:3)]
 
 # ---- Plot All Data Over Time ----
 
-
 # For each variable, mean is plotted against year.
 # Colored by station ID.
 for (var in wq_variables) {
@@ -76,12 +76,41 @@ for (var in wq_variables) {
                                             y = .data[[var]],
                                             color = as.factor(internal_station_id))) +
     geom_point() +
-    labs(x = "Year", y = var, title = paste("Time Series of", var)) +
+    labs(x = "Date", y = var, title = paste("Time Series of", var)) +
     theme_minimal() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1))
   
   print(p)
 }
+
+# ---- Plot All Data Over Time - ~Monthly (all collection dates) ----
+
+start_year <- min(ccs_data_wellfleet$collected_at, na.rm = TRUE)
+end_year   <- max(ccs_data_wellfleet$collected_at, na.rm = TRUE)
+
+# Monthly temperature
+ggplot(data = ccs_data_wellfleet,
+       mapping = aes(x = collected_at, 
+                     y = temperature_C,
+       color = as.factor(internal_station_id))) +
+  geom_point() +
+  
+  # add 25 Celcius threshold line
+  geom_hline(yintercept = 25, linetype = 'dotted', color = 'red', size = 2) +
+  labs(x = "Date",
+       y = "Temperature (°C)",
+       color = "CCS Station ID",
+       title = paste("Temp (C) Time Series - CCS Wellfleet")) +
+  scale_x_datetime(
+    limits = c(start_year, end_year),
+    date_breaks = "2 year", 
+    date_labels = "%Y",
+    labels = function(x) format(x, "%Y")) + # extract just the year for the labels
+  scale_color_brewer(palette = "Set2") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1,),
+        plot.title = element_text(hjust = 0.5))
+
 
 # ---- Plot Annual Medians ----
 

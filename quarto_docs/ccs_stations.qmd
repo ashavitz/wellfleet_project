@@ -16,16 +16,16 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```
 
 
-Load libraries chunk
-```{r Load Libraries}
+Load Libraries
+```{r Load Libraries, message=FALSE, warning=FALSE}
 ```
 
-csv import chunk
-```{r csv import from CCS}
+Read CCS csv data
+```{r csv import from CCS, message=FALSE, warning=FALSE}
 ```
 
-Plot All Data Over Time chunk
-```{r Plot All Data Over Time}
+Plot All Data Over Time ~Monthly (all collection dates)
+```{r Plot All Data Over Time - ~Monthly (all collection dates)}
 ```
 
 
