@@ -1,0 +1,17 @@
+TODO:
+  - Revise data import to include all data, replacing non-"good" qc data with NAs
+  - When calculating statistics (e.g. means) from shorter time series data, remove 
+    intervals without complete data (e.g. if summarizing for a day from 5 min data,
+    only include days with complete data)
+  - Create time series graphs from 1995 (or earliest date if after 1995) for all variables
+  
+
+
+Questions:
+  - How should daily/monthly means be calculated when there is variable patchiness in the data? For example, if I do
+    a simple mean, some days may be missing all values from a portion of the day, which would skew the data.
+    - Consider options: impute missing data, use only days with complete data, other?
+  - For simplicity, I have been simply importing data where all observations of all variables have "good" qc ratings. 
+    However, this will exclude some "good" values, because there are instances where one variable is "good" 
+    while others are not. Is it better practice to import all data, and then mark non-"good" variables as NA?
+    
