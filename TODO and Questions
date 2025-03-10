@@ -15,3 +15,6 @@ Questions:
     However, this will exclude some "good" values, because there are instances where one variable is "good" 
     while others are not. Is it better practice to import all data, and then mark non-"good" variables as NA?
     
+  - Which CCS variables to use for DIN? For DIP? (phosphate?)
+  
+    
