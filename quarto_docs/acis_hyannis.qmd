@@ -1,0 +1,22 @@
+---
+title: "acis_climate_data"
+author: "Aaron Shavitz"
+format: html
+---
+[Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
+
+# ACIS Air Temperature Data - Hyannis
+
+```{r, echo=FALSE}
+# Using knitr package to read code chunks from acis_air_temp.R
+
+# Set the root directory to the current folder
+knitr::opts_knit$set(root.dir = here::here())
+
+# Read in the R script from the 'scripts' folder (relative to the root project directory)
+knitr::read_chunk("../scripts/acis_air_temp.R")
+```
+
+### All
+```{r All, message=FALSE, warning=FALSE}
+```
