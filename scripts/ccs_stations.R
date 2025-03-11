@@ -214,8 +214,7 @@ for (var in wq_variables) {
          y = var,
          color = "CCS Station ID",
          title = paste("Annual", var_name, "Time Series - CCS Wellfleet")) +
-    scale_color_brewer(palette = "Set2") +
-    theme(legend.position = "none")
+    scale_color_brewer(palette = "Set2")
   
   # Create annual median plot
   var_name <- paste0(var, "_median")
@@ -225,12 +224,18 @@ for (var in wq_variables) {
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Year",
-         y = NULL,
+         y = var,
          color = "CCS Station ID",
          title = paste("Annual", var_name, "Time Series - CCS Wellfleet")) +
     scale_color_brewer(palette = "Set2")
     
-  print(p_1 + p_2)
+  # Combine the plots using patchwork with adjusted spacing
+  combined_plot <- p_1 + p_2 + 
+    # Stack the plots vertically
+    plot_layout(ncol = 1, heights = c(1, 1)) +
+    plot_annotation(title = paste("Annual -", var))
+  
+  print(combined_plot)
 }
 
 
@@ -252,8 +257,7 @@ for (var in wq_variables) {
          y = var,
          color = "CCS Station ID",
          title = paste("Summer", var_name, "Time Series - CCS Wellfleet")) +
-    scale_color_brewer(palette = "Set2") +
-    theme(legend.position = "none")
+    scale_color_brewer(palette = "Set2")
   
   # Create summer median plot
   var_name <- paste0(var, "_median")
@@ -267,12 +271,16 @@ for (var in wq_variables) {
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
     
     labs(x = "Year",
-         y = NULL,
+         y = var,
          color = "CCS Station ID",
          title = paste("Summer", var_name, "Time Series - CCS Wellfleet")) +
     scale_color_brewer(palette = "Set2")
   
-  print(p_1 + p_2)
+  combined_plot <- p_1 + p_2 + 
+    plot_layout(ncol = 1, heights = c(1, 1)) +
+    plot_annotation(title = paste("Summer -", var))
+  
+  print(combined_plot)
 }
 
 
