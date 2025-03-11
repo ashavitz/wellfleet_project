@@ -2,4 +2,4 @@
 
 ## Index: 
 - [CCS Water Quality Data](quarto_docs/ccs_stations.html)
-- [ACIS Air Temperature - Hyannis)](quarto_docs/acis_hyannis.html)
+- [ACIS Air Temperature - Hyannis](quarto_docs/acis_hyannis.html)
