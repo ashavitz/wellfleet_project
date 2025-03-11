@@ -17,6 +17,9 @@ knitr::opts_knit$set(root.dir = here::here())
 knitr::read_chunk("../scripts/ccs_stations.R")
 ```
 
+```{r Header}
+```
+
 ### Load Libraries
 ```{r Load Libraries, message=FALSE, warning=FALSE}
 ```
@@ -29,10 +32,14 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r Filter Only "Full" Years With Exactly One Monthly Measurement}
 ```
 
+### Filter Only "Full" Summers With Exactly One Monthly Measurement (June - September)
+```{r Filter Only "Full" Summers With Exactly One Monthly Measurement June - September}
+```
+
 ### Set Global ggplot Themes
 ```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
 ```
 
-### Plot All Data Over Time ~Monthly (all collection dates)
-```{r Plots by Variable}
+### Plot All Data Over Time (~Monthly, Annual Mean, Annual Median)
+```{r Plot All Data Over Time, message=FALSE, warning=FALSE}
 ```
