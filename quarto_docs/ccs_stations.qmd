@@ -4,17 +4,17 @@ author: "Aaron Shavitz"
 format: html
 ---
 
-# Displaying chunks of css_stations in Quarto doc test:
+# CCS Water Quality Data - Wellfleet
 
-### Using knitr package to read code chunks from ccs_stations.R
-```{r}
+```{r, echo=FALSE}
+# Using knitr package to read code chunks from ccs_stations.R
+
 # Set the root directory to the current folder
 knitr::opts_knit$set(root.dir = here::here())
 
 # Read in the R script from the 'scripts' folder (relative to the root project directory)
 knitr::read_chunk("../scripts/ccs_stations.R")
 ```
-
 
 ### Load Libraries
 ```{r Load Libraries, message=FALSE, warning=FALSE}
@@ -24,18 +24,14 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r csv import from CCS, message=FALSE, warning=FALSE}
 ```
 
+### Filter Only "Full" Years With Exactly One Monthly Measurement
+```{r Filter Only "Full" Years With Exactly One Monthly Measurement}
+```
+
 ### Set Global ggplot Themes
 ```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
 ```
 
 ### Plot All Data Over Time ~Monthly (all collection dates)
-```{r Plot All Data Over Time - ~Monthly (all collection dates)}
+```{r Plots by Variable}
 ```
-
-
-```{r}
-```
-
-```{r}
-```
-
