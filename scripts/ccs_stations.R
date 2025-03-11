@@ -8,13 +8,8 @@
 #'--------------------------------------
 
 # ---- TODO ----
-# TODO: Import and clean data
-# TODO: Calculate daily mean and high values to reduce size of data sets.
-#       Only include days with complete data
 
-# TODO: Initial visualization - variable change over time
-# TODO: Add threshold reference lines
-# --------------------------------------
+
 
 # ---- Load Libraries ----
 
