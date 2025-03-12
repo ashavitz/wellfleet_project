@@ -1,3 +1,4 @@
+# ---- Header ----
 #'--------------------------------------
 #' NERACOOS Buoy A01 
 #' Massachusetts Bay
@@ -8,14 +9,18 @@
 #' https://www.ndbc.noaa.gov/station_page.php?station=44029
 #' Massachusetts Bay
 #' Owned and maintained by NERACOOS
+#' NERACOOS ERDDAP base URL:
+#' https://www.neracoos.org/erddap/index.html
 #'--------------------------------------
 
+# ---- TODO ----
 # TODO: Calculate daily mean and high values to reduce size of data sets.
 #       Only include days with complete data
 
 # TODO: Initial visualization - variable change over time
 #'--------------------------------------
 
+# ---- Load Libraries ----
 library(readr) # for reading in files
 library(lubridate) # for date time formats
 library(dplyr) # for data manipulation and transformation
@@ -23,11 +28,6 @@ library(tidyr) # for tidying and reshaping data
 library(rerddap) # for accessing ERDDAP servers
 library(ggplot2) # for visualization
 
-# ---- Importing files via ERDDAP ----
-#' -------------------------------------
-#' NERACOOS ERDDAP base URL:
-#' https://www.neracoos.org/erddap/index.html
-#' -------------------------------------
 
 # ---- 	A01 Aanderaa - Historic Surface Currents (and 2m depth water temperature) ----
 
@@ -54,39 +54,83 @@ A01_aanderaa_hist <-
 # Clean imported data
 A01_aanderaa_hist <- A01_aanderaa_hist |> 
   mutate(
-    time = ymd_hms(time, tz = "UTC"), # convert time column to date time
-    date = as.Date(time), # create date column based on time column
-    across(c(current_speed, current_direction, temperature),
-           as.numeric), # convert to numeric
+    # convert time column to date time, and create date, year, month, and day columns
+    time = ymd_hms(time, tz = "UTC"), 
+    date = as.Date(time),
+    year = year(time),
+    month = month(time),
+    day = day(time),
+    
+    # convert to numeric
+    across(c(current_speed, current_direction, temperature), as.numeric),
+    
     # Convert non-"good" quality data to NAs. qc flags of 0 are considered "good"
     current_speed = ifelse(current_speed_qc != 0, NA, current_speed),
     current_direction = ifelse(current_direction_qc != 0, NA, current_direction),
     temperature = ifelse(temperature_qc != 0, NA, temperature)
   ) |> 
-  # Remove QC flag columns
-  select(-current_speed_qc, -current_direction_qc, -temperature_qc)
+  
+  # Remove QC flag columns and move ymd columns to start
+  select(-current_speed_qc, -current_direction_qc, -temperature_qc) |> 
+  relocate(date, year, month, day, .before = time)
+
+  
+# Check for duplicated rows of data
+duplicates_logical <- 
+  duplicated(A01_aanderaa_hist) | duplicated(A01_aanderaa_hist, fromLast = TRUE)
+
+# Subset the original data to keep all duplicate rows
+if(any(duplicates_logical)){
+  A01_duplicates <- A01_aanderaa_hist[duplicates_logical, ]
+  print("Duplicates found")
+} else {
+  print("Duplicates NOT found")
+}
+# NOTE - No Duplicates found
+
+# Subset data to keep only days with full set of hourly measurements
+A01_aanderaa_hist_full_days <- A01_aanderaa_hist |>
+  # Count how many measurements per unique day
+  group_by(date) |>
+  summarize(n_measurements = n(), .groups = "drop") |>
+  # Keep only days with exactly 24 measurements per day
+  filter(n_measurements == 24) |>
+  select(-n_measurements) |>
+  # Join back to original data
+  inner_join(A01_aanderaa_hist, by = "date")
+
+# Calculate daily mean for all variables
+# TODO - Need to use proper mean calculation for direction variable
+A01_aanderaa_hist_daily <- A01_aanderaa_hist_full_days |> 
+  group_by(date) |> 
+  summarize(
+    across(c(current_speed, temperature),
+           list(mean = function(x) if (any(is.na(x))) NA_real_ else mean(x))),
+    .groups = "drop"
+  )
+
+# Plot daily mean values for each variable
+
+variables <- c("current_speed_mean", "temperature_mean")
+
+for (var in variables) {
+  p <- ggplot(A01_aanderaa_hist_daily,
+              aes(x = date,
+                  y = .data[[var]])) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    
+    labs(x = "Date",
+         y = var,
+         title = paste(var, "Time Series - A01 Buoy")) +
+    scale_color_brewer(palette = "Set2")
+  
+  print(p)
+}
 
 
-# # Pivot data long in order to view all variables over time
-# A01_aanderaa_hist_long <-
-#   pivot_longer(data = A01_aanderaa_hist,
-#                cols = c(current_speed,
-#                         current_direction,
-#                         temperature),
-#                names_to = "variable",
-#                values_to = "value")
-# 
-# # Simple ggplot of each variable over time
-# ggplot(data = A01_aanderaa_hist,
-#        mapping = aes(x = time)) +
-#   geom_point(mapping = aes (y = temperature))
-# 
-# 
-# ggplot(data = A01_aanderaa_hist_long,
-#        mapping = aes(x = time,
-#                      y = value, 
-#                      color = variable)) +
-#   geom_point()
+# For each year with a full set of hourly measurements, calculate annual mean
+
 
 # ---- A01 Directional Waves ----
 
