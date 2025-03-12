@@ -91,6 +91,22 @@ thresholds <- c(
 start_year <- min(ccs_data_wellfleet$collected_at, na.rm = TRUE)
 end_year   <- max(ccs_data_wellfleet$collected_at, na.rm = TRUE)
 
+
+# ---- Check for duplicate data rows in raw CCS data ----
+
+# # Identify which rows are duplicates in wellfleet data (ignore id and internal_station_id)
+# duplicates_logical <- duplicated(ccs_data_wellfleet[, -c(1, 2)]) | duplicated(ccs_data_wellfleet[, -c(1, 2)], fromLast = TRUE)
+# 
+# # Subset the original data to keep all duplicate rows
+# if(any(duplicates_logical)){
+#   ccs_duplicates <- ccs_data_all[duplicates_logical, ]
+#   print("Duplicates found")
+# } else {
+#   print("Duplicates NOT found")
+# }
+# 
+# # Note - No duplicate data rows identified for the 3 wellfleet sites examined
+
 # ---- Filter Only "Full" Years With Exactly One Monthly Measurement ----
 
 # NOTE - For each station, the following block only includes years with exactly one
@@ -124,7 +140,6 @@ ccs_wellfleet_annual <- ccs_wellfleet_full_years |>
     ),
     .groups = "drop"
   )
-
 
 # ---- Filter Only "Full" Summers With Exactly One Monthly Measurement June - September ----
 
@@ -188,7 +203,7 @@ for (var in wq_variables) {
     labs(x = "Date",
          y = var,
          color = "CCS Station ID",
-         title = paste(var, " Time Series - CCS Wellfleet")) +
+         title = paste(var, "Time Series - CCS Wellfleet")) +
     scale_x_datetime(
       limits = c(start_year, end_year),
       date_breaks = "2 year", 
@@ -237,6 +252,33 @@ for (var in wq_variables) {
   
   print(combined_plot)
 }
+
+
+# For each relevant variable, plot all Summer ~monthly data over time
+for (var in wq_variables) {
+  p <- ggplot(ccs_wellfleet_full_summers, aes(x = collected_at,
+                                      y = .data[[var]],
+                                      color = as.factor(internal_station_id))) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+
+    # add threshold line, if available
+    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
+
+    labs(x = "Date",
+         y = var,
+         color = "CCS Station ID",
+         title = paste("Summer", var, "Time Series - CCS Wellfleet")) +
+    scale_x_datetime(
+      limits = c(start_year, end_year),
+      date_breaks = "2 year",
+      date_labels = "%Y",
+      labels = date_format("%Y")) +
+    scale_color_brewer(palette = "Set2")
+
+  print(p)
+}
+
 
 
 # For each relevant variable, plot Summer mean and mean values

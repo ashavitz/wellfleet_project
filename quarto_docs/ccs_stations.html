@@ -301,7 +301,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date"</span>,</span>
 <span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
 <span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(var, <span class="st">" Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(var, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
 <span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_datetime</span>(</span>
 <span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits =</span> <span class="fu">c</span>(start_year, end_year),</span>
 <span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_breaks =</span> <span class="st">"2 year"</span>, </span>
@@ -502,49 +502,30 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot Summer mean and mean values</span></span>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot all Summer ~monthly data over time</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> wq_variables) {</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create summer mean plot</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_mean"</span>)</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  p_1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_summers, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">y =</span> .data[[var_name]],</span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create summer median plot</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_median"</span>)</span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  p_2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_summers, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">y =</span> .data[[var_name]],</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a>  combined_plot <span class="ot">&lt;-</span> p_1 <span class="sc">+</span> p_2 <span class="sc">+</span> </span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer -"</span>, var))</span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(combined_plot)</span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_full_summers, <span class="fu">aes</span>(<span class="at">x =</span> collected_at,</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">y =</span> .data[[var]],</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date"</span>,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_datetime</span>(</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits =</span> <span class="fu">c</span>(start_year, end_year),</span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_breaks =</span> <span class="st">"2 year"</span>,</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_labels =</span> <span class="st">"%Y"</span>,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">date_format</span>(<span class="st">"%Y"</span>)) <span class="sc">+</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(p)</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -619,6 +600,126 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div>
 <figure class="figure">
 <p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-33.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot Summer mean and mean values</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> wq_variables) {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create summer mean plot</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_mean"</span>)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  p_1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_summers, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">y =</span> .data[[var_name]],</span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create summer median plot</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_median"</span>)</span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  p_2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_summers, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">y =</span> .data[[var_name]],</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>  combined_plot <span class="ot">&lt;-</span> p_1 <span class="sc">+</span> p_2 <span class="sc">+</span> </span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer -"</span>, var))</span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(combined_plot)</span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-34.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-35.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-36.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-37.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-38.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-39.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-40.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-41.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-42.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-43.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-44.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
