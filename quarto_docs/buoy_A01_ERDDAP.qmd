@@ -8,7 +8,7 @@ format: html
 # A01 Buoy ERDDAP Data
 
 ```{r, echo=FALSE}
-# Using knitr package to read code chunks from ccs_stations.R
+# Using knitr package to read code chunks from buoy_A01_ERDDAP.R
 
 # Set the root directory to the current folder
 knitr::opts_knit$set(root.dir = here::here())
