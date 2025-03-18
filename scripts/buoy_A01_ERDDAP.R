@@ -14,12 +14,7 @@
 #'--------------------------------------
 
 # ---- TODO ----
-# TODO: Calculate daily mean and high values to reduce size of data sets.
-#       Only include days with complete data
 
-# TODO: Plot annual averages (not missing averages)
-
-# TODO: Initial visualization - variable change over time
 #'--------------------------------------
 
 # ---- Load Libraries ----
