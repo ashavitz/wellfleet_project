@@ -240,7 +240,7 @@ for (var in variable_means) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = var,
-         title = paste(var, "Daily Time Series - 221 Buoy (Wellfleet)")) +
+         title = paste(var, "Daily Time Series - 221 Buoy (Cape Cod Bay)")) +
     scale_color_brewer(palette = "Set2")
   
   print(p)
@@ -284,7 +284,7 @@ for (var in variable_means) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = var,
-         title = paste(var, "Annual Time Series - 221 Buoy (Wellfleet)")) +
+         title = paste(var, "Annual Time Series - 221 Buoy (Cape Cod Bay)")) +
     scale_color_brewer(palette = "Set2")
   
   print(p)
