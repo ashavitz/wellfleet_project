@@ -5,7 +5,7 @@ format: html
 ---
 [Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
 
-# 221 Buoy ERDDAP Data (Wellfleet Buoy)
+# 221 Buoy ERDDAP Data (Cape Cod Bay)
 
 ```{r, echo=FALSE}
 # Using knitr package to read code chunks from buoy_221_ERDDAP.R
