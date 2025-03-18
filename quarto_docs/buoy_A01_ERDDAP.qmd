@@ -20,11 +20,21 @@ knitr::read_chunk("../scripts/buoy_A01_ERDDAP.R")
 ```{r Header}
 ```
 
+```{r Custom Functions, echo=FALSE, message=FALSE, warning=FALSE}
+```
+
 ### Load Libraries
 ```{r Load Libraries, message=FALSE, warning=FALSE}
 ```
 
-### A01 Aanderaa - Historic Surface Currents
-```{r A01 Aanderaa - Historic Surface Currents (and 2m depth water temperature), message=FALSE, warning=FALSE}
+### Set Global ggplot Themes
+```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
 ```
 
+### A01 Aanderaa - Historic Surface Currents
+```{r A01 Aanderaa - Realtime Surface Currents and O2, message=FALSE, warning=FALSE}
+```
+
+### A01 Met - Meteorology
+```{r A01_met_all, message=FALSE, warning=FALSE}
+```
