@@ -1,0 +1,53 @@
+---
+title: "buoy_221_ERDDAP"
+author: "Aaron Shavitz"
+format: html
+---
+[Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
+
+# 221 Buoy ERDDAP Data (Wellfleet Buoy)
+
+```{r, echo=FALSE}
+# Using knitr package to read code chunks from buoy_221_ERDDAP.R
+
+# Set the root directory to the current folder
+knitr::opts_knit$set(root.dir = here::here())
+
+# Read in the R script from the 'scripts' folder (relative to the root project directory)
+knitr::read_chunk("../scripts/buoy_221_ERDDAP.R")
+```
+
+```{r Header}
+```
+
+### Load Libraries
+```{r Load Libraries, message=FALSE, warning=FALSE}
+```
+
+### Importing Files via ERDDAP
+```{r Importing files via ERDDAP, message=FALSE, warning=FALSE}
+```
+
+### Air Temperature Measurements
+```{r Air temperature measurements, message=FALSE, warning=FALSE}
+```
+
+### SST Measurements
+```{r Sea surface temperature (SST) measurements, message=FALSE, warning=FALSE}
+```
+
+### Surface Current (acm) measurements
+```{r Surface Current (acm) measurements, message=FALSE, warning=FALSE}
+```
+
+### Wave measurements
+```{r Wave measurements, message=FALSE, warning=FALSE}
+```
+
+### Create data set for analysis
+```{r Create data set for analysis, message=FALSE, warning=FALSE}
+```
+
+### Plot all Variables
+```{r Plot all Variables, message=FALSE, warning=FALSE}
+```

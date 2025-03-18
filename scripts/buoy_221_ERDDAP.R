@@ -1,3 +1,4 @@
+# ---- Header ----
 #'--------------------------------------
 #' CDIP221 Buoy https://www.ndbc.noaa.gov/station_history.php?station=44090
 #' Cape Cod Bay, MA
@@ -10,12 +11,11 @@
 #' Sea temp depth: 0.46 m below water line
 #'--------------------------------------
 
-# TODO: Calculate daily mean and high values to reduce size of data sets.
-#       Only include days with complete data
+# ---- TODO ----
 
-# TODO: Initial visualization - variable change over time
 #'--------------------------------------
 
+# ---- Load Libraries ----
 library(readr) # for reading in files
 library(lubridate) # for date time formats
 library(dplyr) # for data manipulation and transformation
@@ -118,9 +118,7 @@ buoy_221_sst_daily <-
   ungroup()
 
 # ---- Surface Current (acm) measurements ----
-# (acm = acoustic current measurements ?)
-
-# TODO: Do we need other data in this data set?
+# (acm = acoustic current measurements)
 
 # Get data set information
 data_info_acm <- rerddap::info("acm_agg",
@@ -162,29 +160,13 @@ buoy_221_acm_daily <-
   summarize(
     mean_acm_speed = mean(acmSpeed),
     max_acm_speed = max(acmSpeed),
-# TODO: Review this calculation and confirm if correct
-    mean_acm_direction = {
-  
-      # Convert wind direction to radians
-      rad = (acmDirection * pi / 180)
-      
-      # Calculate the x and y components of the wind vector
-      x = mean(cos(rad))
-      y = mean(sin(rad))
-      
-      # Convert the x and y components back to an angle (in degrees)
-      mean_direction = atan2(y, x) * 180 / pi
-      
-      # Normalize the result to a range of 0 to 360 degrees
-      ifelse(mean_direction < 0, mean_direction + 360, mean_direction)
-    },
+    mean_acm_direction = as.numeric(circular::mean.circular(
+      circular::circular(acmDirection, units = "degrees", modulo = "2pi"))),
   mean_acm_vertical_speed = mean(acmVerticalSpeed)
   ) |> 
   ungroup()
 
 # ---- Wave measurements ----
-
-# TODO: Do we need other data in this data set?
 
 # Get data set information
 data_info_wave <- rerddap::info("wave_agg",
@@ -233,23 +215,77 @@ buoy_221_daily <-
   purrr::reduce(
     list(buoy_221_cat4_daily,
          buoy_221_sst_daily,
-         buoy_221_wave_daily,
+         buoy_221_acm_daily,
          buoy_221_wave_daily),
     full_join, by = "date") |> 
   arrange(date)
 
-# ---- TODO ----
+
+# ---- Plot all Variables ----
+
+# Daily plots
+
+# Create a list of variable names, excluding the 'date' column
+scalar_variable_means <- colnames(buoy_221_daily)[!colnames(buoy_221_daily) 
+                                             %in% c("date", "mean_acm_direction")]
+angular_variable_means <- c("mean_acm_direction")
+variable_means <- c(scalar_variable_means, angular_variable_means)
 
 
-# Review structure of files. Identify all NA, Null, or otherwise invalid cells
+for (var in variable_means) {
+  p <- ggplot(buoy_221_daily,
+              aes(x = date,
+                  y = .data[[var]])) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = var,
+         title = paste(var, "Daily Time Series - 221 Buoy (Wellfleet)")) +
+    scale_color_brewer(palette = "Set2")
+  
+  print(p)
+}
 
-# Standardize all invalid cells to NA
 
-# Remove all unwanted variables
+# Annual plots
 
-# Remove all rows with NAs? More likely keep them, but be sure 
+# For each year with at least 80% complete data (80% of days have data) calculate annual mean
+# Calculate annual mean for all variables
+buoy_221_annual <- buoy_221_daily |> 
+  mutate(year = year(date)) |> 
+  group_by(year) |> 
+  summarize(
+    across(all_of(scalar_variable_means),
+           
+           # Calculate mean if there are non-NA variable observations for at least 80% of a 365 day year
+           list(mean = function(x) if (sum(!is.na(x)) >= 0.8 * 365) {mean(x, na.rm = TRUE)}
+                else {NA_real_}),
+           .names = "{.col}"
+    ),
+    across(all_of(angular_variable_means),
+           list(mean = function (x) if (sum(!is.na(x)) >= 0.8 * 365) {
+             
+             # Use circular package to calculate circular mean
+             as.numeric(circular::mean.circular(
+               circular::circular(x, units = "degrees", modulo = "2pi"), na.rm = TRUE))} 
+             else {NA_real_}),
+           .names = "{.col}"
+    ),
+    .groups = "drop"
+  )
 
 
-
-# Goal: Group all years into one data frame and display
-# summary statistics and exploratory graphs
+# Plot annual means
+for (var in variable_means) {
+  p <- ggplot(buoy_221_annual,
+              aes(x = year,
+                  y = .data[[var]])) +
+    geom_point(size = 3) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = var,
+         title = paste(var, "Annual Time Series - 221 Buoy (Wellfleet)")) +
+    scale_color_brewer(palette = "Set2")
+  
+  print(p)
+}
