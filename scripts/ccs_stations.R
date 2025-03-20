@@ -127,7 +127,7 @@ ccs_wellfleet_full_years <- ccs_data_wellfleet |>
   inner_join(ccs_data_wellfleet, by = c("internal_station_id", "year_collected"))
 
 
-# Calculate mean & median for all water quality variables
+# Calculate annual mean & median for all water quality variables
 ccs_wellfleet_annual <- ccs_wellfleet_full_years |> 
   group_by(internal_station_id, year_collected) |> 
   summarize(
@@ -175,7 +175,6 @@ ccs_wellfleet_summers <- ccs_wellfleet_full_summers |>
     .groups = "drop"
   )
 
-
 # ---- Set Global ggplot Themes ----
 
 # Set ggplot theme to minimal, rotate x axis labels, and center plot titles
@@ -188,6 +187,26 @@ theme_set(
 )
 
 # ---- Plot All Data Over Time ----
+
+# Add log transformed chlorophyll
+ccs_data_wellfleet <- ccs_data_wellfleet |>
+  mutate(`log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`))
+
+ccs_wellfleet_annual <- ccs_wellfleet_annual |>
+  mutate(`log10_chlorophyll_ug/L_mean` = log10(`chlorophyll_ug/L_mean`),
+         `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`))
+
+ccs_wellfleet_full_summers <- ccs_wellfleet_full_summers |> 
+  mutate(`log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`),
+         `log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`))
+
+ccs_wellfleet_summers <- ccs_wellfleet_summers |>
+  mutate(`log10_chlorophyll_ug/L_mean` = log10(`chlorophyll_ug/L_mean`),
+         `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`))
+
+# Update wq_variables to add log transformed chlorophyll
+wq_variables <- c(wq_variables, "log10_chlorophyll_ug/L")
+
 
 # For each relevant variable, plot all ~monthly data over time
 for (var in wq_variables) {
@@ -213,7 +232,7 @@ for (var in wq_variables) {
   
   print(p)
 }
-  
+
 
 # For each relevant variable, plot Annual mean and mean values
 for (var in wq_variables) {
