@@ -1,11 +1,13 @@
 ---
 title: "buoy_A01_ERDDAP"
 author: "Aaron Shavitz"
-format: html
+format: 
+  html:
+    code-fold: show
 ---
 [Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
 
-# A01 Buoy ERDDAP Data
+# A01 Buoy ERDDAP Data - Massachusetts Bay
 
 ```{r, echo=FALSE}
 # Using knitr package to read code chunks from buoy_A01_ERDDAP.R
