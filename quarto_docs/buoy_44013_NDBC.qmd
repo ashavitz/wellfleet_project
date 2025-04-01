@@ -26,6 +26,10 @@ knitr::read_chunk("../scripts/buoy_44013_NDBC.R")
 ```{r Load Libraries, message=FALSE, warning=FALSE}
 ```
 
+### Set Global ggplot Themes
+```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
+```
+
 ### Load and Clean NDBC Data
 ```{r Load and Clean NDBC Data, message=FALSE, warning=FALSE}
 ```
