@@ -1,0 +1,39 @@
+---
+title: "nps_eelgrass_monitor"
+author: "Aaron Shavitz"
+format: 
+  html:
+    code-fold: show
+---
+[Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
+
+# NDBC Buoy 44013 - Boston Harbor
+
+```{r, echo=FALSE}
+# Using knitr package to read code chunks from nps_eelgrass_monitor.R
+
+# Set the root directory to the current folder
+knitr::opts_knit$set(root.dir = here::here())
+
+# Read in the R script from the 'scripts' folder (relative to the root project directory)
+knitr::read_chunk("../scripts/nps_eelgrass_monitor.R")
+```
+
+```{r Header}
+```
+
+### Load Libraries
+```{r Load Libraries, message=FALSE, warning=FALSE}
+```
+
+### Set Global ggplot Themes
+```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
+```
+
+### Load NPS Data
+```{r Load NPS Data}
+```
+
+### Visualize Monitoring Data
+```{r Visualize Monitoring Data}
+```
