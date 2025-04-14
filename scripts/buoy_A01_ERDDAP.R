@@ -400,8 +400,26 @@ for (var in variable_means) {
   p <- ggplot(A01_met_all_annual_summary,
               aes(x = year,
                   y = .data[[var]])) +
-    geom_point(size = 3) +
-    geom_line(size = 0.5) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = variable_means_meta[[var]],
+         title = paste("Annual Time Series - A01 Buoy", variable_means_meta[[var]], sep = "\n"),
+         caption = "(only years with at least 80% complete data included)") +
+    scale_color_brewer(palette = "Set2")
+  
+  print(p)
+}
+
+
+# Plot simple mean wind direction for 2003 - 2014 for comparison with DKP
+for (var in list("wind_direction_mean_simple")) {
+  p <- ggplot(A01_met_all_annual_summary,
+              aes(x = year,
+                  y = .data[[var]])) +
+    geom_point() +
+    geom_line(data = filter(A01_met_all_annual_summary, !is.na(wind_direction_mean_simple)),
+              color = "blue") +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variable_means_meta[[var]],
