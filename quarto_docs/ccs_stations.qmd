@@ -1,7 +1,9 @@
 ---
 title: "ccs_stations"
 author: "Aaron Shavitz"
-format: html
+format: 
+  html:
+    code-fold: show
 ---
 [Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
 
