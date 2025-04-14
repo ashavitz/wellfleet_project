@@ -59,7 +59,13 @@ ccs_data_wellfleet <- filter(ccs_data_all,
                              internal_station_id %in% station_ids_wellfleet) |> 
   # create year and month columns
   mutate(year_collected = year(collected_at),
-         month = month(collected_at)) |>
+         month = month(collected_at),
+         internal_station_id = case_when(
+           internal_station_id == 1 ~ "1 (5N)",
+           internal_station_id == 2 ~ "2 (5S)",
+           internal_station_id == 3 ~ "3 (5SX)"
+           )
+         ) |>
   relocate(year_collected, month, .after = collected_at)
 
 # Create list of all water quality variables of interest
