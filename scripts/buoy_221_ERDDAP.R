@@ -230,6 +230,21 @@ scalar_variable_means <- colnames(buoy_221_daily)[!colnames(buoy_221_daily)
                                              %in% c("date", "mean_acm_direction")]
 angular_variable_means <- c("mean_acm_direction")
 variable_means <- c(scalar_variable_means, angular_variable_means)
+variable_means_meta <- list(
+  mean_air_temp = "Mean Air Temperature (degC)",
+  max_air_temp = "Max Air Temperature (degC)",
+  mean_sst = "Mean SST (degC)",
+  max_sst = "Max SST (deg C)",
+  mean_acm_speed = "Mean Current Speed 0.75m depth (m/s)",
+  max_acm_speed = "Max Current Speed 0.75m depth (m/s)",
+  mean_acm_vertical_speed = "Mean Vertical Current Speed 0.75m depth (m/s)",
+  mean_wave_hs = "Mean Wave Significant Height (m)",
+  mean_wave_tp = "Mean Wave Period (s)
+            (variance spectral density max)",
+  mean_wave_Ta = "Mean Wave Period (s)
+    (variance spectral density first frequency moment)",
+  mean_acm_direction = "Current Direction 0.75m depth (degT)"
+)
 
 
 for (var in variable_means) {
@@ -239,7 +254,7 @@ for (var in variable_means) {
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
-         y = var,
+         y = variable_means_meta[[var]],
          title = paste(var, "Daily Time Series - 221 Buoy (Cape Cod Bay)")) +
     scale_color_brewer(palette = "Set2")
   
@@ -283,7 +298,7 @@ for (var in variable_means) {
     geom_point(size = 3) +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
-         y = var,
+         y = variable_means_meta[[var]],
          title = paste(var, "Annual Time Series - 221 Buoy (Cape Cod Bay)")) +
     scale_color_brewer(palette = "Set2")
   
