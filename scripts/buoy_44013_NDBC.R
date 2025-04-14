@@ -268,8 +268,8 @@ for (var in list("WDIR_simple")) {
   p <- ggplot(filter(buoy_data_annual, YYYY %in% c(2003:2014)),
               aes(x = YYYY,
                   y = .data[[var]])) +
-    geom_point(color = "orange") +
-    geom_line(color = "orange") +
+    geom_point(color = "blue") +
+    geom_line(color = "blue") +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variables_meta[[var]],
