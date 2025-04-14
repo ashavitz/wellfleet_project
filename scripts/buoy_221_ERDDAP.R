@@ -11,9 +11,12 @@
 #' Sea temp depth: 0.46 m below water line
 #'--------------------------------------
 
-# ---- TODO ----
-
-#'--------------------------------------
+# ---- Importing files via ERDDAP ----
+#' -------------------------------------
+#' Importing files via ERDDAP
+#' CDIP ERDDAP base URL:
+#' https://erddap.cdip.ucsd.edu/erddap/index.html
+#' -------------------------------------
 
 # ---- Load Libraries ----
 library(readr) # for reading in files
@@ -23,12 +26,17 @@ library(tidyr) # for tidying and reshaping data
 library(rerddap) # for accessing ERDDAP servers
 library(ggplot2) # for visualization
 
-# ---- Importing files via ERDDAP ----
-#' -------------------------------------
-#' Importing files via ERDDAP
-#' CDIP ERDDAP base URL:
-#' https://erddap.cdip.ucsd.edu/erddap/index.html
-#' -------------------------------------
+# ---- Set Global ggplot Themes ----
+
+# Set ggplot theme to minimal, rotate x axis labels, and center plot titles
+theme_set(
+  theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+)
 
 # ---- Air temperature measurements ----
 
@@ -36,8 +44,6 @@ library(ggplot2) # for visualization
 data_info_cat4 <- rerddap::info("cat4_agg",
                            url = "erddap.cdip.ucsd.edu/erddap")
 
-# TODO: Import all data for selected variables, including qcs, and convert non-"good" 
-# quality data to NAs
 
 # Get time and air temp data for station 221 from the cat4_agg data set
 # and QC flags for each variable other than time
@@ -255,7 +261,8 @@ for (var in variable_means) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variable_means_meta[[var]],
-         title = paste(var, "Daily Time Series - 221 Buoy (Cape Cod Bay)")) +
+         title = paste("Daily Time Series - 221 Buoy (Cape Cod Bay)",
+                       variable_means_meta[[var]], sep = "\n")) +
     scale_color_brewer(palette = "Set2")
   
   print(p)
@@ -299,7 +306,9 @@ for (var in variable_means) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variable_means_meta[[var]],
-         title = paste(var, "Annual Time Series - 221 Buoy (Cape Cod Bay)")) +
+         title = paste("Annual Time Series - 221 Buoy (Cape Cod Bay)",
+                       variable_means_meta[[var]], sep = "\n"),
+         caption = "(only years with at least 80% complete data included)") +
     scale_color_brewer(palette = "Set2")
   
   print(p)

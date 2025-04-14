@@ -1,7 +1,9 @@
 ---
 title: "buoy_221_ERDDAP"
 author: "Aaron Shavitz"
-format: html
+format: 
+  html:
+    code-fold: show
 ---
 [Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
 
@@ -20,12 +22,16 @@ knitr::read_chunk("../scripts/buoy_221_ERDDAP.R")
 ```{r Header}
 ```
 
+### Importing Files via ERDDAP
+```{r Importing files via ERDDAP, message=FALSE, warning=FALSE}
+```
+
 ### Load Libraries
 ```{r Load Libraries, message=FALSE, warning=FALSE}
 ```
 
-### Importing Files via ERDDAP
-```{r Importing files via ERDDAP, message=FALSE, warning=FALSE}
+### Set Global ggplot Themes
+```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
 ```
 
 ### Air Temperature Measurements

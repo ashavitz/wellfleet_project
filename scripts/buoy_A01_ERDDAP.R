@@ -182,7 +182,7 @@ for (var in variables) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variables_meta[[var]],
-         title = paste(var, "Daily Time Series - A01 Buoy")) +
+         title = paste("Daily Time Series - A01 Buoy", variables_meta[[var]], sep = "\n")) +
     scale_color_brewer(palette = "Set2")
   
   print(p)
@@ -226,8 +226,8 @@ for (var in variables) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variables_meta[[var]],
-         title = paste(var, "Annual Time Series - A01 Buoy"),
-         subtitle = "(only years with at least 80% complete data included)") +
+         title = paste("Annual Time Series - A01 Buoy", variables_meta[[var]], sep = "\n"),
+         caption = "(only years with at least 80% complete data included)") +
     scale_color_brewer(palette = "Set2")
   
   print(p)
@@ -260,7 +260,6 @@ angular_variables <- c("wind_direction",
                         "wind_2_direction")
 
 variables <- c(scalar_variables, angular_variables)
-
 qc_variables <- paste0(variables, "_qc")
 
 # Get all data
@@ -333,21 +332,24 @@ A01_met_all_daily_summary <- A01_met_all |>
                   }
                 )
            ),
+    # also calculate a simple, non-circular mean for wind direction, for comparison to DKP analysis
+    wind_direction_mean_simple = mean(wind_direction),
     .groups = "drop"
     )
 
 
 # Plot daily mean values for each variable
-scalar_variable_means <- paste0(scalar_variables, "_mean")
+scalar_variable_means <- c(paste0(scalar_variables, "_mean"), "wind_direction_mean_simple")
 angular_variable_means <- paste0(angular_variables, "_mean")
-variable_means <- paste0(variables, "_mean")
+variable_means <- c(paste0(variables, "_mean"), "wind_direction_mean_simple")
 variable_means_meta <- list(
   air_temperature_mean = "Mean Air Temperature (degC)",
   barometric_pressure_mean = "Mean Barometric Pressure (millibars)",
   wind_gust_mean = "Mean Wind Gust Speed (m/s)",
   wind_speed_mean = "Mean Wind Speed (m/s)",
   visibility_mean = "Mean Visibility (meters)",
-  wind_direction_mean = "Circular Mean Wind Direction (degT)"
+  wind_direction_mean = "Circular Mean Wind Direction (degT)",
+  wind_direction_mean_simple = "Simple Mean Wind Direction (angular degrees)"
 )
 
 
@@ -359,7 +361,9 @@ for (var in variable_means) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variable_means_meta[[var]],
-         title = paste(var, "Daily Time Series - A01 Buoy")) +
+         title = paste("Daily Time Series - A01 Buoy", variable_means_meta[[var]], sep = "\n"),
+         caption = "NOTE - Did NOT check that data was full/complete for each day.
+         Need to determine the best approach for this, because days have different intervals of collection") +
     scale_color_brewer(palette = "Set2")
   
   print(p)
@@ -397,10 +401,12 @@ for (var in variable_means) {
               aes(x = year,
                   y = .data[[var]])) +
     geom_point(size = 3) +
+    geom_line(size = 0.5) +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variable_means_meta[[var]],
-         title = paste(var, "Annual Time Series - A01 Buoy")) +
+         title = paste("Annual Time Series - A01 Buoy", variable_means_meta[[var]], sep = "\n"),
+         caption = "(only years with at least 80% complete data included)") +
     scale_color_brewer(palette = "Set2")
   
   print(p)
@@ -509,7 +515,7 @@ for (var in variables) {
     
     labs(x = "Date",
          y = variables_meta[[var]],
-         title = paste(var, "Time Series - A01 Buoy")) +
+         title = paste("Daily Time Series - A01 Buoy", variables_meta[[var]], sep = "\n")) +
     scale_color_brewer(palette = "Set2")
   
   print(p)
