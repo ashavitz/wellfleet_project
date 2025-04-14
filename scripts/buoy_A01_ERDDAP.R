@@ -39,7 +39,8 @@ theme_set(
 
 # ---- Custom Functions ----
 
-make_compass_plot <- function(df, direction_var, speed_var, year_var) {
+make_compass_plot <- function(df, direction_var, speed_var, year_var,
+                              units_dir, units_speed, medium_type) {
   
   max_speed <- max(df[[deparse(substitute(speed_var))]], na.rm = TRUE)
   # Plot annual current direction and speed on a compass plot
@@ -62,9 +63,9 @@ make_compass_plot <- function(df, direction_var, speed_var, year_var) {
     coord_polar(start = 0, direction = 1) +
     theme_minimal() +
     labs(
-      title = "Direction Over Time Compass Plot",
-      x = "Direction (degrees)",
-      y = "Speed"
+      title = paste(medium_type, "Direction & Speed Over Time Compass Plot"),
+      x = units_dir,
+      y = units_speed
     ) +
     # Add a north arrow
     annotate(
@@ -167,6 +168,11 @@ A01_aanderaa_o2_all_daily_summary <- A01_aanderaa_o2_all_full_days |>
 
 # Plot daily mean values for each variable
 variables <- c("current_speed_mean", "current_direction_mean", "temperature_mean")
+variables_meta <- list(
+  current_speed_mean = "Mean Current Speed (cm/s)",
+  current_direction_mean = "Circular Mean Current Direction (degT)",
+  temperature_mean = "Mean Temperature @ 2m depth (degC)"
+)
 
 for (var in variables) {
   p <- ggplot(A01_aanderaa_o2_all_daily_summary,
@@ -175,7 +181,7 @@ for (var in variables) {
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
-         y = var,
+         y = variables_meta[[var]],
          title = paste(var, "Daily Time Series - A01 Buoy")) +
     scale_color_brewer(palette = "Set2")
   
@@ -219,7 +225,7 @@ for (var in variables) {
     geom_point(size = 3) +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
-         y = var,
+         y = variables_meta[[var]],
          title = paste(var, "Annual Time Series - A01 Buoy"),
          subtitle = "(only years with at least 80% complete data included)") +
     scale_color_brewer(palette = "Set2")
@@ -231,7 +237,10 @@ for (var in variables) {
 make_compass_plot(A01_aanderaa_o2_all_annual_summary,
                   current_direction_mean,
                   current_speed_mean,
-                  year)
+                  year,
+                  units_dir = "Direction (degT)",
+                  units_speed = "Current Speed (cm/s)",
+                  medium_type = "Current")
 
 # ---- A01_met_all ----
 
@@ -294,7 +303,7 @@ A01_met_all <- A01_met_all |>
   ) |> 
   select(-c(wind_2_speed, wind_2_gust, wind_2_direction)) 
 
-# Updat list of variables
+# Update list of variables
 scalar_variables <- c("air_temperature",
                       "barometric_pressure",
                       "wind_gust",
@@ -332,6 +341,15 @@ A01_met_all_daily_summary <- A01_met_all |>
 scalar_variable_means <- paste0(scalar_variables, "_mean")
 angular_variable_means <- paste0(angular_variables, "_mean")
 variable_means <- paste0(variables, "_mean")
+variable_means_meta <- list(
+  air_temperature_mean = "Mean Air Temperature (degC)",
+  barometric_pressure_mean = "Mean Barometric Pressure (millibars)",
+  wind_gust_mean = "Mean Wind Gust Speed (m/s)",
+  wind_speed_mean = "Mean Wind Speed (m/s)",
+  visibility_mean = "Mean Visibility (meters)",
+  wind_direction_mean = "Circular Mean Wind Direction (degT)"
+)
+
 
 for (var in variable_means) {
   p <- ggplot(A01_met_all_daily_summary,
@@ -340,7 +358,7 @@ for (var in variable_means) {
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
-         y = var,
+         y = variable_means_meta[[var]],
          title = paste(var, "Daily Time Series - A01 Buoy")) +
     scale_color_brewer(palette = "Set2")
   
@@ -381,7 +399,7 @@ for (var in variable_means) {
     geom_point(size = 3) +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
-         y = var,
+         y = variable_means_meta[[var]],
          title = paste(var, "Annual Time Series - A01 Buoy")) +
     scale_color_brewer(palette = "Set2")
   
@@ -392,7 +410,10 @@ for (var in variable_means) {
 make_compass_plot(A01_met_all_annual_summary,
                   wind_direction_mean,
                   wind_speed_mean,
-                  year)
+                  year,
+                  units_dir = "Direction (degT)",
+                  units_speed = "Wind Speed (m/s)",
+                  medium_type = "Wind")
 
 # ---- A01 Aanderaa - Historic Surface Currents (and 2m depth water temperature) ----
 
@@ -473,6 +494,11 @@ A01_aanderaa_hist_daily <- A01_aanderaa_hist_full_days |>
 
 # Plot daily mean values for each variable
 variables <- c("current_speed_mean", "current_direction_mean", "temperature_mean")
+variables_meta <- list(
+  current_speed_mean = "Mean Current Speed (cm/s)",
+  current_direction_mean = "Circular Mean Current Direction (degT)",
+  temperature_mean = "Mean Temperature @ 2m depth (degC)"
+)
 
 for (var in variables) {
   p <- ggplot(A01_aanderaa_hist_daily,
@@ -482,7 +508,7 @@ for (var in variables) {
     geom_smooth(method = "lm", se = FALSE) +
     
     labs(x = "Date",
-         y = var,
+         y = variables_meta[[var]],
          title = paste(var, "Time Series - A01 Buoy")) +
     scale_color_brewer(palette = "Set2")
   
