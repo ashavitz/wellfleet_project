@@ -157,13 +157,13 @@ scalar_variables <- c("WSPD","GST", "WVHT", "DPD", "APD", "PRES",
                       "ATMP","WTMP", "DEWP", "VIS","TIDE")
 variables <- c(angular_variables, scalar_variables)
 variables_meta <- list(
-  WDIR = "Wind Direction (degT)",
+  WDIR = "Circular Mean Wind Direction (degT)",
   WSPD = "Wind speed (m/s)",
   GST	= "Peak 5 or 8 second gust speed (m/s)",
   WVHT = "Significant wave height (meters)",
   DPD	= "Dominant wave period (seconds)",
   APD	= "Average wave period (seconds)",
-  MWD	= "Wave dir at dominant period (degT)",
+  MWD	= "Wave direction at dominant period (degT)",
   PRES = "Sea level pressure (hPa)",
   ATMP = "Air temperature (degC)",
   WTMP = "Sea surface temperature (degC)",
@@ -183,14 +183,21 @@ buoy_data_daily <- buoy_data |>
                circular::circular(.x, units = "degrees", modulo = "2pi"),
                na.rm = TRUE))
     ),
+    # also calculate a simple, non-circular mean for wind direction, for comparison to DKP analysis
+    WDIR_simple = mean(WDIR),
     .groups = "drop"
   ) |> 
   mutate(date = make_date(YYYY, MM, DD)) |> 
   relocate(WDIR, .before = WSPD) |> 
+  relocate(WDIR_simple, .after = WDIR) |> 
   relocate(MWD, .before = ATMP) |> 
   relocate(date, .before = YYYY)
   
-
+# Update variables
+  scalar_variables <- c("WDIR_simple", scalar_variables)
+  variables <- c("WDIR_simple", variables)
+  variables_meta <- c(variables_meta, WDIR_simple = "Simple Mean Wind Direction (degT)")
+  
 
 # Plot daily mean values for each variable
 for (var in variables) {
@@ -201,8 +208,12 @@ for (var in variables) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variables_meta[[var]],
-         title = paste(var, "Daily Time Series - Boston Harbor Buoy")) +
-    scale_color_brewer(palette = "Set2")
+         title = paste("Daily Time Series - Boston Harbor Buoy",
+                       variables_meta[[var]], sep = "\n")) +
+    scale_color_brewer(palette = "Set2") +
+    scale_x_date(
+      breaks = seq(min(buoy_data_daily$date), max(buoy_data_daily$date), by = "2 years"),
+      date_labels = "%Y")
   
   print(p)
 }
@@ -216,7 +227,7 @@ for (var in variables) {
 #   summarize(count_obs = n())
 # 1997 and 2012 are missing large time periods of data
 
-
+  
 buoy_data_annual <- buoy_data_daily |> 
   group_by(YYYY) |> 
   # 1997 and 2012 are missing large time periods of data. Excluding from annual summaries  
@@ -243,8 +254,30 @@ for (var in variables) {
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variables_meta[[var]],
-         title = paste(var, "Annual Time Series - Boston Harbor Buoy")) +
-    scale_color_brewer(palette = "Set2")
+         title = paste("Annual Time Series - Boston Harbor Buoy",
+                       variables_meta[[var]], sep = "\n")) +
+    scale_color_brewer(palette = "Set2") +
+    scale_x_continuous(
+      breaks = seq(min(buoy_data_annual$YYYY), max(buoy_data_annual$YYYY), by = 2))
+  
+  print(p)
+}
+
+# Plot Simple Mean Wind Direction 2003 - 2014 for comparison with DKP
+for (var in list("WDIR_simple")) {
+  p <- ggplot(filter(buoy_data_annual, YYYY %in% c(2003:2014)),
+              aes(x = YYYY,
+                  y = .data[[var]])) +
+    geom_point(color = "orange") +
+    geom_line(color = "orange") +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = variables_meta[[var]],
+         title = paste("Annual Time Series - Boston Harbor Buoy",
+                       variables_meta[[var]], sep = "\n")) +
+    scale_color_brewer(palette = "Set2") +
+    scale_x_continuous(
+      breaks = seq(min(buoy_data_annual$YYYY), max(buoy_data_annual$YYYY), by = 2))
   
   print(p)
 }
