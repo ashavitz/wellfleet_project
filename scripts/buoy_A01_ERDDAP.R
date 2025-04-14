@@ -417,9 +417,9 @@ for (var in list("wind_direction_mean_simple")) {
   p <- ggplot(A01_met_all_annual_summary,
               aes(x = year,
                   y = .data[[var]])) +
-    geom_point() +
+    geom_point(color = "orange") +
     geom_line(data = filter(A01_met_all_annual_summary, !is.na(wind_direction_mean_simple)),
-              color = "blue") +
+              color = "orange") +
     geom_smooth(method = "lm", se = FALSE) +
     labs(x = "Date",
          y = variable_means_meta[[var]],
