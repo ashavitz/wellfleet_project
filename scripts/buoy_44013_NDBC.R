@@ -141,7 +141,7 @@ buoy_data <- buoy_data |>
   # PRES - Sea level pressure (hPa)
   # ATMP - Air temperature (degC)
   # WTMP - Sea surface temperature (degC)
-  # DEWP -Dewpoint temperature
+  # DEWP -Dewpoint temperature (not stated - assuming degC)
   # VIS	- Station visibility (nautical miles)
   # TIDE - The water level in feet above or below MLLW (ft)
 
@@ -167,7 +167,7 @@ variables_meta <- list(
   PRES = "Sea level pressure (hPa)",
   ATMP = "Air temperature (degC)",
   WTMP = "Sea surface temperature (degC)",
-  DEWP = "Dewpoint temperature",
+  DEWP = "Dewpoint temperature (degC)",
   VIS	= "Station visibility (nautical miles)",
   TIDE = "Water level above or below MLLW (ft)"
 )
