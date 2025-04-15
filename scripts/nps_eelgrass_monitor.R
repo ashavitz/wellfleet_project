@@ -32,11 +32,14 @@ theme_set(
 )
 
 
-# ---- Load NPS Data ----
+# ---- Load NPS Monitoring Data ----
 
 # Load monitoring data (% cover, wasting disease, seed production) . Isolate relevant data for current analysis
 dh_data_all <- read_csv("data/nps_duck_harbor/duckharbor_zm_data_03_24.csv")
-dh_data <- select(dh_data_all, c(Location, Date, Transect, Percent_Cover, Density_Source, Fruits, Wasting)) |> 
+dh_data <- select(dh_data_all,
+                  c(Location, Date, Transect,
+                    Percent_Cover, Density_Source,
+                    `Shoot Density_0.25m2`, Fruits, Wasting)) |> 
   mutate(Date = mdy(Date),
          Reproductive_Shoots = Fruits) |> 
   select(-Fruits)
@@ -45,25 +48,14 @@ dh_data <- select(dh_data_all, c(Location, Date, Transect, Percent_Cover, Densit
 
 # Clean data
 
-# Remove Percent_Cover NA rows
-dh_data <- filter(dh_data, is.na(Percent_Cover) == FALSE)
-
+# Remove row where Percent_Cover or shoot density has NA values
+dh_data <- dh_data |> 
+  filter(!is.na(Percent_Cover) & !is.na(`Shoot Density_0.25m2`)) |> 
+  
 # For most instances when Percent_Cover == 0, Density_Source and Wasting are NA, but there are
 # a few inconsistencies. Standardize by making all NA where Percent_Cover == 0
-dh_data <- dh_data |> 
   mutate(Density_Source = ifelse(Percent_Cover == 0, NA, Density_Source),
          Wasting = ifelse(Percent_Cover ==0, NA, Wasting))
-
-# Load PAR data
-par_data <- read_csv("data/nps_duck_harbor/duck_harbor_PAR.csv") |> 
-  mutate(date_time = mdy_hm(`Date/Time (UTC-4:00)`)) |> relocate(date_time, .before = PAR1) |> select(-`Date/Time (UTC-4:00)`)
-  
-
-# Load water temperature data
-water_temp_data_a <- read_csv("data/nps_duck_harbor/Water_Temp.A@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
-water_temp_data_b <- read_csv("data/nps_duck_harbor/Water_Temp.B@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
-water_temp_data_c <- read_csv("data/nps_duck_harbor/Water_Temp.C@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
-
 
 
 # ---- Visualize Monitoring Data ----
@@ -82,9 +74,11 @@ dh_data <- dh_data |>
 # Calculate mean % cover & mean count of reproductive shoots per transect per year
 dh_data_summary <- dh_data |> 
   group_by(Transect, Date) |> 
-  summarize(Percent_Cover = mean(Percent_Cover),
-            Reproductive_Shoots = mean(Reproductive_Shoots)) |> 
-  ungroup()
+  summarize(across(c(Percent_Cover, Reproductive_Shoots, `Shoot Density_0.25m2`),
+                   \(x) mean(x, na.rm = TRUE)),
+            .groups = "drop") |> 
+  # calculate proportion of total shoot density
+  mutate(repro_shoot_prop = Reproductive_Shoots / `Shoot Density_0.25m2`)
 
 # Plot mean % cover over time
 ggplot(dh_data_summary,
@@ -100,26 +94,118 @@ ggplot(dh_data_summary,
   labs(title = "Mean Percent Cover Over Time (with smoothing)",
        y = "Mean Percent Cover")
 
+
+# Plot reproductive shoots and proportion of reproductive shoots
+
+# For examining reproductive shoots, only include May through September (fruiting months)
+dh_data_summary_fruiting <- dh_data_summary |> 
+  filter(month(Date) %in% c(5,6,7,8,9)) |> 
+# Average by year to reduce to single data point per year
+# NOTE - It is likely more appropriate to do this step earlier. May need to revise
+  group_by(Transect, Year = year(Date)) |> 
+  summarize(repro_shoot_prop = mean(repro_shoot_prop),
+            Reproductive_Shoots = mean(Reproductive_Shoots), 
+            Percent_Cover = mean(Percent_Cover)/100,
+            .groups = "drop") |> 
+  mutate(non_repro_shoot_prop = 1 - repro_shoot_prop)
+
 # Plot mean count of reproductive over time
-ggplot(dh_data_summary,
-       aes(x = Date, y = Reproductive_Shoots, color = Transect)) +
+ggplot(dh_data_summary_fruiting,
+       aes(x = Year, y = Reproductive_Shoots, color = Transect)) +
   geom_line() +
   labs(title = "Mean Count Reproductive Shoots Over Time",
        y = "Mean Count Reproductive Shoots")
 
-ggplot(dh_data_summary,
-       aes(x = Date, y = Reproductive_Shoots, color = Transect)) +
+ggplot(dh_data_summary_fruiting,
+       aes(x = Year, y = Reproductive_Shoots, color = Transect)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   labs(title = "Mean Count Reproductive Shoots Over Time (with smoothing)",
        y = "Mean Count Reproductive Shoots")
 
 
+# Plot proportion of reproductive shoots out of shoot density (total counted shoots)
+ggplot(dh_data_summary_fruiting,
+       aes(x = as.character(Year), y = repro_shoot_prop)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)
+    ) +
+  facet_wrap(~Transect) + 
+  labs(title = "Proportion of Reproductive Shoots by Year",
+       caption = "Only May through September Included")
+
+ggplot(dh_data_summary_fruiting,
+       aes(x = as.character(Year), y = Percent_Cover, fill = repro_shoot_prop)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)
+  ) +
+  facet_wrap(~Transect) + 
+  labs(title = "% Cover & Proportion Reproductive Shoots by Year",
+       caption = "Only May through September Included")
+
+
+
+# Pivot longer for alternative bar plots
+dh_fruiting_long <- dh_data_summary_fruiting |> 
+  pivot_longer(cols = c(repro_shoot_prop, non_repro_shoot_prop, Percent_Cover),
+               names_to = "Metric",
+               values_to = "Value")
+
+
+ggplot(filter(dh_fruiting_long, Metric != "non_repro_shoot_prop"),
+       aes(x = as.character(Year), y = Value, fill = Metric)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)
+  ) +
+  facet_wrap(~Transect) + 
+  labs(title = "% Cover & Proportion of Reproductive Shoots by Year",
+       caption = "Only May through September Included")
+
+ggplot(filter(dh_fruiting_long, Metric != "Percent_Cover"),
+       aes(x = as.character(Year), y = Value, fill = Metric)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)
+  ) +
+  facet_wrap(~Transect) + 
+  labs(title = "% Cover & Proportion of Reproductive Shoots by Year",
+       caption = "Only May through September Included")
+
+ggplot(dh_data_summary_fruiting,
+       aes(x = as.character(Year), y = repro_shoot_prop, fill = Transect)) +
+  geom_bar(stat = "identity", position = position_dodge()) +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)
+  ) +
+  labs(title = "Proportion of Reproductive Shoots by Year",
+       caption = "Only May through September Included")
+
+
+# Facet by transect, bars are year or date, one plot for totals and one plot for proportions
+
+
 # Calculate counts for each categorization of wasting disease by transect by year
 # Plot (bar graph) over time
 
 
+# ---- Load PAR and Water Temp Data ----
+# Load PAR data
+par_data <- read_csv("data/nps_duck_harbor/duck_harbor_PAR.csv") |> 
+  mutate(date_time = mdy_hm(`Date/Time (UTC-4:00)`)) |> relocate(date_time, .before = PAR1) |> select(-`Date/Time (UTC-4:00)`)
 
+
+# Load water temperature data
+water_temp_data_a <- read_csv("data/nps_duck_harbor/Water_Temp.A@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
+water_temp_data_b <- read_csv("data/nps_duck_harbor/Water_Temp.B@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
+water_temp_data_c <- read_csv("data/nps_duck_harbor/Water_Temp.C@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
 
 
 

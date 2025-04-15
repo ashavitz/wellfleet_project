@@ -30,10 +30,14 @@ knitr::read_chunk("../scripts/nps_eelgrass_monitor.R")
 ```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
 ```
 
-### Load NPS Data
-```{r Load NPS Data}
+### Load NPS Monitoring Data
+```{r Load NPS Monitoring Data}
 ```
 
 ### Visualize Monitoring Data
 ```{r Visualize Monitoring Data}
+```
+
+### Load PAR and Water Temp Data
+```{r Load PAR and Water Temp Data}
 ```
