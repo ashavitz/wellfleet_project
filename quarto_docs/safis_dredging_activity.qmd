@@ -1,0 +1,40 @@
+---
+title: "safis_dredging_activity"
+author: "Aaron Shavitz"
+format: 
+  html:
+    code-fold: show
+---
+[Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
+
+# SAFIS Dredging Activity
+
+```{r, echo=FALSE}
+# Using knitr package to read code chunks from safis_dredging_activity.R
+
+# Set the root directory to the current folder
+knitr::opts_knit$set(root.dir = here::here())
+
+# Read in the R script from the 'scripts' folder (relative to the root project directory)
+knitr::read_chunk("../scripts/safis_dredging_activity.R")
+```
+
+```{r Header}
+```
+
+**Map of Relevant DMF Shellfish Growing Areas:**  
+(see [Mass.gov shellfish classification areas](https://www.mass.gov/info-details/shellfish-classification-areas))
+```{r Map of Growing Areas, echo=FALSE, message=FALSE, warning=FALSE}
+```
+
+### Load Libraries
+```{r Load Libraries, message=FALSE, warning=FALSE}
+```
+
+### Set Global ggplot Themes
+```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
+```
+
+### Load and Visualize SAFIS Data
+```{r Load and Visualize SAFIS Data, message=FALSE, warning=FALSE}
+```
