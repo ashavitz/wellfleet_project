@@ -19,7 +19,7 @@ knitr::opts_knit$set(root.dir = here::here())
 knitr::read_chunk("../scripts/nps_eelgrass_monitor.R")
 ```
 
-```{r Header}
+```{r Header, message=FALSE, warning=FALSE}
 ```
 
 ### Load Libraries
@@ -35,9 +35,13 @@ knitr::read_chunk("../scripts/nps_eelgrass_monitor.R")
 ```
 
 ### Visualize Monitoring Data
-```{r Visualize Monitoring Data}
+```{r Visualize Monitoring Data, message=FALSE, warning=FALSE}
 ```
 
-### Load PAR and Water Temp Data
-```{r Load PAR and Water Temp Data}
+### Load and Visualize PAR Data
+```{r Load and Visualize PAR Data, message=FALSE, warning=FALSE}
+```
+
+### Load Water Temp Data
+```{r Load Water Temp Data, message=FALSE, warning=FALSE}
 ```

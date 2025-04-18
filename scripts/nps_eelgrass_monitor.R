@@ -118,6 +118,7 @@ dh_data_summary_fruiting <- dh_data_summary |>
             .groups = "drop") |> 
   mutate(non_repro_shoot_prop = 1 - repro_shoot_prop)
 
+
 # Plot mean count of reproductive over time
 ggplot(dh_data_summary_fruiting,
        aes(x = Year, y = Reproductive_Shoots, color = Transect)) +
@@ -145,6 +146,8 @@ ggplot(dh_data_summary_fruiting,
 #   labs(title = "Proportion of Reproductive Shoots by Year",
 #        caption = "Only May through September Included")
 
+
+# Bar plot showing percent cover by year, colored by proportion of shoots which are reproductive
 ggplot(dh_data_summary_fruiting,
        aes(x = as.character(Year), y = Percent_Cover, fill = repro_shoot_prop)) +
   geom_bar(stat = "identity") +
@@ -176,6 +179,8 @@ dh_fruiting_long <- dh_data_summary_fruiting |>
 #   labs(title = "% Cover & Proportion of Reproductive Shoots by Year",
 #        caption = "Only May through September Included")
 
+
+# Stacked bar plot showing % Cover & Proportion of Reproductive Shoots by Year
 ggplot(filter(dh_fruiting_long, Metric != "Percent_Cover"),
        aes(x = as.character(Year), y = Value, fill = Metric)) +
   geom_bar(stat = "identity") +
@@ -241,19 +246,90 @@ ggplot(dh_data_summary_wasting,
   labs(title = "% Cover & Proportion High Wasting Disease by Year")
 
 
-# ---- Load PAR and Water Temp Data ----
+# ---- Load and Visualize PAR Data ----
 # Load PAR data
-par_data <- read_csv("data/nps_duck_harbor/duck_harbor_PAR.csv") |> 
-  mutate(date_time = mdy_hm(`Date/Time (UTC-4:00)`)) |> relocate(date_time, .before = PAR1) |> select(-`Date/Time (UTC-4:00)`)
+par_data_raw <- read_csv("data/nps_duck_harbor/duck_harbor_PAR.csv")
 
+par_data <- par_data_raw |>
+  mutate(date_time = mdy_hm(`Date/Time (UTC-4:00)`)) |>
+  select(c(date_time, Kd)) |> 
+  filter(!is.na(Kd))
+
+# Establish threshold Kd values based on NPS report (Good, Fair, Poor)
+# Threshold values as defined by Kopp and Neckles (2009), and utilized in NPS (draft) report
+# on Condition and Trends of Estuarine Water Quality and Seagrass in Cape Cod National Seashore
+# Northeast Coastal and Barrier Network, 2003 – 2022
+# Units: m-1
+threshold_poor_fair <- 1.61
+threshold_fair_good <- 0.92
+
+# Plot all data scatter plot, x axis date time, y axis Kd
+ggplot(par_data, aes(x = date_time, y = Kd)) +
+  geom_point() + 
+  
+  # Add threshold lines
+  geom_hline(yintercept = threshold_poor_fair,
+             linetype = 'dashed', color = 'red', linewidth = 1, alpha = 0.5) +
+  geom_hline(yintercept = threshold_fair_good,
+             linetype = 'dashed', color = 'orange', linewidth = 1, alpha = 0.5) +
+  geom_smooth(method = lm) + 
+  
+  # Add text labels to denote threshold line meanings
+  annotate("text", x = as.POSIXct("2020-01-01", tz = "UTC"), y = threshold_fair_good - 0.05,
+    label = "Good", color = "darkgreen", size = 3) +
+  annotate("text", x = as.POSIXct("2020-01-01", tz = "UTC"), y = threshold_fair_good + 0.05,
+           label = "Fair", color = "orange", size = 3) + 
+  annotate("text", x = as.POSIXct("2020-01-01", tz = "UTC"), y = threshold_poor_fair - 0.05,
+           label = "Fair", color = "orange", size = 3) + 
+  annotate("text", x = as.POSIXct("2020-01-01", tz = "UTC"), y = threshold_poor_fair + 0.05,
+           label = "Poor", color = "red", size = 3) +
+  
+  labs(title = "PAR Attenuation (Kd) at Duck Harbor",
+       y = expression("Kd (m"^{-1}*")"))
+
+
+# Create data frame with just Kd values, day of year, year,
+# and Kd classification (Good, Fair, Poor)
+par_data_quality <- par_data |> 
+  mutate(year = year(date_time),
+         day_of_year = yday(date_time),
+         quality = case_when(
+           Kd < 0.92 ~ "Good",
+           Kd < 1.61 ~ "Fair",
+           Kd >= 1.61 ~ "Poor")) |> 
+  group_by(year, day_of_year, quality) |> 
+  summarize(count = n(), .groups = "drop") |> 
+  mutate(hours_measured_per_day = count / 4) 
+
+# Reorder quality factor to control the stacking order
+par_data_quality$quality <- factor(par_data_quality$quality, levels = c("Poor", "Fair", "Good"))
+
+# Plot stacked bar chart, showing hours of Good, Fair, Poor per day of year, faceted by year
+ggplot(par_data_quality,
+       aes(x = factor(day_of_year), y = hours_measured_per_day, fill = quality)) +
+  geom_bar(stat = "identity", position = "stack", color = "white", linewidth = 0.2) +
+  scale_fill_manual(values = c("Poor" = "yellow2", "Fair" = "purple4", "Good" = "aquamarine4")) +
+  scale_x_discrete(limits = as.character(140:230), breaks = seq(140, 230, by = 10)) + 
+  labs(
+    title = "Quality Classification by Day of Year",
+    x = "Day of Year",
+    y = "Total Hours per Day",
+    fill = "Quality"
+  ) +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5),
+        
+        # Modify facet formatting
+        strip.text = element_text(size = 10),
+        strip.background = element_rect(fill = "grey", color = "black", size = 0.5),
+        panel.spacing = unit(1, "lines"),
+        axis.ticks.x = element_line()) +
+  facet_wrap(~ year, scales = "free_x")
+
+# ---- Load Water Temp Data ----
 
 # Load water temperature data
 water_temp_data_a <- read_csv("data/nps_duck_harbor/Water_Temp.A@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
 water_temp_data_b <- read_csv("data/nps_duck_harbor/Water_Temp.B@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
 water_temp_data_c <- read_csv("data/nps_duck_harbor/Water_Temp.C@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
-
-
-
-
 
 
