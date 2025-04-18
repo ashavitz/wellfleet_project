@@ -272,8 +272,11 @@ ggplot(par_data, aes(x = date_time, y = Kd)) +
              linetype = 'dashed', color = 'red', linewidth = 1, alpha = 0.5) +
   geom_hline(yintercept = threshold_fair_good,
              linetype = 'dashed', color = 'orange', linewidth = 1, alpha = 0.5) +
-  geom_smooth(method = lm) + 
-  
+  # geom_smooth(method = lm) + 
+  scale_x_datetime(
+    limits = as.POSIXct(c("2018-01-01", "2025-01-01")),
+    date_breaks = "1 year",
+    date_labels = "%Y") +
   # Add text labels to denote threshold line meanings
   annotate("text", x = as.POSIXct("2020-01-01", tz = "UTC"), y = threshold_fair_good - 0.05,
     label = "Good", color = "darkgreen", size = 3) +
@@ -283,8 +286,8 @@ ggplot(par_data, aes(x = date_time, y = Kd)) +
            label = "Fair", color = "orange", size = 3) + 
   annotate("text", x = as.POSIXct("2020-01-01", tz = "UTC"), y = threshold_poor_fair + 0.05,
            label = "Poor", color = "red", size = 3) +
-  
   labs(title = "PAR Attenuation (Kd) at Duck Harbor",
+       x = "Datetime (Annual Intervals Displayed)",
        y = expression("Kd (m"^{-1}*")"))
 
 
