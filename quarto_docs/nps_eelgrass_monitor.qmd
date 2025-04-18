@@ -31,7 +31,7 @@ knitr::read_chunk("../scripts/nps_eelgrass_monitor.R")
 ```
 
 ### Load NPS Monitoring Data
-```{r Load NPS Monitoring Data}
+```{r Load NPS Monitoring Data, message=FALSE, warning=FALSE}
 ```
 
 ### Visualize Monitoring Data
