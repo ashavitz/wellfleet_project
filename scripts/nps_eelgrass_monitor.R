@@ -314,7 +314,7 @@ ggplot(par_data_quality,
   scale_fill_manual(values = c("Poor" = "yellow2", "Fair" = "purple4", "Good" = "aquamarine4")) +
   scale_x_discrete(limits = as.character(140:230), breaks = seq(140, 230, by = 10)) + 
   labs(
-    title = "Quality Classification by Day of Year",
+    title = "PAR Attenuation Kd Quality Classification by Day of Year",
     x = "Day of Year",
     y = "Total Hours per Day",
     fill = "Quality"
