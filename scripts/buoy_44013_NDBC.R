@@ -227,17 +227,31 @@ for (var in variables) {
 #   summarize(count_obs = n())
 # 1997 and 2012 are missing large time periods of data
 
-  
 buoy_data_annual <- buoy_data_daily |> 
   group_by(YYYY) |> 
   # 1997 and 2012 are missing large time periods of data. Excluding from annual summaries  
   filter(!(YYYY %in% c(1997, 2012))) |> 
   summarize(
-    across(all_of(scalar_variables), ~ mean(.x, na.rm = TRUE)),
-    across(all_of(angular_variables), ~
-             as.numeric(circular::mean.circular(
-               circular::circular(.x, units = "degrees", modulo = "2pi"),
-               na.rm = TRUE))
+    # scalar variables: only mean if ≥80% non‑NA, else NA
+    across(all_of(scalar_variables),
+           ~ ifelse(
+             sum(!is.na(.x)) >= 0.8 * n(),
+             mean(.x, na.rm = TRUE),
+             NA_real_
+           )
+    ),
+    
+    # angular variables: only circular‐mean if ≥80% non‑NA, else NA
+    across(all_of(angular_variables),
+           ~ ifelse(
+             sum(!is.na(.x)) >= 0.8 * n(),
+             as.numeric(
+               circular::mean.circular(
+                 circular::circular(.x, units = "degrees", modulo = "2pi")
+               )
+             ),
+             NA_real_
+           )
     ),
     .groups = "drop"
   ) |> 
@@ -283,5 +297,10 @@ for (var in list("WDIR_simple")) {
 }
 
 
+
+
+
+# ---- Export Annual Data ----
+# write_csv(buoy_data_annual, here::here("data", "summary_data", "buoy_44013_annual.csv"))
 
 
