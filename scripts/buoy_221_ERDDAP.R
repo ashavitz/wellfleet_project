@@ -313,3 +313,13 @@ for (var in variable_means) {
   
   print(p)
 }
+
+
+
+
+
+# ---- Export Annual Data ----
+# Write annual summary data to csv
+# write_csv(buoy_221_annual, here::here("data", "summary_data", "buoy_221_annual.csv"))
+
+
