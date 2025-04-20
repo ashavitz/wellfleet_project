@@ -53,7 +53,7 @@ make_compass_plot <- function(df, direction_var, speed_var, year_var,
         yend = {{speed_var}},
         color = {{year_var}}
       ),
-      arrow = arrow(length = unit(0.2, "cm")),
+      # arrow = arrow(length = unit(0.2, "cm")),
       alpha = 0.7
     ) +
     scale_x_continuous(
@@ -632,3 +632,15 @@ A01_wave_acc <- A01_wave_acc |>
 
 
 
+
+
+
+
+# ---- Export Annual Data ----
+# Merge annual summary data frames by year
+A01_buoy_annual <- full_join(A01_met_all_annual_summary,
+                             A01_aanderaa_o2_all_annual_summary,
+                             by = "year")
+
+# Write annual summary data to csv
+# write_csv(A01_buoy_annual, here::here("data", "summary_data", "buoy_a01_annual.csv"))
