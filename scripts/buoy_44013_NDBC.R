@@ -247,9 +247,10 @@ buoy_data_annual <- buoy_data_daily |>
              sum(!is.na(.x)) >= 0.8 * n(),
              as.numeric(
                circular::mean.circular(
-                 circular::circular(.x, units = "degrees", modulo = "2pi")
-               )
-             ),
+                 circular::circular(.x, units = "degrees", modulo = "2pi"),
+                 na.rm = TRUE
+                 )
+               ),
              NA_real_
            )
     ),
