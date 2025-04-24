@@ -147,6 +147,13 @@ ggplot(dh_data_summary_fruiting,
 #        caption = "Only May through September Included")
 
 
+# Create facet labels for faceted plots
+transect_labels <- c(
+  "A" = "Transect A (Shallow)",
+  "B" = "Transect B (Mid Depth)",
+  "C" = "Transect C (Deep)"
+)
+
 # Bar plot showing percent cover by year, colored by proportion of shoots which are reproductive
 ggplot(dh_data_summary_fruiting,
        aes(x = as.character(Year), y = Percent_Cover, fill = repro_shoot_prop)) +
@@ -155,10 +162,19 @@ ggplot(dh_data_summary_fruiting,
     labels = scales::percent_format(),
     limits = c(0, 1)
   ) +
-  facet_wrap(~Transect) + 
-  labs(title = "% Cover & Proportion Reproductive Shoots by Year",
-       caption = "Only May through September Included")
-
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) + 
+  labs(
+    title = "% Cover & Proportion Reproductive Shoots by Year",
+    caption = "Only May through September Included",
+    fill = "Reproductive
+    Proportion",
+    x = "Year",
+    y = "Percent Cover"
+  ) +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
 
 
 # Pivot longer for alternative bar plots
@@ -188,9 +204,22 @@ ggplot(filter(dh_fruiting_long, Metric != "Percent_Cover"),
     labels = scales::percent_format(),
     limits = c(0, 1)
   ) +
-  facet_wrap(~Transect) + 
-  labs(title = "% Cover & Proportion of Reproductive Shoots by Year",
-       caption = "Only May through September Included")
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Proportion of Reproductive Shoots by Year",
+       caption = "Only May through September Included",
+       x = "Year",
+       y = "Proportion of Total Shoots",
+       fill = "Cover Type"
+       ) +
+  scale_fill_manual(
+    values = c("non_repro_shoot_prop" = "#A9B7A9", "repro_shoot_prop" = "darkgreen"),
+    labels = c("non_repro_shoot_prop" = "Reproductive Shoots", 
+               "repro_shoot_prop" = "Non-Reproductive Shoots")
+  ) +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
 
 # ggplot(dh_data_summary_fruiting,
 #        aes(x = as.character(Year), y = repro_shoot_prop, fill = Transect)) +
@@ -231,9 +260,20 @@ ggplot(dh_wasting_long,
       "prop_wasting_high" = "red",
       "prop_wasting_low" = "skyblue",
       "prop_wasting_trace" = "lightgreen",
-      "prop_wasting_none" = "gray")) +
-  facet_wrap(~Transect) +
-  labs(title = "Wasting Status Proportion by Year")
+      "prop_wasting_none" = "gray"),
+    labels = c(
+      "prop_wasting_high" = "High",
+      "prop_wasting_low" = "Low",
+      "prop_wasting_trace" = "Trace",
+      "prop_wasting_none" = "None")) +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Wasting Status Proportion by Year",
+       x = "Year",
+       y = "Proportion") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
 
 ggplot(dh_data_summary_wasting,
        aes(x = as.character(Year), y = Percent_Cover, fill = prop_wasting_high)) +
@@ -242,8 +282,16 @@ ggplot(dh_data_summary_wasting,
     labels = scales::percent_format(),
     limits = c(0, 1)) +
   scale_fill_gradient(low = "gray", high = "red") +
-  facet_wrap(~Transect) + 
-  labs(title = "% Cover & Proportion High Wasting Disease by Year")
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "% Cover & Proportion High Wasting Disease by Year",
+       x = "Year",
+       y = "Percent Cover",
+       fill = "Proportion with High
+    Levels of Wasting") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
 
 
 # ---- Load and Visualize PAR Data ----
