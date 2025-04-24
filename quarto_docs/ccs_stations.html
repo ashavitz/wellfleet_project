@@ -203,14 +203,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>  <span class="at">temperature_C =</span> <span class="dv">25</span>,</span>
 <span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">dissolved_oxygen_mg/L</span><span class="st">`</span> <span class="ot">=</span> <span class="dv">6</span>,</span>
 <span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">chlorophyll_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fl">5.1</span>,</span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>  <span class="at">turbidty_NTU =</span> <span class="dv">5</span>,</span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>  <span class="at">total_nitrogen_uM =</span> <span class="fl">21.42</span>,</span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>  <span class="at">total_phosphorus_uM =</span> <span class="fl">2.29</span></span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a><span class="co"># Set start year and end year for plotting</span></span>
-<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>start_year <span class="ot">&lt;-</span> <span class="fu">min</span>(ccs_data_wellfleet<span class="sc">$</span>collected_at, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>end_year   <span class="ot">&lt;-</span> <span class="fu">max</span>(ccs_data_wellfleet<span class="sc">$</span>collected_at, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">log10_chlorophyll_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="fl">5.1</span>),</span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>  <span class="at">turbidty_NTU =</span> <span class="dv">5</span>,</span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>  <span class="at">total_nitrogen_uM =</span> <span class="fl">21.42</span>,</span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>  <span class="at">log10_total_nitrogen_uM =</span> <span class="fu">log10</span>(<span class="fl">21.42</span>),</span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>  <span class="at">total_phosphorus_uM =</span> <span class="fl">2.29</span>,</span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>  <span class="at">log10_total_phosphorus_uM =</span> <span class="fu">log10</span>(<span class="fl">2.29</span>)</span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a><span class="co"># Set start year and end year for plotting</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>start_year <span class="ot">&lt;-</span> <span class="fu">min</span>(ccs_data_wellfleet<span class="sc">$</span>collected_at, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>end_year   <span class="ot">&lt;-</span> <span class="fu">max</span>(ccs_data_wellfleet<span class="sc">$</span>collected_at, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
@@ -308,502 +311,733 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </details>
 </div>
 </section>
-<section id="plot-all-data-over-time-monthly-annual-mean-annual-median" class="level3">
-<h3 class="anchored" data-anchor-id="plot-all-data-over-time-monthly-annual-mean-annual-median">Plot All Data Over Time (~Monthly, Annual Mean, Annual Median)</h3>
+<section id="log10-transform-variables" class="level3">
+<h3 class="anchored" data-anchor-id="log10-transform-variables">Log10 Transform Variables</h3>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add log transformed chlorophyll</span></span>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Add log transformed chlorophyll, pheophytin, and nutrient values</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>ccs_data_wellfleet <span class="ot">&lt;-</span> ccs_data_wellfleet <span class="sc">|&gt;</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">log10_chlorophyll_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L</span><span class="st">`</span>))</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>ccs_wellfleet_annual <span class="ot">&lt;-</span> ccs_wellfleet_annual <span class="sc">|&gt;</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">log10_chlorophyll_ug/L_mean</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L_mean</span><span class="st">`</span>),</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_chlorophyll_ug/L_median</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L_median</span><span class="st">`</span>))</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>ccs_wellfleet_full_summers <span class="ot">&lt;-</span> ccs_wellfleet_full_summers <span class="sc">|&gt;</span> </span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">log10_chlorophyll_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L</span><span class="st">`</span>),</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_chlorophyll_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L</span><span class="st">`</span>))</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>ccs_wellfleet_summers <span class="ot">&lt;-</span> ccs_wellfleet_summers <span class="sc">|&gt;</span></span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">log10_chlorophyll_ug/L_mean</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L_mean</span><span class="st">`</span>),</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_chlorophyll_ug/L_median</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L_median</span><span class="st">`</span>))</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Update wq_variables to add log transformed chlorophyll</span></span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>wq_variables <span class="ot">&lt;-</span> <span class="fu">c</span>(wq_variables, <span class="st">"log10_chlorophyll_ug/L"</span>)</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot all ~monthly data over time</span></span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> wq_variables) {</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_data_wellfleet, <span class="fu">aes</span>(<span class="at">x =</span> collected_at,</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">y =</span> .data[[var]],</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date"</span>,</span>
-<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
-<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(var, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
-<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_datetime</span>(</span>
-<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits =</span> <span class="fu">c</span>(start_year, end_year),</span>
-<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_breaks =</span> <span class="st">"2 year"</span>, </span>
-<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_labels =</span> <span class="st">"%Y"</span>,</span>
-<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">date_format</span>(<span class="st">"%Y"</span>)) <span class="sc">+</span> <span class="co"># extract just the year for the labels</span></span>
-<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
-<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(p)</span>
-<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">log10_chlorophyll_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L</span><span class="st">`</span>),</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_pheophytin_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">pheophytin_ug/L</span><span class="st">`</span>), </span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_nitrate_nitrite_uM =</span> <span class="fu">log10</span>(nitrate_nitrite_uM), </span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ammonium_uM =</span> <span class="fu">log10</span>(ammonium_uM), </span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ortho_phosphate_uM =</span> <span class="fu">log10</span>(ortho_phosphate_uM), </span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_nitrogen_uM =</span> <span class="fu">log10</span>(total_nitrogen_uM),</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_phosphorus_uM =</span> <span class="fu">log10</span>(total_phosphorus_uM))</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>ccs_wellfleet_annual <span class="ot">&lt;-</span> ccs_wellfleet_annual <span class="sc">|&gt;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">log10_chlorophyll_ug/L_mean</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L_mean</span><span class="st">`</span>),</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_chlorophyll_ug/L_median</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L_median</span><span class="st">`</span>),</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_pheophytin_ug/L_mean</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">pheophytin_ug/L_mean</span><span class="st">`</span>),</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_pheophytin_ug/L_median</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">pheophytin_ug/L_median</span><span class="st">`</span>),</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_nitrate_nitrite_uM_mean =</span> <span class="fu">log10</span>(nitrate_nitrite_uM_mean), </span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_nitrate_nitrite_uM_median =</span> <span class="fu">log10</span>(nitrate_nitrite_uM_median),</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ammonium_uM_mean =</span> <span class="fu">log10</span>(ammonium_uM_mean), </span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ammonium_uM_median =</span> <span class="fu">log10</span>(ammonium_uM_median),</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ortho_phosphate_uM_mean =</span> <span class="fu">log10</span>(ortho_phosphate_uM_mean), </span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ortho_phosphate_uM_median =</span> <span class="fu">log10</span>(ortho_phosphate_uM_median), </span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_nitrogen_uM_mean =</span> <span class="fu">log10</span>(total_nitrogen_uM_mean),</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_nitrogen_uM_median =</span> <span class="fu">log10</span>(total_nitrogen_uM_median),</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_phosphorus_uM_mean =</span> <span class="fu">log10</span>(total_phosphorus_uM_mean),</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_phosphorus_uM_median =</span> <span class="fu">log10</span>(total_phosphorus_uM_median))</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>ccs_wellfleet_full_summers <span class="ot">&lt;-</span> ccs_wellfleet_full_summers <span class="sc">|&gt;</span> </span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">log10_chlorophyll_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L</span><span class="st">`</span>),</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_pheophytin_ug/L</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">pheophytin_ug/L</span><span class="st">`</span>), </span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_nitrate_nitrite_uM =</span> <span class="fu">log10</span>(nitrate_nitrite_uM), </span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ammonium_uM =</span> <span class="fu">log10</span>(ammonium_uM), </span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ortho_phosphate_uM =</span> <span class="fu">log10</span>(ortho_phosphate_uM), </span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_nitrogen_uM =</span> <span class="fu">log10</span>(total_nitrogen_uM),</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_phosphorus_uM =</span> <span class="fu">log10</span>(total_phosphorus_uM))</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>ccs_wellfleet_summers <span class="ot">&lt;-</span> ccs_wellfleet_summers <span class="sc">|&gt;</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="st">`</span><span class="at">log10_chlorophyll_ug/L_mean</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L_mean</span><span class="st">`</span>),</span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_chlorophyll_ug/L_median</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">chlorophyll_ug/L_median</span><span class="st">`</span>),</span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_pheophytin_ug/L_mean</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">pheophytin_ug/L_mean</span><span class="st">`</span>),</span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>         <span class="st">`</span><span class="at">log10_pheophytin_ug/L_median</span><span class="st">`</span> <span class="ot">=</span> <span class="fu">log10</span>(<span class="st">`</span><span class="at">pheophytin_ug/L_median</span><span class="st">`</span>),</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_nitrate_nitrite_uM_mean =</span> <span class="fu">log10</span>(nitrate_nitrite_uM_mean), </span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_nitrate_nitrite_uM_median =</span> <span class="fu">log10</span>(nitrate_nitrite_uM_median),</span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ammonium_uM_mean =</span> <span class="fu">log10</span>(ammonium_uM_mean), </span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ammonium_uM_median =</span> <span class="fu">log10</span>(ammonium_uM_median),</span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ortho_phosphate_uM_mean =</span> <span class="fu">log10</span>(ortho_phosphate_uM_mean), </span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_ortho_phosphate_uM_median =</span> <span class="fu">log10</span>(ortho_phosphate_uM_median), </span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_nitrogen_uM_mean =</span> <span class="fu">log10</span>(total_nitrogen_uM_mean),</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_nitrogen_uM_median =</span> <span class="fu">log10</span>(total_nitrogen_uM_median),</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_phosphorus_uM_mean =</span> <span class="fu">log10</span>(total_phosphorus_uM_mean),</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>         <span class="at">log10_total_phosphorus_uM_median =</span> <span class="fu">log10</span>(total_phosphorus_uM_median))</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Update wq_variables to add log transformed chlorophyll</span></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>wq_variables <span class="ot">&lt;-</span> <span class="fu">c</span>(wq_variables,</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"log10_chlorophyll_ug/L"</span>,</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"log10_pheophytin_ug/L"</span>,</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"log10_nitrate_nitrite_uM"</span>,</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"log10_ammonium_uM"</span>,</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"log10_ortho_phosphate_uM"</span>,</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"log10_total_nitrogen_uM"</span>,</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>                  <span class="st">"log10_total_phosphorus_uM"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
 </div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-3.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-4.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-5.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-6.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-7.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-8.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-9.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-10.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-11.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-12.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
+</section>
+<section id="plot-all-data-monthly" class="level3">
+<h3 class="anchored" data-anchor-id="plot-all-data-monthly">Plot All Data (~Monthly)</h3>
+<div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot Annual mean and mean values</span></span>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot all ~monthly data over time</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> wq_variables) {</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create annual mean plot</span></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_mean"</span>)</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  p_1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_annual, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">y =</span> .data[[var_name]],</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Annual"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create annual median plot</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_median"</span>)</span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  p_2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_annual, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">y =</span> .data[[var_name]],</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Annual"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine the plots using patchwork with adjusted spacing</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  combined_plot <span class="ot">&lt;-</span> p_1 <span class="sc">+</span> p_2 <span class="sc">+</span> </span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Stack the plots vertically</span></span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Annual -"</span>, var))</span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(combined_plot)</span>
-<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_data_wellfleet, <span class="fu">aes</span>(<span class="at">x =</span> collected_at,</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">y =</span> .data[[var]],</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date"</span>,</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(var, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_datetime</span>(</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits =</span> <span class="fu">c</span>(start_year, end_year),</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_breaks =</span> <span class="st">"2 year"</span>, </span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_labels =</span> <span class="st">"%Y"</span>,</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">date_format</span>(<span class="st">"%Y"</span>)) <span class="sc">+</span> <span class="co"># extract just the year for the labels</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(p)</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-13.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-14.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-15.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-16.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-17.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-18.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-19.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-20.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-8.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-21.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-9.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-22.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-10.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-23.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-11.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-24.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-12.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-13.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-14.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-15.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-16.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-17.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data-18.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-annual-mean-and-median" class="level3">
+<h3 class="anchored" data-anchor-id="plot-annual-mean-and-median">Plot Annual Mean and Median</h3>
+<div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot all Summer ~monthly data over time</span></span>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot Annual mean and mean values</span></span>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> wq_variables) {</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_full_summers, <span class="fu">aes</span>(<span class="at">x =</span> collected_at,</span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">y =</span> .data[[var]],</span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date"</span>,</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_datetime</span>(</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits =</span> <span class="fu">c</span>(start_year, end_year),</span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_breaks =</span> <span class="st">"2 year"</span>,</span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_labels =</span> <span class="st">"%Y"</span>,</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">date_format</span>(<span class="st">"%Y"</span>)) <span class="sc">+</span></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(p)</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create annual mean plot</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_mean"</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  p_1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_annual, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">y =</span> .data[[var_name]],</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Annual"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create annual median plot</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_median"</span>)</span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  p_2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_annual, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">y =</span> .data[[var_name]],</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>                                        <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Annual"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Combine the plots using patchwork with adjusted spacing</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>  combined_plot <span class="ot">&lt;-</span> p_1 <span class="sc">+</span> p_2 <span class="sc">+</span> </span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Stack the plots vertically</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Annual -"</span>, var))</span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(combined_plot)</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-25.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-26.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-27.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-28.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-29.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-30.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-31.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-32.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-8.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-33.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-9.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-34.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-10.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-35.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-11.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-36.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-12.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-13.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-14.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-15.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-16.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-17.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Annual%20Mean%20and%20Median-18.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-all-summer-data-monthly-summer-only" class="level3">
+<h3 class="anchored" data-anchor-id="plot-all-summer-data-monthly-summer-only">Plot All Summer Data (~Monthly, summer only)</h3>
+<div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot Summer mean and mean values</span></span>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot all Summer ~monthly data over time</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> wq_variables) {</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create summer mean plot</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_mean"</span>)</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  p_1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_summers, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">y =</span> .data[[var_name]],</span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create summer median plot</span></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_median"</span>)</span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  p_2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_summers, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">y =</span> .data[[var_name]],</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
-<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
-<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
-<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
-<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
-<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>  combined_plot <span class="ot">&lt;-</span> p_1 <span class="sc">+</span> p_2 <span class="sc">+</span> </span>
-<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
-<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer -"</span>, var))</span>
-<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>  </span>
-<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(combined_plot)</span>
-<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  p <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_full_summers, <span class="fu">aes</span>(<span class="at">x =</span> collected_at,</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">y =</span> .data[[var]],</span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>                                      <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Date"</span>,</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_x_datetime</span>(</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>      <span class="at">limits =</span> <span class="fu">c</span>(start_year, end_year),</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_breaks =</span> <span class="st">"2 year"</span>,</span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>      <span class="at">date_labels =</span> <span class="st">"%Y"</span>,</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>      <span class="at">labels =</span> <span class="fu">date_format</span>(<span class="st">"%Y"</span>)) <span class="sc">+</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(p)</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-37.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-38.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-2.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-39.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-3.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-40.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-4.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-41.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-5.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-42.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-6.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-43.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-7.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-44.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-8.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-45.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-9.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-46.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-10.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-47.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-11.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="ccs_stations_files/figure-html/Plot%20All%20Data%20Over%20Time-48.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-12.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-13.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-14.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-15.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-16.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-17.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20All%20Summer%20Data-18.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section id="plot-summer-mean-and-median" class="level3">
+<h3 class="anchored" data-anchor-id="plot-summer-mean-and-median">Plot Summer Mean and Median</h3>
+<div class="cell">
+<details open="" class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># For each relevant variable, plot Summer mean and mean values</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (var <span class="cf">in</span> wq_variables) {</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create summer mean plot</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_mean"</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  p_1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_summers, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">y =</span> .data[[var_name]],</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Create summer median plot</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  var_name <span class="ot">&lt;-</span> <span class="fu">paste0</span>(var, <span class="st">"_median"</span>)</span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>  p_2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(ccs_wellfleet_summers, <span class="fu">aes</span>(<span class="at">x =</span> year_collected,</span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">y =</span> .data[[var_name]],</span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>                                          <span class="at">color =</span> <span class="fu">as.factor</span>(internal_station_id))) <span class="sc">+</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">"lm"</span>, <span class="at">se =</span> <span class="cn">FALSE</span>) <span class="sc">+</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>    <span class="co"># add threshold line, if available</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> thresholds[var], <span class="at">linetype =</span> <span class="st">'dotted'</span>, <span class="at">color =</span> <span class="st">'red'</span>, <span class="at">linewidth =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb11-31"><a href="#cb11-31" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb11-32"><a href="#cb11-32" aria-hidden="true" tabindex="-1"></a>    <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Year"</span>,</span>
+<span id="cb11-33"><a href="#cb11-33" aria-hidden="true" tabindex="-1"></a>         <span class="at">y =</span> var,</span>
+<span id="cb11-34"><a href="#cb11-34" aria-hidden="true" tabindex="-1"></a>         <span class="at">color =</span> <span class="st">"CCS Station ID"</span>,</span>
+<span id="cb11-35"><a href="#cb11-35" aria-hidden="true" tabindex="-1"></a>         <span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer"</span>, var_name, <span class="st">"Time Series - CCS Wellfleet"</span>)) <span class="sc">+</span></span>
+<span id="cb11-36"><a href="#cb11-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">scale_color_brewer</span>(<span class="at">palette =</span> <span class="st">"Set2"</span>)</span>
+<span id="cb11-37"><a href="#cb11-37" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-38"><a href="#cb11-38" aria-hidden="true" tabindex="-1"></a>  combined_plot <span class="ot">&lt;-</span> p_1 <span class="sc">+</span> p_2 <span class="sc">+</span> </span>
+<span id="cb11-39"><a href="#cb11-39" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_layout</span>(<span class="at">ncol =</span> <span class="dv">1</span>, <span class="at">heights =</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb11-40"><a href="#cb11-40" aria-hidden="true" tabindex="-1"></a>    <span class="fu">plot_annotation</span>(<span class="at">title =</span> <span class="fu">paste</span>(<span class="st">"Summer -"</span>, var))</span>
+<span id="cb11-41"><a href="#cb11-41" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb11-42"><a href="#cb11-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">print</span>(combined_plot)</span>
+<span id="cb11-43"><a href="#cb11-43" aria-hidden="true" tabindex="-1"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-2.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-3.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-4.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-5.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-6.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-7.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-8.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-9.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-10.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-11.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-12.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-13.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-14.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-15.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-16.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-17.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="ccs_stations_files/figure-html/Plot%20Summer%20Mean%20and%20Median-18.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>

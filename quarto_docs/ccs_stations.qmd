@@ -42,6 +42,28 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
 ```
 
-### Plot All Data Over Time (~Monthly, Annual Mean, Annual Median)
-```{r Plot All Data Over Time, message=FALSE, warning=FALSE}
+### Log10 Transform Variables
+```{r Log10 Transform Variables, message=FALSE, warning=FALSE}
 ```
+
+### Plot All Data (~Monthly)
+```{r Plot All Data, message=FALSE, warning=FALSE}
+```
+
+### Plot Annual Mean and Median
+```{r Plot Annual Mean and Median, message=FALSE, warning=FALSE}
+```
+
+### Plot All Summer Data (~Monthly, summer only)
+```{r Plot All Summer Data, message=FALSE, warning=FALSE}
+```
+
+### Plot Summer Mean and Median
+```{r Plot Summer Mean and Median, message=FALSE, warning=FALSE}
+```
+
+
+
+
+
+

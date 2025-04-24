@@ -88,9 +88,12 @@ thresholds <- c(
   temperature_C = 25,
   `dissolved_oxygen_mg/L` = 6,
   `chlorophyll_ug/L` = 5.1,
+  `log10_chlorophyll_ug/L` = log10(5.1),
   turbidty_NTU = 5,
   total_nitrogen_uM = 21.42,
-  total_phosphorus_uM = 2.29
+  log10_total_nitrogen_uM = log10(21.42),
+  total_phosphorus_uM = 2.29,
+  log10_total_phosphorus_uM = log10(2.29)
 )
 
 # Set start year and end year for plotting
@@ -192,27 +195,71 @@ theme_set(
     )
 )
 
-# ---- Plot All Data Over Time ----
+# ---- Log10 Transform Variables ----
 
-# Add log transformed chlorophyll
+# Add log transformed chlorophyll, pheophytin, and nutrient values
 ccs_data_wellfleet <- ccs_data_wellfleet |>
-  mutate(`log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`))
+  mutate(`log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`),
+         `log10_pheophytin_ug/L` = log10(`pheophytin_ug/L`), 
+         log10_nitrate_nitrite_uM = log10(nitrate_nitrite_uM), 
+         log10_ammonium_uM = log10(ammonium_uM), 
+         log10_ortho_phosphate_uM = log10(ortho_phosphate_uM), 
+         log10_total_nitrogen_uM = log10(total_nitrogen_uM),
+         log10_total_phosphorus_uM = log10(total_phosphorus_uM))
 
 ccs_wellfleet_annual <- ccs_wellfleet_annual |>
   mutate(`log10_chlorophyll_ug/L_mean` = log10(`chlorophyll_ug/L_mean`),
-         `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`))
+         `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`),
+         `log10_pheophytin_ug/L_mean` = log10(`pheophytin_ug/L_mean`),
+         `log10_pheophytin_ug/L_median` = log10(`pheophytin_ug/L_median`),
+         log10_nitrate_nitrite_uM_mean = log10(nitrate_nitrite_uM_mean), 
+         log10_nitrate_nitrite_uM_median = log10(nitrate_nitrite_uM_median),
+         log10_ammonium_uM_mean = log10(ammonium_uM_mean), 
+         log10_ammonium_uM_median = log10(ammonium_uM_median),
+         log10_ortho_phosphate_uM_mean = log10(ortho_phosphate_uM_mean), 
+         log10_ortho_phosphate_uM_median = log10(ortho_phosphate_uM_median), 
+         log10_total_nitrogen_uM_mean = log10(total_nitrogen_uM_mean),
+         log10_total_nitrogen_uM_median = log10(total_nitrogen_uM_median),
+         log10_total_phosphorus_uM_mean = log10(total_phosphorus_uM_mean),
+         log10_total_phosphorus_uM_median = log10(total_phosphorus_uM_median))
 
 ccs_wellfleet_full_summers <- ccs_wellfleet_full_summers |> 
   mutate(`log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`),
-         `log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`))
+         `log10_pheophytin_ug/L` = log10(`pheophytin_ug/L`), 
+         log10_nitrate_nitrite_uM = log10(nitrate_nitrite_uM), 
+         log10_ammonium_uM = log10(ammonium_uM), 
+         log10_ortho_phosphate_uM = log10(ortho_phosphate_uM), 
+         log10_total_nitrogen_uM = log10(total_nitrogen_uM),
+         log10_total_phosphorus_uM = log10(total_phosphorus_uM))
 
 ccs_wellfleet_summers <- ccs_wellfleet_summers |>
   mutate(`log10_chlorophyll_ug/L_mean` = log10(`chlorophyll_ug/L_mean`),
-         `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`))
+         `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`),
+         `log10_pheophytin_ug/L_mean` = log10(`pheophytin_ug/L_mean`),
+         `log10_pheophytin_ug/L_median` = log10(`pheophytin_ug/L_median`),
+         log10_nitrate_nitrite_uM_mean = log10(nitrate_nitrite_uM_mean), 
+         log10_nitrate_nitrite_uM_median = log10(nitrate_nitrite_uM_median),
+         log10_ammonium_uM_mean = log10(ammonium_uM_mean), 
+         log10_ammonium_uM_median = log10(ammonium_uM_median),
+         log10_ortho_phosphate_uM_mean = log10(ortho_phosphate_uM_mean), 
+         log10_ortho_phosphate_uM_median = log10(ortho_phosphate_uM_median), 
+         log10_total_nitrogen_uM_mean = log10(total_nitrogen_uM_mean),
+         log10_total_nitrogen_uM_median = log10(total_nitrogen_uM_median),
+         log10_total_phosphorus_uM_mean = log10(total_phosphorus_uM_mean),
+         log10_total_phosphorus_uM_median = log10(total_phosphorus_uM_median))
 
 # Update wq_variables to add log transformed chlorophyll
-wq_variables <- c(wq_variables, "log10_chlorophyll_ug/L")
+wq_variables <- c(wq_variables,
+                  "log10_chlorophyll_ug/L",
+                  "log10_pheophytin_ug/L",
+                  "log10_nitrate_nitrite_uM",
+                  "log10_ammonium_uM",
+                  "log10_ortho_phosphate_uM",
+                  "log10_total_nitrogen_uM",
+                  "log10_total_phosphorus_uM")
 
+
+# ---- Plot All Data ----
 
 # For each relevant variable, plot all ~monthly data over time
 for (var in wq_variables) {
@@ -239,6 +286,8 @@ for (var in wq_variables) {
   print(p)
 }
 
+
+# ---- Plot Annual Mean and Median ----
 
 # For each relevant variable, plot Annual mean and mean values
 for (var in wq_variables) {
@@ -279,6 +328,8 @@ for (var in wq_variables) {
 }
 
 
+# ---- Plot All Summer Data ----
+
 # For each relevant variable, plot all Summer ~monthly data over time
 for (var in wq_variables) {
   p <- ggplot(ccs_wellfleet_full_summers, aes(x = collected_at,
@@ -305,6 +356,7 @@ for (var in wq_variables) {
 }
 
 
+# ---- Plot Summer Mean and Median ----
 
 # For each relevant variable, plot Summer mean and mean values
 for (var in wq_variables) {
