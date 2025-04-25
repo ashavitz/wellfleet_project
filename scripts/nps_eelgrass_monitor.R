@@ -213,8 +213,8 @@ ggplot(filter(dh_fruiting_long, Metric != "Percent_Cover"),
        ) +
   scale_fill_manual(
     values = c("non_repro_shoot_prop" = "#A9B7A9", "repro_shoot_prop" = "darkgreen"),
-    labels = c("non_repro_shoot_prop" = "Reproductive Shoots", 
-               "repro_shoot_prop" = "Non-Reproductive Shoots")
+    labels = c("non_repro_shoot_prop" = "Non-Reproductive Shoots", 
+               "repro_shoot_prop" = "Reproductive Shoots")
   ) +
   theme(
     strip.text = element_text(size = 8),
