@@ -118,19 +118,22 @@ end_year   <- max(ccs_data_wellfleet$collected_at, na.rm = TRUE)
 
 # ---- Filter Only "Full" Years With Exactly One Monthly Measurement ----
 
-# NOTE - For each station, the following block only includes years with exactly one
-# measurement per month (no more no less). A few years have months with more than one
-# measurement, which could be included if only one of those measurements is selected.
+# NOTE - For each station, the following block only includes years with a full 12 months of data
+#      - Many years have 11 months of data (and some 10 or fewer), which could be included
 
 ccs_wellfleet_full_years <- ccs_data_wellfleet |>
   # Count how many measurements per station, year, and month
   group_by(internal_station_id, year_collected, month) |>
-  summarize(n_measurements = n(), .groups = "drop") |>
-  # For each station and year, check how many months had exactly one measurement
+  summarize(n_measurements = n(), 
+            # average across each month to reduce months with multiple measurements to one average
+            across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+            .groups = "drop"
+            ) |>
+  # For each station and year, check how many months had data
   group_by(internal_station_id, year_collected) |>
-  summarize(months_with_one_measurement = sum(n_measurements == 1), .groups = "drop") |>
-  # Keep only station-years with exactly one measurement per month (12 months, no extras)
-  filter(months_with_one_measurement == 12) |>
+  summarize(n_months = n(), .groups = "drop") |>
+  # Keep only station-years with exactly 12 months of measurements
+  filter(n_months == 12) |>
   select(internal_station_id, year_collected) |>
   # Join back to original data to filter only good station-years, removing id column
   inner_join(ccs_data_wellfleet, by = c("internal_station_id", "year_collected"))
