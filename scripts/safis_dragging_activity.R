@@ -1,6 +1,6 @@
 # ---- Header ----
 #'--------------------------------------
-#' SAFIS Dredging Data from DMF
+#' SAFIS Dragging Data from DMF
 #' Shellfish growing areas CCB 6,8,9,17,20
 #' 2010-2022
 #' SPECIES INCLUDES
@@ -79,7 +79,7 @@ ggplot(dredge_data,
   scale_y_continuous(
     sec.axis = sec_axis(~ . / 1000, name = "Trip Count"),
     expand = c(0,0)) + 
-  labs(title = "Dredging Activity for Shellfish Growing Areas CCB 6,8,9,17,20",
+  labs(title = "Dragging Activity for Shellfish Growing Areas CCB 6,8,9,17,20",
        x = "Year",
        y = "Live Pounds",
        caption = "2012 Trip Count Data Unavailable due to Confidentiality") + 

@@ -1,5 +1,5 @@
 ---
-title: "safis_dredging_activity"
+title: "safis_dragging_activity"
 author: "Aaron Shavitz"
 format: 
   html:
@@ -7,16 +7,16 @@ format:
 ---
 [Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
 
-# SAFIS Dredging Activity
+# SAFIS Dragging Activity
 
 ```{r, echo=FALSE}
-# Using knitr package to read code chunks from safis_dredging_activity.R
+# Using knitr package to read code chunks from safis_dragging_activity.R
 
 # Set the root directory to the current folder
 knitr::opts_knit$set(root.dir = here::here())
 
 # Read in the R script from the 'scripts' folder (relative to the root project directory)
-knitr::read_chunk("../scripts/safis_dredging_activity.R")
+knitr::read_chunk("../scripts/safis_dragging_activity.R")
 ```
 
 ```{r Header}

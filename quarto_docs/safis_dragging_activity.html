@@ -8,7 +8,7 @@
 
 <meta name="author" content="Aaron Shavitz">
 
-<title>safis_dredging_activity</title>
+<title>safis_dragging_activity</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -58,16 +58,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </style>
 
 
-<script src="safis_dredging_activity_files/libs/clipboard/clipboard.min.js"></script>
-<script src="safis_dredging_activity_files/libs/quarto-html/quarto.js"></script>
-<script src="safis_dredging_activity_files/libs/quarto-html/popper.min.js"></script>
-<script src="safis_dredging_activity_files/libs/quarto-html/tippy.umd.min.js"></script>
-<script src="safis_dredging_activity_files/libs/quarto-html/anchor.min.js"></script>
-<link href="safis_dredging_activity_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="safis_dredging_activity_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="safis_dredging_activity_files/libs/bootstrap/bootstrap.min.js"></script>
-<link href="safis_dredging_activity_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="safis_dredging_activity_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="safis_dragging_activity_files/libs/clipboard/clipboard.min.js"></script>
+<script src="safis_dragging_activity_files/libs/quarto-html/quarto.js"></script>
+<script src="safis_dragging_activity_files/libs/quarto-html/popper.min.js"></script>
+<script src="safis_dragging_activity_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="safis_dragging_activity_files/libs/quarto-html/anchor.min.js"></script>
+<link href="safis_dragging_activity_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="safis_dragging_activity_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="safis_dragging_activity_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="safis_dragging_activity_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="safis_dragging_activity_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -80,7 +80,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">safis_dredging_activity</h1>
+<h1 class="title">safis_dragging_activity</h1>
 </div>
 
 
@@ -104,13 +104,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <p><a href="https://ashavitz.github.io/wellfleet_project/">Return to Home Page (Index)</a></p>
-<section id="safis-dredging-activity" class="level1">
-<h1>SAFIS Dredging Activity</h1>
+<section id="safis-dragging-activity" class="level1">
+<h1>SAFIS Dragging Activity</h1>
 <div class="cell">
 <details open="" class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#'--------------------------------------</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' SAFIS Dredging Data from DMF</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' SAFIS Dragging Data from DMF</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' Shellfish growing areas CCB 6,8,9,17,20</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#' 2010-2022</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#' SPECIES INCLUDES</span></span>
@@ -133,7 +133,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="safis_dredging_activity_files/figure-html/Map%20of%20Growing%20Areas-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="safis_dragging_activity_files/figure-html/Map%20of%20Growing%20Areas-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -203,7 +203,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(</span>
 <span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">sec.axis =</span> <span class="fu">sec_axis</span>(<span class="sc">~</span> . <span class="sc">/</span> <span class="dv">1000</span>, <span class="at">name =</span> <span class="st">"Trip Count"</span>),</span>
 <span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">expand =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="dv">0</span>)) <span class="sc">+</span> </span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Dredging Activity for Shellfish Growing Areas CCB 6,8,9,17,20"</span>,</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Dragging Activity for Shellfish Growing Areas CCB 6,8,9,17,20"</span>,</span>
 <span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"Year"</span>,</span>
 <span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>       <span class="at">y =</span> <span class="st">"Live Pounds"</span>,</span>
 <span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>       <span class="at">caption =</span> <span class="st">"2012 Trip Count Data Unavailable due to Confidentiality"</span>) <span class="sc">+</span> </span>
@@ -218,7 +218,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="safis_dredging_activity_files/figure-html/Load%20and%20Visualize%20SAFIS%20Data-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="safis_dragging_activity_files/figure-html/Load%20and%20Visualize%20SAFIS%20Data-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
