@@ -376,11 +376,221 @@ ggplot(par_data_quality,
         axis.ticks.x = element_line()) +
   facet_wrap(~ year, scales = "free_x")
 
-# ---- Load Water Temp Data ----
+# ---- Load and Visualize Water Temp Data ----
 
-# Load water temperature data
-water_temp_data_a <- read_csv("data/nps_duck_harbor/Water_Temp.A@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
-water_temp_data_b <- read_csv("data/nps_duck_harbor/Water_Temp.B@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
-water_temp_data_c <- read_csv("data/nps_duck_harbor/Water_Temp.C@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", skip = 14)
+# Load water temperature data and add transect identifier variable
+water_temp_data_a <- 
+  read_csv("data/nps_duck_harbor/Water_Temp.A@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv", 
+           skip = 14) |>
+  mutate(Transect = "A")
+
+water_temp_data_b <- 
+  read_csv("data/nps_duck_harbor/Water_Temp.B@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv",
+           skip = 14) |> 
+  mutate(Transect = "B")
+
+water_temp_data_c <- 
+  read_csv("data/nps_duck_harbor/Water_Temp.C@CACO_Seagrass_MA20_1.EntireRecord_20250321.csv",
+           skip = 14) |> 
+  mutate(Transect = "C")
+
+# Bind temperature data into long data frame
+water_temp_data <- 
+  bind_rows(water_temp_data_a, water_temp_data_b, water_temp_data_c) |> 
+  rename(Temp_C = Value, ) |> 
+  rename(Date_Time = `Timestamp (UTC-04:00)`) |> 
+  select(Date_Time, Temp_C, Transect) |> 
+  mutate(Day = day(Date_Time), Month = month(Date_Time), Year = year(Date_Time))
+
+# Remove raw stored raw data
+remove(list = c("water_temp_data_a", "water_temp_data_b", "water_temp_data_c"))
+
+# DAILY
+
+# Create new data frame with daily temperature means
+# Assuming the daily temperature fluctuations are minimal, and thus not checking whether
+# individual days have a "complete" set of data
+water_temp_daily <- water_temp_data |> 
+  group_by(Year, Month, Day, Transect) |> 
+  summarize(Temp_C = mean(Temp_C), .groups = "drop") |> 
+  mutate(Date = make_date(Year, Month, Day))
+
+# Plot all daily temperature over time
+ggplot(water_temp_daily, 
+       aes(x = Date, y = Temp_C, color = Transect)) +
+  geom_point()
 
 
+# NOTE - For Annual and Summer mean temperature, consider only including Summers/Years in which 
+# at least X% of values IN EACH MONTH are available.
+# Alternatively, should do simple linear data imputation.
+
+# The vast majority of months have at least 27 daily measurements. Use as cut off.
+
+# water_temp_daily |> 
+#   group_by(Year, Month, Transect) |> 
+#   summarize(count = n()) |> 
+#   ggplot(aes(y = count)) +
+#   geom_histogram()
+
+
+# ANNUAL 
+
+# Determine which transect years have at least least 27 daily measurements per month (as noted above) 
+valid_years <- water_temp_daily |> 
+  group_by(Year, Month, Transect) |> 
+  summarize(n_measurements = n(), .groups = "drop") |> 
+  group_by(Year, Transect) |> 
+  summarize(all_months_valid = all(n_measurements >=27) && n_distinct(Month) == 12,
+            .groups = "drop")
+  
+# Calculate annual mean temperature for valid years
+water_temp_annual <- water_temp_daily |>
+  group_by(Year, Transect) |> 
+  summarize(Temp_C = mean(Temp_C), .groups = "drop") |> 
+  left_join(valid_years, by = c("Transect", "Year")) |> 
+  mutate(Temp_C = ifelse(all_months_valid, Temp_C, NA_real_)) |> 
+  select(-all_months_valid)
+
+# Plot annual mean temperatures
+ggplot(water_temp_annual,
+       aes(x = Year, y = Temp_C, color = Transect)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Annual Mean Temperatures by Transect")
+
+
+# SUMMER (June - September)
+
+# Determine which transect years have at least least 27 daily measurements per month (as noted above)
+# (for summer months only)
+valid_summers <- water_temp_daily |> 
+  filter(Month %in% c(6,7,8,9)) |> 
+  group_by(Year, Month, Transect) |> 
+  summarize(n_measurements = n(), .groups = "drop") |> 
+  group_by(Year, Transect) |> 
+  summarize(all_months_valid = all(n_measurements >=27) && n_distinct(Month) == 4,
+            .groups = "drop")
+
+# Calculate summer mean temperature for valid years
+water_temp_summer <- water_temp_daily |>
+  filter(Month %in% c(6,7,8,9)) |>
+  group_by(Year, Transect) |> 
+  summarize(Temp_C = mean(Temp_C), .groups = "drop") |> 
+  left_join(valid_summers, by = c("Transect", "Year")) |> 
+  mutate(Temp_C = ifelse(all_months_valid, Temp_C, NA_real_)) |> 
+  select(-all_months_valid)
+
+# Plot summer mean temperatures
+ggplot(water_temp_summer,
+       aes(x = Year, y = Temp_C, color = Transect)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Summer (June - Sep) Mean Temperatures by Transect")
+
+
+
+# Compare transect annual mean temps to remote sensing SST
+
+# Load NOAA CoastWatch SST data for gps point near Duck Harbor (41.94, -70.09)
+# Originally accessed via NOAA CoastWatch ERDDAP
+# https://coastwatch.noaa.gov/erddap/info/noaacwecnMURdaily/index.html
+sst_data_dh <- read_csv("data/noaa_coastwatch_sst/sst_data_dh.csv") |> mutate(site = "duck_harbor") |> 
+  mutate(Year = year(time))
+
+# Calculate annual means and restructure data to match transect data frame
+sst_dh_annual <-sst_data_dh |> 
+  group_by(Year) |> 
+  summarize(Temp_C = mean(sst), .groups = "drop") |> 
+  mutate(Transect = "CoastWatch SST") |> 
+  relocate(Transect, .after = Year)
+
+# Bind temperature data frames
+water_temp_annual <- water_temp_annual |> 
+  bind_rows(sst_dh_annual)
+
+# Plot annual mean temperatures
+ggplot(water_temp_annual,
+       aes(x = Year, y = Temp_C, color = Transect)) +
+  geom_point() +
+  geom_line() +
+  labs(title = "Annual Mean Temperatures by Transect")
+
+
+# Transect Temperature & Wasting Disease
+
+# Join summer temperature data to wasting data set
+dh_data_summary_wasting <- dh_data_summary_wasting |> 
+  left_join(water_temp_summer, by = join_by(Transect, Year)) |> 
+  rename(summer_mean_temp = Temp_C)
+
+# Plot proportion high wasting, colored by summer temperature
+ggplot(dh_data_summary_wasting,
+       aes(x = as.character(Year), y = prop_wasting_high, fill = summer_mean_temp)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Proportion High Wasting Disease & Summer Mean Temp by Year",
+       x = "Year",
+       y = "Proportion with High Wasting Disease",
+       fill = "Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+
+# Create column for previous year mean summer temperature
+
+# Separate wasting data into separate transect data frames
+dh_data_summary_wasting <- dh_data_summary_wasting |> arrange(Transect, Year) 
+wasting_A <- dh_data_summary_wasting |> filter(Transect == "A") |> 
+  mutate(summer_mean_temp_prev = lag(summer_mean_temp))
+wasting_B <- dh_data_summary_wasting |> filter(Transect == "B") |> 
+  mutate(summer_mean_temp_prev = lag(summer_mean_temp))
+wasting_C <- dh_data_summary_wasting |> filter(Transect == "C") |> 
+  mutate(summer_mean_temp_prev = lag(summer_mean_temp))
+
+dh_data_summary_wasting <- bind_rows(wasting_A, wasting_B, wasting_C) 
+remove(list = c("wasting_A", "wasting_B", "wasting_C"))
+
+# Plot proportion high wasting, colored by previous summer temperature 
+ggplot(dh_data_summary_wasting,
+       aes(x = as.character(Year), y = prop_wasting_high, fill = summer_mean_temp_prev)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Proportion High Wasting Disease & Previous Summer Mean Temp by Year",
+       x = "Year",
+       y = "Proportion with High Wasting Disease",
+       fill = "Previous Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+# Plot percent cover, colored by previous summer temperature 
+ggplot(dh_data_summary_wasting,
+       aes(x = as.character(Year), y = Percent_Cover, fill = summer_mean_temp_prev)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Percent Cover & Previous Summer Mean Temp by Year",
+       x = "Year",
+       y = "Percent Cover",
+       fill = "Previous Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+       
