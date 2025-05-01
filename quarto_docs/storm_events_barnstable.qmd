@@ -1,0 +1,35 @@
+---
+title: "storm_events_barnstable"
+author: "Aaron Shavitz"
+format: 
+  html:
+    code-fold: show
+---
+[Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
+
+# Barnstable County, MA - Storm Events from NOAA Storm Event Database (1998-2024)
+
+```{r, echo=FALSE}
+# Using knitr package to read code chunks from buoys_merged.R
+
+# Set the root directory to the current folder
+knitr::opts_knit$set(root.dir = here::here())
+
+# Read in the R script from the 'scripts' folder (relative to the root project directory)
+knitr::read_chunk("../scripts/storm_events_barnstable.R")
+```
+
+```{r Header}
+```
+
+### Load Libraries
+```{r Load Libraries, message=FALSE, warning=FALSE}
+```
+
+### Set Global ggplot Themes
+```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
+```
+
+### Load and Visualize NOAA Storm Events Data
+```{r Load and Visualize NOAA Storm Events Data, message=FALSE, warning=FALSE}
+```

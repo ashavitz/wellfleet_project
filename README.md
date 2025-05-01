@@ -5,6 +5,7 @@
 - [ACIS Air Temperature - Hyannis](quarto_docs/acis_hyannis.html)
 - [NPS Duck Harbor Monitoring](quarto_docs/nps_eelgrass_monitor.html)
 - [SAFIS Dragging Activity](quarto_docs/safis_dragging_activity.html)
+- [NOAA Storm Events Data - Barnstable County](quarto_docs/storm_events_barnstable.html)
 
 - [Merged Buoy Data](quarto_docs/buoys_merged.html)
   - [A01 Buoy (Massachusetts Bay)](quarto_docs/buoy_A01_ERDDAP.html)
