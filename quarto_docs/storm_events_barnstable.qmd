@@ -10,7 +10,7 @@ format:
 # Barnstable County, MA - Storm Events from NOAA Storm Event Database (1998-2024)
 
 ```{r, echo=FALSE}
-# Using knitr package to read code chunks from buoys_merged.R
+# Using knitr package to read code chunks from storm_events_barnstable.R
 
 # Set the root directory to the current folder
 knitr::opts_knit$set(root.dir = here::here())
