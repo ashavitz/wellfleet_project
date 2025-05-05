@@ -721,7 +721,8 @@ dh_wasting_aggregated <- dh_data_summary_wasting |>
   summarize(Percent_Cover = mean(Percent_Cover, na.rm = TRUE),
             prop_wasting_high = mean(prop_wasting_high, na.rm = TRUE), 
             summer_mean_temp_A = mean(summer_mean_temp_A, na.rm = TRUE),
-            summer_mean_temp_A_prev = mean(summer_mean_temp_A_prev, na.rm = TRUE)
+            summer_mean_temp_A_prev = mean(summer_mean_temp_A_prev, na.rm = TRUE),
+            .groups = "drop"
   )
 
 
