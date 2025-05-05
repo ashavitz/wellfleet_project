@@ -517,7 +517,7 @@ ggplot(water_temp_annual,
   labs(title = "Annual Mean Temperatures by Transect")
 
 
-# Transect Temperature & Wasting Disease
+### Transect Temperature & Wasting Disease
 
 # Join summer temperature data to wasting data set
 dh_data_summary_wasting <- dh_data_summary_wasting |> 
@@ -543,19 +543,16 @@ ggplot(dh_data_summary_wasting,
   )
 
 
-# Create column for previous year mean summer temperature
+### Create column for previous year mean summer temperature
 
 # Separate wasting data into separate transect data frames
-dh_data_summary_wasting <- dh_data_summary_wasting |> arrange(Transect, Year) 
-wasting_A <- dh_data_summary_wasting |> filter(Transect == "A") |> 
-  mutate(summer_mean_temp_prev = lag(summer_mean_temp))
-wasting_B <- dh_data_summary_wasting |> filter(Transect == "B") |> 
-  mutate(summer_mean_temp_prev = lag(summer_mean_temp))
-wasting_C <- dh_data_summary_wasting |> filter(Transect == "C") |> 
-  mutate(summer_mean_temp_prev = lag(summer_mean_temp))
-
-dh_data_summary_wasting <- bind_rows(wasting_A, wasting_B, wasting_C) 
-remove(list = c("wasting_A", "wasting_B", "wasting_C"))
+dh_data_summary_wasting <- dh_data_summary_wasting |>
+  arrange(Transect, Year) |> 
+  group_by(Transect) |> 
+  mutate(
+    summer_mean_temp_prev = lag(summer_mean_temp)
+  ) |> 
+  ungroup()
 
 # Plot proportion high wasting, colored by previous summer temperature 
 ggplot(dh_data_summary_wasting,
@@ -570,6 +567,26 @@ ggplot(dh_data_summary_wasting,
        x = "Year",
        y = "Proportion with High Wasting Disease",
        fill = "Previous Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+### Percent cover and wasting disease
+
+# Plot percent cover, colored by summer temperature 
+ggplot(dh_data_summary_wasting,
+       aes(x = as.character(Year), y = Percent_Cover, fill = summer_mean_temp)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Percent Cover & Summer Mean Temp by Year",
+       x = "Year",
+       y = "Percent Cover",
+       fill = "Summer Mean Temp") +
   theme(
     strip.text = element_text(size = 8),
     plot.title = element_text(hjust = 0.5, face = "bold")
@@ -593,4 +610,198 @@ ggplot(dh_data_summary_wasting,
     plot.title = element_text(hjust = 0.5, face = "bold")
   )
 
+
+### Plot same plots as above but with just transect A temperatures for longer time series
+
+# Add column for transect A summe mean temperatures
+dh_data_summary_wasting <- dh_data_summary_wasting |> 
+  left_join(
+    select(
+      filter(water_temp_summer, Transect == "A"),
+      c(Year, Temp_C)
+    ), 
+    by = c("Year")
+  )|>
+  rename(summer_mean_temp_A = Temp_C) |> 
+  # create column for previous summer mean transect A temp
+  arrange(Transect, Year) |> 
+  group_by(Transect) |> 
+  mutate(
+    summer_mean_temp_A_prev = lag(summer_mean_temp_A)
+  ) |> 
+  ungroup()
+
+
+# Plot proportion high wasting, colored by transect A summer temperature
+ggplot(dh_data_summary_wasting,
+       aes(x = as.character(Year), y = prop_wasting_high, fill = summer_mean_temp_A)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Proportion High Wasting Disease 
+            & Transect A Summer Mean Temp by Year",
+       x = "Year",
+       y = "Proportion with High Wasting Disease",
+       fill = "Transect A
+Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+# Plot proportion high wasting, colored by transect A previous summer temperature 
+ggplot(dh_data_summary_wasting,
+       aes(x = as.character(Year), y = prop_wasting_high, fill = summer_mean_temp_A_prev)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Proportion High Wasting Disease &
+          Transect A Previous Summer Mean Temp by Year",
+       x = "Year",
+       y = "Proportion with High Wasting Disease",
+       fill = "Tansect A Previous
+Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+### Percent cover and wasting disease
+
+# Plot percent cover, colored by transect A summer temperature 
+ggplot(dh_data_summary_wasting,
+       aes(x = as.character(Year), y = Percent_Cover, fill = summer_mean_temp_A)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Percent Cover & Transect A 
+       Summer Mean Temp by Year",
+       x = "Year",
+       y = "Percent Cover",
+       fill = "Transect A 
+Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+# Plot percent cover, colored by transect A previous summer temperature 
+ggplot(dh_data_summary_wasting,
+       aes(x = as.character(Year), y = Percent_Cover, fill = summer_mean_temp_A_prev)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
+  labs(title = "Percent Cover & Transect A
+       Previous Summer Mean Temp by Year",
+       x = "Year",
+       y = "Percent Cover",
+       fill = "Transect A Previous
+Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+
+### Aggregate across transects (annual mean % cover across all transects)
+dh_wasting_aggregated <- dh_data_summary_wasting |> 
+  group_by(Year) |> 
+  summarize(Percent_Cover = mean(Percent_Cover, na.rm = TRUE),
+            prop_wasting_high = mean(prop_wasting_high, na.rm = TRUE), 
+            summer_mean_temp_A = mean(summer_mean_temp_A, na.rm = TRUE),
+            summer_mean_temp_A_prev = mean(summer_mean_temp_A_prev, na.rm = TRUE)
+  )
+
+
+# Same plots as above, but for aggregated data
+
+# Plot proportion high wasting, colored by transect A summer temperature
+ggplot(dh_wasting_aggregated,
+       aes(x = as.character(Year), y = prop_wasting_high, fill = summer_mean_temp_A)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  labs(title = "Aggregated Proportion High Wasting Disease 
+            & Transect A Summer Mean Temp by Year",
+       x = "Year",
+       y = "Proportion with High Wasting Disease",
+       fill = "Transect A
+Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+# Plot proportion high wasting, colored by transect A previous summer temperature 
+ggplot(dh_wasting_aggregated,
+       aes(x = as.character(Year), y = prop_wasting_high, fill = summer_mean_temp_A_prev)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  labs(title = "Aggregated Proportion High Wasting Disease &
+          Transect A Previous Summer Mean Temp by Year",
+       x = "Year",
+       y = "Proportion with High Wasting Disease",
+       fill = "Tansect A Previous
+Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+### Percent cover and wasting disease
+
+# Plot percent cover, colored by transect A summer temperature 
+ggplot(dh_wasting_aggregated,
+       aes(x = as.character(Year), y = Percent_Cover, fill = summer_mean_temp_A)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  labs(title = "Aggregated Percent Cover & Transect A 
+       Summer Mean Temp by Year",
+       x = "Year",
+       y = "Percent Cover",
+       fill = "Transect A 
+Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
+
+# Plot percent cover, colored by transect A previous summer temperature 
+ggplot(dh_wasting_aggregated,
+       aes(x = as.character(Year), y = Percent_Cover, fill = summer_mean_temp_A_prev)) +
+  geom_bar(stat = "identity") +
+  scale_y_continuous(
+    labels = scales::percent_format(),
+    limits = c(0, 1)) +
+  scale_fill_gradient(low = "blue", high = "darkorange") +
+  labs(title = "Aggregated Percent Cover & Transect A
+       Previous Summer Mean Temp by Year",
+       x = "Year",
+       y = "Percent Cover",
+       fill = "Transect A Previous
+Summer Mean Temp") +
+  theme(
+    strip.text = element_text(size = 8),
+    plot.title = element_text(hjust = 0.5, face = "bold")
+  )
        
