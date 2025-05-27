@@ -45,7 +45,7 @@ barnstable_events_1999_2024 <- bind_rows(
 
 # Clean data
 storm_events <- barnstable_events_1999_2024 |> 
-  select(c(BEGIN_DATE, EVENT_TYPE, MAGNITUDE)) |> 
+  select(c(BEGIN_DATE, EVENT_TYPE, MAGNITUDE, MAGNITUDE_TYPE)) |> 
   mutate(date = mdy(BEGIN_DATE),
          year = year(date),
          month = month(date), 
@@ -53,7 +53,7 @@ storm_events <- barnstable_events_1999_2024 |>
          event_type = EVENT_TYPE, 
          magnitude = MAGNITUDE
          ) |> 
-  select(-c(BEGIN_DATE, EVENT_TYPE, MAGNITUDE)) |> 
+  # select(-c(BEGIN_DATE, EVENT_TYPE, MAGNITUDE)) |> 
   # remove irrelevant events types
   filter(event_type %in% c("Coastal Flood", "Flash Flood", "Flood", "High Surf", "High Wind",
                            "Storm Surge/Tide", "Strong Wind", "Thunderstorm Wind", "Tornado",
@@ -62,8 +62,9 @@ storm_events <- barnstable_events_1999_2024 |>
   distinct() |> 
   # Some events appear to be recorded many times in a single day. 
   # Condense into single day, keeping maximum magnitude if applicable
-  group_by(date, year, month, day, event_type) |> 
+  group_by(date, year, month, day, event_type, MAGNITUDE_TYPE) |> 
   summarize(magnitude_max = max(magnitude), .groups = "drop")
+  AR
 
 # Plot event frequency over time
 ggplot(storm_events, 
@@ -113,3 +114,4 @@ for (yr in unique(wind_events$year)) {
   
   print(p)
 }
+
