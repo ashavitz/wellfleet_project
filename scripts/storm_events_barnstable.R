@@ -64,7 +64,6 @@ storm_events <- barnstable_events_1999_2024 |>
   # Condense into single day, keeping maximum magnitude if applicable
   group_by(date, year, month, day, event_type, MAGNITUDE_TYPE) |> 
   summarize(magnitude_max = max(magnitude), .groups = "drop")
-  AR
 
 # Plot event frequency over time
 ggplot(storm_events, 
