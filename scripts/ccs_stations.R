@@ -20,6 +20,9 @@ library(tidyr) # for tidying and reshaping data
 library(ggplot2) # for data visualization
 library(RColorBrewer) # for data viz color palettes
 library(patchwork) # for displaying graphs together
+library(purrr) # for map
+library(broom) # for tidy model outputs
+library(ggpmisc)
 
 # ---- csv import from CCS ----
 
@@ -116,7 +119,7 @@ end_year   <- max(ccs_data_wellfleet$collected_at, na.rm = TRUE)
 # 
 # # Note - No duplicate data rows identified for the 3 wellfleet sites examined
 
-# ---- Filter Only "Full" Years With Exactly One Monthly Measurement ----
+# ---- Filter Only "Full" Years With at least One Monthly Measurement ----
 
 # NOTE - For each station, the following block only includes years with a full 12 months of data
 #      - Many years have 11 months of data (and some 10 or fewer), which could be included
@@ -161,7 +164,11 @@ ccs_wellfleet_summers <- filter(ccs_data_wellfleet, month %in% 6:9)
 ccs_wellfleet_full_summers <- ccs_wellfleet_summers |> 
   # Count how many measurements per station, year, and month
   group_by(internal_station_id, year_collected, month) |>
-  summarize(n_measurements = n(), .groups = "drop") |>
+  summarize(n_measurements = n(), 
+            # average across each month to reduce months with multiple measurements to one average
+            across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+            .groups = "drop"
+            ) |>
   # For each station and year, check how many months had exactly one measurement
   group_by(internal_station_id, year_collected) |>
   summarize(months_with_one_measurement = sum(n_measurements == 1), .groups = "drop") |>
@@ -170,7 +177,6 @@ ccs_wellfleet_full_summers <- ccs_wellfleet_summers |>
   select(internal_station_id, year_collected) |>
   # Join back to original data to filter only good station-years, removing id column
   inner_join(ccs_wellfleet_summers, by = c("internal_station_id", "year_collected")) 
-  # Filter once more 
 
 
 # Calculate (summer) mean & median for all water quality variables
@@ -263,7 +269,6 @@ wq_variables <- c(wq_variables,
 
 
 # ---- Plot All Data ----
-
 # For each relevant variable, plot all ~monthly data over time
 for (var in wq_variables) {
   p <- ggplot(ccs_data_wellfleet, aes(x = collected_at,
@@ -271,6 +276,20 @@ for (var in wq_variables) {
                                       color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3
+    ) +
 
     # add threshold line, if available
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
@@ -302,6 +321,21 @@ for (var in wq_variables) {
                                         color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3
+    ) +
+    
     labs(x = "Year",
          y = var,
          color = "CCS Station ID",
@@ -315,6 +349,21 @@ for (var in wq_variables) {
                                         color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3
+    ) +
+    
     labs(x = "Year",
          y = var,
          color = "CCS Station ID",
@@ -340,6 +389,20 @@ for (var in wq_variables) {
                                       color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3
+    ) +
 
     # add threshold line, if available
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
@@ -372,6 +435,20 @@ for (var in wq_variables) {
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3
+    ) +
+    
     # add threshold line, if available
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
     
@@ -388,6 +465,20 @@ for (var in wq_variables) {
                                           color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3
+    ) +
     
     # add threshold line, if available
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
@@ -406,7 +497,50 @@ for (var in wq_variables) {
 }
 
 
-# ---- Plots by Variable ----
+# ---- Simple Linear Models - Annual ----
+
+### Annual Means
+
+# Adjust year_collected to years following [initial year]. 
+# This will not change the slope, but will change the intercept to be more interpretable
+ccs_wellfleet_annual <- ccs_wellfleet_annual |>
+  mutate(years_post_start = year_collected - min(year_collected))
+
+# Create a tibble with columns: buoy, variable, list column of lm(variable ~ year_collected)
+buoy <- unique(ccs_wellfleet_annual$internal_station_id)
+variable <- names(select(ccs_wellfleet_annual,
+                         -c("internal_station_id", "year_collected", "years_post_start")))
+annual_lms <- crossing(buoy, variable)
+annual_lms <- annual_lms |> 
+  rowwise() |> 
+  mutate(model = list(
+    lm(
+      formula = as.formula(paste0("`", variable, "` ~ years_post_start")),
+      data = filter(ccs_wellfleet_annual, internal_station_id == buoy)
+    )
+  )) |> 
+  ungroup()
+
+# For each row (model) extract relevant summary statistics
+annual_lms <- annual_lms |>
+  mutate(
+    tidy_summary = map(model, tidy), # for slope, slope std.error, and slope p.value
+    glance_summary = map(model, glance), # for R2
+    slope = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(estimate)),
+    std_error = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(std.error)),
+    p_value = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(p.value)),
+    r_squared = map_dbl(glance_summary, ~ .x$r.squared)
+  )
+
+annual_lms$tidy_summary[[1]]
+annual_lms$glance_summary[[1]]
+
+
+
+# ---- Simple Linear Models - Monthly ----
+
+
+# ---- Plots by Variable (Incomplete) ----
 
 # _____________________________ Temperature _____________________________
 

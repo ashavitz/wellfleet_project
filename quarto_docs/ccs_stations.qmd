@@ -31,7 +31,7 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```
 
 ### Filter Only "Full" Years With Exactly One Monthly Measurement
-```{r Filter Only "Full" Years With Exactly One Monthly Measurement}
+```{r Filter Only "Full" Years With at least One Monthly Measurement}
 ```
 
 ### Filter Only "Full" Summers With Exactly One Monthly Measurement (June - September)
