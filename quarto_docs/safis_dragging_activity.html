@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.57">
+<meta name="generator" content="quarto-1.6.42">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -64,10 +64,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="safis_dragging_activity_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="safis_dragging_activity_files/libs/quarto-html/anchor.min.js"></script>
 <link href="safis_dragging_activity_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="safis_dragging_activity_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="safis_dragging_activity_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="safis_dragging_activity_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="safis_dragging_activity_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="safis_dragging_activity_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="safis_dragging_activity_files/libs/bootstrap/bootstrap-c0367b04c37547644fece4185067e4a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -107,8 +107,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="safis-dragging-activity" class="level1">
 <h1>SAFIS Dragging Activity</h1>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#'--------------------------------------</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' SAFIS Dragging Data from DMF</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' Shellfish growing areas CCB 6,8,9,17,20</span></span>
@@ -141,8 +141,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="load-libraries" class="level3">
 <h3 class="anchored" data-anchor-id="load-libraries">Load Libraries</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr) <span class="co"># for reading in files</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate) <span class="co"># for date time formats</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># for data manipulation and transformation</span></span>
@@ -154,8 +154,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="set-global-ggplot-themes" class="level3">
 <h3 class="anchored" data-anchor-id="set-global-ggplot-themes">Set Global ggplot Themes</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set ggplot theme to minimal, rotate x axis labels, and center plot titles</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
@@ -171,8 +171,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="load-and-visualize-safis-data" class="level3">
 <h3 class="anchored" data-anchor-id="load-and-visualize-safis-data">Load and Visualize SAFIS Data</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load data</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Note: Live pound data for 2012 could not be provided as it wouold violate confidentiality</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>dredge_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"data/safis/DMF_CC_Shellfish_Dredging_data.csv"</span>)</span>
@@ -310,8 +310,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -422,7 +420,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

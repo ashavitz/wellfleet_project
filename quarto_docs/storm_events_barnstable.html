@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.57">
+<meta name="generator" content="quarto-1.6.42">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -64,10 +64,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="storm_events_barnstable_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="storm_events_barnstable_files/libs/quarto-html/anchor.min.js"></script>
 <link href="storm_events_barnstable_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="storm_events_barnstable_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="storm_events_barnstable_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="storm_events_barnstable_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="storm_events_barnstable_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="storm_events_barnstable_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="storm_events_barnstable_files/libs/bootstrap/bootstrap-c0367b04c37547644fece4185067e4a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -107,8 +107,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="barnstable-county-ma---storm-events-from-noaa-storm-event-database-1998-2024" class="level1">
 <h1>Barnstable County, MA - Storm Events from NOAA Storm Event Database (1998-2024)</h1>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#'--------------------------------------</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' NOAA Storm Events Database: https://www.ncdc.noaa.gov/stormevents/</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' Barnstable County 1999-01-01 through 2024-12-31</span></span>
@@ -123,8 +123,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="load-libraries" class="level3">
 <h3 class="anchored" data-anchor-id="load-libraries">Load Libraries</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr) <span class="co"># for reading in files</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate) <span class="co"># for date time formats</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># for data manipulation and transformation</span></span>
@@ -136,8 +136,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="set-global-ggplot-themes" class="level3">
 <h3 class="anchored" data-anchor-id="set-global-ggplot-themes">Set Global ggplot Themes</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set ggplot theme to minimal, rotate x axis labels, and center plot titles</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
@@ -153,8 +153,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="load-and-visualize-noaa-storm-events-data" class="level3">
 <h3 class="anchored" data-anchor-id="load-and-visualize-noaa-storm-events-data">Load and Visualize NOAA Storm Events Data</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>barnstable_events_1999_2024 <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(</span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_csv</span>(<span class="st">"data/noaa_storm_events/storm_data_barnstable_1999_2010.csv"</span>),</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">read_csv</span>(<span class="st">"data/noaa_storm_events/storm_data_barnstable_2011_2024.csv"</span>)</span>
@@ -163,7 +163,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean data</span></span>
 <span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>storm_events <span class="ot">&lt;-</span> barnstable_events_1999_2024 <span class="sc">|&gt;</span> </span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(BEGIN_DATE, EVENT_TYPE, MAGNITUDE)) <span class="sc">|&gt;</span> </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="fu">c</span>(BEGIN_DATE, EVENT_TYPE, MAGNITUDE, MAGNITUDE_TYPE)) <span class="sc">|&gt;</span> </span>
 <span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">mdy</span>(BEGIN_DATE),</span>
 <span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>         <span class="at">year =</span> <span class="fu">year</span>(date),</span>
 <span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>         <span class="at">month =</span> <span class="fu">month</span>(date), </span>
@@ -171,7 +171,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">event_type =</span> EVENT_TYPE, </span>
 <span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">magnitude =</span> MAGNITUDE</span>
 <span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">|&gt;</span> </span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">c</span>(BEGIN_DATE, EVENT_TYPE, MAGNITUDE)) <span class="sc">|&gt;</span> </span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="co"># select(-c(BEGIN_DATE, EVENT_TYPE, MAGNITUDE)) |&gt; </span></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove irrelevant events types</span></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(event_type <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Coastal Flood"</span>, <span class="st">"Flash Flood"</span>, <span class="st">"Flood"</span>, <span class="st">"High Surf"</span>, <span class="st">"High Wind"</span>,</span>
 <span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>                           <span class="st">"Storm Surge/Tide"</span>, <span class="st">"Strong Wind"</span>, <span class="st">"Thunderstorm Wind"</span>, <span class="st">"Tornado"</span>,</span>
@@ -180,7 +180,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
 <span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Some events appear to be recorded many times in a single day. </span></span>
 <span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="co"># Condense into single day, keeping maximum magnitude if applicable</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(date, year, month, day, event_type) <span class="sc">|&gt;</span> </span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(date, year, month, day, event_type, MAGNITUDE_TYPE) <span class="sc">|&gt;</span> </span>
 <span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">magnitude_max =</span> <span class="fu">max</span>(magnitude), <span class="at">.groups =</span> <span class="st">"drop"</span>)</span>
 <span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Plot event frequency over time</span></span>
@@ -200,8 +200,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </figure>
 </div>
 </div>
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="do">### Plot max magnitude (knots) of all wind events</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter only wind events</span></span>
@@ -497,8 +497,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -609,7 +607,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {

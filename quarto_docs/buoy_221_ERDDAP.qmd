@@ -3,7 +3,8 @@ title: "buoy_221_ERDDAP"
 author: "Aaron Shavitz"
 format: 
   html:
-    code-fold: show
+    code-fold: true
+    code-summary: "Show the code"
 ---
 [Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
 

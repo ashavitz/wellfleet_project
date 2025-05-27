@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.5.57">
+<meta name="generator" content="quarto-1.6.42">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -64,10 +64,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <script src="buoy_221_ERDDAP_files/libs/quarto-html/tippy.umd.min.js"></script>
 <script src="buoy_221_ERDDAP_files/libs/quarto-html/anchor.min.js"></script>
 <link href="buoy_221_ERDDAP_files/libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="buoy_221_ERDDAP_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<link href="buoy_221_ERDDAP_files/libs/quarto-html/quarto-syntax-highlighting-2f5df379a58b258e96c21c0638c20c03.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="buoy_221_ERDDAP_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="buoy_221_ERDDAP_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="buoy_221_ERDDAP_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<link href="buoy_221_ERDDAP_files/libs/bootstrap/bootstrap-c0367b04c37547644fece4185067e4a7.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -107,8 +107,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="buoy-erddap-data-cape-cod-bay" class="level1">
 <h1>221 Buoy ERDDAP Data (Cape Cod Bay)</h1>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#'--------------------------------------</span></span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' CDIP221 Buoy https://www.ndbc.noaa.gov/station_history.php?station=44090</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' Cape Cod Bay, MA</span></span>
@@ -125,8 +125,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="importing-files-via-erddap" class="level3">
 <h3 class="anchored" data-anchor-id="importing-files-via-erddap">Importing Files via ERDDAP</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">#' -------------------------------------</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#' Importing files via ERDDAP</span></span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#' CDIP ERDDAP base URL:</span></span>
@@ -138,8 +138,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="load-libraries" class="level3">
 <h3 class="anchored" data-anchor-id="load-libraries">Load Libraries</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr) <span class="co"># for reading in files</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lubridate) <span class="co"># for date time formats</span></span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr) <span class="co"># for data manipulation and transformation</span></span>
@@ -152,8 +152,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="set-global-ggplot-themes" class="level3">
 <h3 class="anchored" data-anchor-id="set-global-ggplot-themes">Set Global ggplot Themes</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set ggplot theme to minimal, rotate x axis labels, and center plot titles</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">theme_set</span>(</span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
@@ -169,8 +169,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="air-temperature-measurements" class="level3">
 <h3 class="anchored" data-anchor-id="air-temperature-measurements">Air Temperature Measurements</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get information about the cat4 (air measurements) data set</span></span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>data_info_cat4 <span class="ot">&lt;-</span> rerddap<span class="sc">::</span><span class="fu">info</span>(<span class="st">"cat4_agg"</span>,</span>
 <span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>                           <span class="at">url =</span> <span class="st">"erddap.cdip.ucsd.edu/erddap"</span>)</span>
@@ -190,8 +190,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>[1] "failed to get variable datatype information"
 [1] "will leave units unchanged"</code></pre>
 </div>
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># # Examining the data</span></span>
 <span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co"># str(buoy_221_cat4)</span></span>
 <span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co"># summary(buoy_221_cat4)</span></span>
@@ -226,8 +226,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="sst-measurements" class="level3">
 <h3 class="anchored" data-anchor-id="sst-measurements">SST Measurements</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get data set information</span></span>
 <span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>data_info_sst <span class="ot">&lt;-</span> rerddap<span class="sc">::</span><span class="fu">info</span>(<span class="st">"sst_agg"</span>,</span>
 <span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>                               <span class="at">url =</span> <span class="st">"erddap.cdip.ucsd.edu/erddap"</span>)</span>
@@ -246,8 +246,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>[1] "failed to get variable datatype information"
 [1] "will leave units unchanged"</code></pre>
 </div>
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean imported data</span></span>
 <span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>buoy_221_sst <span class="ot">&lt;-</span> buoy_221_sst <span class="sc">|&gt;</span> </span>
 <span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
@@ -276,8 +276,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="surface-current-acm-measurements" class="level3">
 <h3 class="anchored" data-anchor-id="surface-current-acm-measurements">Surface Current (acm) measurements</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># (acm = acoustic current measurements)</span></span>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Get data set information</span></span>
@@ -301,8 +301,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>[1] "failed to get variable datatype information"
 [1] "will leave units unchanged"</code></pre>
 </div>
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean imported data</span></span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>buoy_221_acm <span class="ot">&lt;-</span> buoy_221_acm <span class="sc">|&gt;</span> </span>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
@@ -337,8 +337,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="wave-measurements" class="level3">
 <h3 class="anchored" data-anchor-id="wave-measurements">Wave measurements</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get data set information</span></span>
 <span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>data_info_wave <span class="ot">&lt;-</span> rerddap<span class="sc">::</span><span class="fu">info</span>(<span class="st">"wave_agg"</span>,</span>
 <span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>                               <span class="at">url =</span> <span class="st">"erddap.cdip.ucsd.edu/erddap"</span>)</span>
@@ -356,8 +356,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>[1] "failed to get variable datatype information"
 [1] "will leave units unchanged"</code></pre>
 </div>
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Clean data</span></span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>buoy_221_wave <span class="ot">&lt;-</span> buoy_221_wave <span class="sc">|&gt;</span> </span>
 <span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
@@ -390,8 +390,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="create-data-set-for-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="create-data-set-for-analysis">Create data set for analysis</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Join all data frames by date</span></span>
 <span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>buoy_221_daily <span class="ot">&lt;-</span> </span>
 <span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>  purrr<span class="sc">::</span><span class="fu">reduce</span>(</span>
@@ -407,8 +407,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="plot-all-variables" class="level3">
 <h3 class="anchored" data-anchor-id="plot-all-variables">Plot all Variables</h3>
 <div class="cell">
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Daily plots</span></span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Create a list of variable names, excluding the 'date' column</span></span>
@@ -525,8 +525,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </figure>
 </div>
 </div>
-<details open="" class="code-fold">
-<summary>Code</summary>
+<details class="code-fold">
+<summary>Show the code</summary>
 <div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Annual plots</span></span>
 <span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="co"># For each year with at least 80% complete data (80% of days have data) calculate annual mean</span></span>
@@ -737,8 +737,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
   });
   clipboard.on('success', onCopySuccess);
   if (window.document.getElementById('quarto-embedded-source-code-modal')) {
-    // For code content inside modals, clipBoardJS needs to be initialized with a container option
-    // TODO: Check when it could be a function (https://github.com/zenorocha/clipboard.js/issues/860)
     const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
       text: getTextToCopy,
       container: window.document.getElementById('quarto-embedded-source-code-modal')
@@ -849,7 +847,6 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       if (window.Quarto?.typesetMath) {
         window.Quarto.typesetMath(note);
       }
-      // TODO in 1.5, we should make sure this works without a callout special case
       if (note.classList.contains("callout")) {
         return note.outerHTML;
       } else {
