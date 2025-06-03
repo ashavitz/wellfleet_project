@@ -22,7 +22,7 @@ library(RColorBrewer) # for data viz color palettes
 library(patchwork) # for displaying graphs together
 library(purrr) # for map
 library(broom) # for tidy model outputs
-library(ggpmisc)
+library(ggpmisc) # for annotating geom_smooth plots with regression output via stat_poly_eq()
 
 # ---- csv import from CCS ----
 
