@@ -268,28 +268,73 @@ wq_variables <- c(wq_variables,
                   "log10_total_phosphorus_uM")
 
 
+
+# ---- Simple Linear Models - Annual ----
+
+### Build simple linear models for annual means and medians
+
+# Adjust year_collected to years following [initial year]. 
+# This will not change the slope, but will change the intercept to be more interpretable
+ccs_wellfleet_annual <- ccs_wellfleet_annual |>
+  mutate(years_post_start = year_collected - min(year_collected))
+
+# Create a tibble with columns: buoy, variable, list column of lm(variable ~ year_collected)
+buoy <- unique(ccs_wellfleet_annual$internal_station_id)
+variable <- names(select(ccs_wellfleet_annual,
+                         -c("internal_station_id", "year_collected", "years_post_start")))
+annual_lms <- crossing(buoy, variable)
+annual_lms <- annual_lms |> 
+  rowwise() |> 
+  mutate(model = list(
+    lm(
+      formula = as.formula(paste0("`", variable, "` ~ years_post_start")),
+      data = filter(ccs_wellfleet_annual, internal_station_id == buoy)
+    )
+  )) |> 
+  ungroup()
+
+# For each row (model) extract relevant summary statistics
+annual_lms <- annual_lms |>
+  mutate(
+    tidy_summary = map(model, tidy), # for slope, slope std.error, and slope p.value
+    glance_summary = map(model, glance), # for R2
+    intercept = map_dbl(tidy_summary, ~ .x |> filter(term == "(Intercept)") |> pull(estimate)),
+    slope = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(estimate)),
+    std_error = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(std.error)),
+    p_value = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(p.value)),
+    r_squared = map_dbl(glance_summary, ~ .x$r.squared), 
+    label = paste0(buoy, ":  y = ",
+                   round(intercept, 2), " + ",
+                   round(slope, 3), "x,  ",
+                   "R² = ", round(r_squared, 2), ", ",
+                   "p = ", signif(p_value, 3))
+  )
+
+# annual_lms$tidy_summary[[1]]
+# annual_lms$glance_summary[[1]]
+
+
+
+# ---- Simple Linear Models - Monthly ----
+
+
+
 # ---- Plot All Data ----
 # For each relevant variable, plot all ~monthly data over time
 for (var in wq_variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_data_wellfleet[[var]], na.rm = TRUE)
+  y_min <- min(ccs_data_wellfleet[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(ccs_data_wellfleet, aes(x = collected_at,
                                       y = .data[[var]],
                                       color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
-    
-    # Annotate plot with simple linear model p-values and R2 values
-    stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
-      # formula = y ~ x,
-      parse = TRUE,
-      size = 3
-    ) +
 
     # add threshold line, if available
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
@@ -303,7 +348,27 @@ for (var in wq_variables) {
       date_breaks = "2 year", 
       date_labels = "%Y",
       labels = date_format("%Y")) + # extract just the year for the labels
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3, 
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.025
+    )
   
   print(p)
 }
@@ -314,41 +379,87 @@ for (var in wq_variables) {
 # For each relevant variable, plot Annual mean and mean values
 for (var in wq_variables) {
   
-  # Create annual mean plot
+  # Set variable name to _mean
   var_name <- paste0(var, "_mean")
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_wellfleet_annual[[var_name]], na.rm = TRUE)
+  y_min <- min(ccs_wellfleet_annual[[var_name]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  # Update range size with new buffered y max
+  range_size = y_max_buffered - y_min
+    
+  # Create annual mean plot
   p_1 <- ggplot(ccs_wellfleet_annual, aes(x = year_collected,
                                         y = .data[[var_name]],
                                         color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     
-    # Annotate plot with simple linear model p-values and R2 values
-    stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
-      # formula = y ~ x,
-      parse = TRUE,
-      size = 3
-    ) +
+    # # Annotate plot with simple linear model p-values and R2 values
+    # stat_poly_eq(
+    #   aes(group = internal_station_id, 
+    #       color = internal_station_id,
+    #       label = after_stat(
+    #         paste0("Station: ", grp.label, "~~~",
+    #                ..p.value.label.., "~~~",
+    #                ..rr.label..
+    #         ))),
+    #   # formula = y ~ x,
+    #   parse = TRUE,
+    #   size = 3
+    # ) +
     
     labs(x = "Year",
          y = var,
          color = "CCS Station ID",
          title = paste("Annual", var_name, "Time Series - CCS Wellfleet")) +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered))
+  
+  # Add labels
+  labels_to_add <- annual_lms |>
+    filter(variable == var_name) |>
+    mutate(x = min(ccs_wellfleet_annual$year_collected, na.rm = TRUE),
+           y = seq(from = y_max_buffered, length.out = n(), by = (range_size * -0.08)))
+  
+  p_1 <- p_1 + 
+    geom_text(data = labels_to_add,
+              aes(x = x, y = y, label = label, color = as.factor(buoy)),
+              inherit.aes = FALSE,
+              hjust = 0, 
+              vjust = 1,
+              size = 2.5,
+              show.legend = FALSE)
+
+
+  
+  # Set variable name to _median
+  var_name <- paste0(var, "_median")
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_wellfleet_annual[[var_name]], na.rm = TRUE)
+  y_min <- min(ccs_wellfleet_annual[[var_name]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
   
   # Create annual median plot
-  var_name <- paste0(var, "_median")
   p_2 <- ggplot(ccs_wellfleet_annual, aes(x = year_collected,
                                         y = .data[[var_name]],
                                         color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Year",
+         y = var,
+         color = "CCS Station ID",
+         title = paste("Annual", var_name, "Time Series - CCS Wellfleet")) +
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
     stat_poly_eq(
@@ -361,14 +472,11 @@ for (var in wq_variables) {
             ))),
       # formula = y ~ x,
       parse = TRUE,
-      size = 3
-    ) +
-    
-    labs(x = "Year",
-         y = var,
-         color = "CCS Station ID",
-         title = paste("Annual", var_name, "Time Series - CCS Wellfleet")) +
-    scale_color_brewer(palette = "Set2")
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.06,
+      size = 2.5
+    ) 
     
   # Combine the plots using patchwork with adjusted spacing
   combined_plot <- p_1 + p_2 + 
@@ -495,49 +603,6 @@ for (var in wq_variables) {
   
   print(combined_plot)
 }
-
-
-# ---- Simple Linear Models - Annual ----
-
-### Annual Means
-
-# Adjust year_collected to years following [initial year]. 
-# This will not change the slope, but will change the intercept to be more interpretable
-ccs_wellfleet_annual <- ccs_wellfleet_annual |>
-  mutate(years_post_start = year_collected - min(year_collected))
-
-# Create a tibble with columns: buoy, variable, list column of lm(variable ~ year_collected)
-buoy <- unique(ccs_wellfleet_annual$internal_station_id)
-variable <- names(select(ccs_wellfleet_annual,
-                         -c("internal_station_id", "year_collected", "years_post_start")))
-annual_lms <- crossing(buoy, variable)
-annual_lms <- annual_lms |> 
-  rowwise() |> 
-  mutate(model = list(
-    lm(
-      formula = as.formula(paste0("`", variable, "` ~ years_post_start")),
-      data = filter(ccs_wellfleet_annual, internal_station_id == buoy)
-    )
-  )) |> 
-  ungroup()
-
-# For each row (model) extract relevant summary statistics
-annual_lms <- annual_lms |>
-  mutate(
-    tidy_summary = map(model, tidy), # for slope, slope std.error, and slope p.value
-    glance_summary = map(model, glance), # for R2
-    slope = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(estimate)),
-    std_error = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(std.error)),
-    p_value = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(p.value)),
-    r_squared = map_dbl(glance_summary, ~ .x$r.squared)
-  )
-
-annual_lms$tidy_summary[[1]]
-annual_lms$glance_summary[[1]]
-
-
-
-# ---- Simple Linear Models - Monthly ----
 
 
 # ---- Plots by Variable (Incomplete) ----

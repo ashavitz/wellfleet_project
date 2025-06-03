@@ -47,6 +47,14 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r Log10 Transform Variables, message=FALSE, warning=FALSE}
 ```
 
+### Simple Linear Models - Annual
+```{r Simple Linear Models - Annual, message=FALSE, warning=FALSE}
+```
+
+### Simple Linear Models - Monthly
+```{r Simple Linear Models - Monthly, message=FALSE, warning=FALSE}
+```
+
 ### Plot All Data (~Monthly)
 ```{r Plot All Data, message=FALSE, warning=FALSE}
 ```
