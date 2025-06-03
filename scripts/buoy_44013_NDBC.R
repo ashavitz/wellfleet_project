@@ -25,6 +25,7 @@ library(lubridate) # for date time formats
 library(dplyr) # for data manipulation and transformation
 library(tidyr) # for tidying and reshaping data
 library(ggplot2) # for visualization
+library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 
 
 # ---- Set Global ggplot Themes ----
@@ -201,11 +202,27 @@ buoy_data_daily <- buoy_data |>
 
 # Plot daily mean values for each variable
 for (var in variables) {
+  
+  # Determine y_max to create vertical padding so stat_poly_eq annotations will be visible
+  y_max <- max(buoy_data_daily[[var]], na.rm = TRUE) * 1.1
+  
   p <- ggplot(buoy_data_daily,
               aes(x = date,
                   y = .data[[var]])) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+          )
+        ),
+      formula = y ~ x,
+      parse = TRUE,
+      color = "blue") +
+    
     labs(x = "Date",
          y = variables_meta[[var]],
          title = paste("Daily Time Series - Boston Harbor Buoy",
@@ -213,7 +230,10 @@ for (var in variables) {
     scale_color_brewer(palette = "Set2") +
     scale_x_date(
       breaks = seq(min(buoy_data_daily$date), max(buoy_data_daily$date), by = "2 years"),
-      date_labels = "%Y")
+      date_labels = "%Y") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max))
   
   print(p)
 }
@@ -267,6 +287,18 @@ for (var in variables) {
                   y = .data[[var]])) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      formula = y ~ x,
+      parse = TRUE,
+      color = "blue") +
+    
     labs(x = "Date",
          y = variables_meta[[var]],
          title = paste("Annual Time Series - Boston Harbor Buoy",
@@ -278,6 +310,7 @@ for (var in variables) {
   print(p)
 }
 
+
 # Plot Simple Mean Wind Direction 2003 - 2014 for comparison with DKP
 for (var in list("WDIR_simple")) {
   p <- ggplot(filter(buoy_data_annual, YYYY %in% c(2003:2014)),
@@ -286,6 +319,18 @@ for (var in list("WDIR_simple")) {
     geom_point(color = "blue") +
     geom_line(color = "blue") +
     geom_smooth(method = "lm", se = FALSE) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      formula = y ~ x,
+      parse = TRUE,
+      color = "blue") +
+    
     labs(x = "Date",
          y = variables_meta[[var]],
          title = paste("Annual Time Series - Boston Harbor Buoy",
