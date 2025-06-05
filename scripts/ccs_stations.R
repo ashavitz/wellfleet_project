@@ -24,6 +24,19 @@ library(purrr) # for map
 library(broom) # for tidy model outputs
 library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 
+
+# ---- Set Global ggplot Themes ----
+
+# Set ggplot theme to minimal, rotate x axis labels, and center plot titles
+theme_set(
+  theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+)
+
 # ---- csv import from CCS ----
 
 # Read in csv file from local directory
@@ -193,17 +206,6 @@ ccs_wellfleet_summers <- ccs_wellfleet_full_summers |>
     .groups = "drop"
   )
 
-# ---- Set Global ggplot Themes ----
-
-# Set ggplot theme to minimal, rotate x axis labels, and center plot titles
-theme_set(
-  theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      plot.title = element_text(hjust = 0.5)
-    )
-)
-
 # ---- Log10 Transform Variables ----
 
 # Add log transformed chlorophyll, pheophytin, and nutrient values
@@ -269,49 +271,84 @@ wq_variables <- c(wq_variables,
 
 
 
-# ---- Simple Linear Models - Annual ----
 
-### Build simple linear models for annual means and medians
+# ---- Create metadata variables for labeling ----
+wq_variables_meta <- list(
+  temperature_C = "Temperature (°C)",
+  salinity = "Salinity (PSU)",
+  `dissolved_oxygen_mg/L` = "Dissolved Oxygen (mg/L)",
+  `chlorophyll_ug/L` = "Chlorophyll (µg/L)",
+  `pheophytin_ug/L` = "Pheophytin (µg/L)",
+  turbidty_NTU = "Turbidity (NTU)",
+  nitrate_nitrite_uM = "Nitrate + Nitrite (µM)",
+  ammonium_uM = "Ammonium (µM)",
+  ortho_phosphate_uM = "Orthophosphate (µM)",
+  total_nitrogen_uM = "Total Nitrogen (µM)",
+  total_phosphorus_uM = "Total Phosphorus (µM)",
+  `log10_chlorophyll_ug/L` = "log10 Chlorophyll [log10(µg/L)]",
+  `log10_pheophytin_ug/L` = "log10 Pheophytin [log10(µg/L)]",
+  log10_nitrate_nitrite_uM = "log10 Nitrate + Nitrite [log10(µM)]",
+  log10_ammonium_uM = "log10 Ammonium [log10(µM)]",
+  log10_ortho_phosphate_uM = "log10 Orthophosphate [log10(µM)]",
+  log10_total_nitrogen_uM = "log10 Total Nitrogen [log10(µM)]",
+  log10_total_phosphorus_uM = "log10 Total Phosphorus [log10(µM)]"
+)
 
-# Adjust year_collected to years following [initial year]. 
-# This will not change the slope, but will change the intercept to be more interpretable
-ccs_wellfleet_annual <- ccs_wellfleet_annual |>
-  mutate(years_post_start = year_collected - min(year_collected))
+# Function for customizing this labeling for plotting:
+adjust_label <- function(label, extra_text) {
+  if (startsWith(label, "log10 ")) {
+    # Remove "log10 ", add custom text, then keep the rest
+    rest <- sub("^log10 ", "", label)
+    paste("log10", extra_text, rest)
+  } else {
+    paste(extra_text, label)
+  }
+}
 
-# Create a tibble with columns: buoy, variable, list column of lm(variable ~ year_collected)
-buoy <- unique(ccs_wellfleet_annual$internal_station_id)
-variable <- names(select(ccs_wellfleet_annual,
-                         -c("internal_station_id", "year_collected", "years_post_start")))
-annual_lms <- crossing(buoy, variable)
-annual_lms <- annual_lms |> 
-  rowwise() |> 
-  mutate(model = list(
-    lm(
-      formula = as.formula(paste0("`", variable, "` ~ years_post_start")),
-      data = filter(ccs_wellfleet_annual, internal_station_id == buoy)
-    )
-  )) |> 
-  ungroup()
 
-# For each row (model) extract relevant summary statistics
-annual_lms <- annual_lms |>
-  mutate(
-    tidy_summary = map(model, tidy), # for slope, slope std.error, and slope p.value
-    glance_summary = map(model, glance), # for R2
-    intercept = map_dbl(tidy_summary, ~ .x |> filter(term == "(Intercept)") |> pull(estimate)),
-    slope = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(estimate)),
-    std_error = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(std.error)),
-    p_value = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(p.value)),
-    r_squared = map_dbl(glance_summary, ~ .x$r.squared), 
-    label = paste0(buoy, ":  y = ",
-                   round(intercept, 2), " + ",
-                   round(slope, 3), "x,  ",
-                   "R² = ", round(r_squared, 2), ", ",
-                   "p = ", signif(p_value, 3))
-  )
-
-# annual_lms$tidy_summary[[1]]
-# annual_lms$glance_summary[[1]]
+# # ---- Simple Linear Models - Annual ----
+# 
+# ### Build simple linear models for annual means and medians
+# 
+# # Adjust year_collected to years following [initial year]. 
+# # This will not change the slope, but will change the intercept to be more interpretable
+# ccs_wellfleet_annual <- ccs_wellfleet_annual |>
+#   mutate(years_post_start = year_collected - min(year_collected))
+# 
+# # Create a tibble with columns: buoy, variable, list column of lm(variable ~ year_collected)
+# buoy <- unique(ccs_wellfleet_annual$internal_station_id)
+# variable <- names(select(ccs_wellfleet_annual,
+#                          -c("internal_station_id", "year_collected", "years_post_start")))
+# annual_lms <- crossing(buoy, variable)
+# annual_lms <- annual_lms |> 
+#   rowwise() |> 
+#   mutate(model = list(
+#     lm(
+#       formula = as.formula(paste0("`", variable, "` ~ years_post_start")),
+#       data = filter(ccs_wellfleet_annual, internal_station_id == buoy)
+#     )
+#   )) |> 
+#   ungroup()
+# 
+# # For each row (model) extract relevant summary statistics
+# annual_lms <- annual_lms |>
+#   mutate(
+#     tidy_summary = map(model, tidy), # for slope, slope std.error, and slope p.value
+#     glance_summary = map(model, glance), # for R2
+#     intercept = map_dbl(tidy_summary, ~ .x |> filter(term == "(Intercept)") |> pull(estimate)),
+#     slope = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(estimate)),
+#     std_error = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(std.error)),
+#     p_value = map_dbl(tidy_summary, ~ .x |> filter(term == "years_post_start") |> pull(p.value)),
+#     r_squared = map_dbl(glance_summary, ~ .x$r.squared), 
+#     label = paste0(buoy, ":  y = ",
+#                    round(intercept, 2), " + ",
+#                    round(slope, 3), "x,  ",
+#                    "R² = ", round(r_squared, 2), ", ",
+#                    "p = ", signif(p_value, 3))
+#   )
+# 
+# # annual_lms$tidy_summary[[1]]
+# # annual_lms$glance_summary[[1]]
 
 
 
@@ -340,9 +377,10 @@ for (var in wq_variables) {
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
     
     labs(x = "Date",
-         y = var,
+         y = wq_variables_meta[[var]],
          color = "CCS Station ID",
-         title = paste(var, "Time Series - CCS Wellfleet")) +
+         title = wq_variables_meta[[var]],
+         subtitle = "All Data Time Series - CCS Wellfleet") +
     scale_x_datetime(
       limits = c(start_year, end_year),
       date_breaks = "2 year", 
@@ -387,8 +425,8 @@ for (var in wq_variables) {
   y_min <- min(ccs_wellfleet_annual[[var_name]], na.rm = TRUE)
   range_size = y_max - y_min
   y_max_buffered <- y_max + (range_size * 0.2)
-  # Update range size with new buffered y max
-  range_size = y_max_buffered - y_min
+  # # Update range size with new buffered y max
+  # range_size = y_max_buffered - y_min
     
   # Create annual mean plot
   p_1 <- ggplot(ccs_wellfleet_annual, aes(x = year_collected,
@@ -397,43 +435,54 @@ for (var in wq_variables) {
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     
-    # # Annotate plot with simple linear model p-values and R2 values
-    # stat_poly_eq(
-    #   aes(group = internal_station_id, 
-    #       color = internal_station_id,
-    #       label = after_stat(
-    #         paste0("Station: ", grp.label, "~~~",
-    #                ..p.value.label.., "~~~",
-    #                ..rr.label..
-    #         ))),
-    #   # formula = y ~ x,
-    #   parse = TRUE,
-    #   size = 3
-    # ) +
-    
-    labs(x = "Year",
-         y = var,
-         color = "CCS Station ID",
-         title = paste("Annual", var_name, "Time Series - CCS Wellfleet")) +
+    labs(
+      x = "Year",
+      y = wq_variables_meta[[var]],
+      color = "CCS Station ID",
+      title = adjust_label(wq_variables_meta[[var]], "Mean"),
+      ) +
     scale_color_brewer(palette = "Set2") +
+    theme(
+      plot.title = element_text(size = 12),
+      axis.title.y = element_text(size = 8)
+      ) +
     
     # Add vertical padding
-    scale_y_continuous(limits = c(NA, y_max_buffered))
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
-  # Add labels
-  labels_to_add <- annual_lms |>
-    filter(variable == var_name) |>
-    mutate(x = min(ccs_wellfleet_annual$year_collected, na.rm = TRUE),
-           y = seq(from = y_max_buffered, length.out = n(), by = (range_size * -0.08)))
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.06,
+      size = 2.5
+    ) 
   
-  p_1 <- p_1 + 
-    geom_text(data = labels_to_add,
-              aes(x = x, y = y, label = label, color = as.factor(buoy)),
-              inherit.aes = FALSE,
-              hjust = 0, 
-              vjust = 1,
-              size = 2.5,
-              show.legend = FALSE)
+  
+  ## Method for adding regression statistic labels based on previously build models
+  # # Add labels
+  # labels_to_add <- annual_lms |>
+  #   filter(variable == var_name) |>
+  #   mutate(x = min(ccs_wellfleet_annual$year_collected, na.rm = TRUE),
+  #          y = seq(from = y_max_buffered, length.out = n(), by = (range_size * -0.08)))
+  
+  # p_1 <- p_1 + 
+  #   geom_text(data = labels_to_add,
+  #             aes(x = x, y = y, label = label, color = as.factor(buoy)),
+  #             inherit.aes = FALSE,
+  #             hjust = 0, 
+  #             vjust = 1,
+  #             size = 2.5,
+  #             show.legend = FALSE)
 
 
   
@@ -452,11 +501,17 @@ for (var in wq_variables) {
                                         color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
-    labs(x = "Year",
-         y = var,
-         color = "CCS Station ID",
-         title = paste("Annual", var_name, "Time Series - CCS Wellfleet")) +
+    labs(
+      x = "Year",
+     y = wq_variables_meta[[var]],
+     color = "CCS Station ID",
+     title = adjust_label(wq_variables_meta[[var]], "Median")
+    ) +
     scale_color_brewer(palette = "Set2") +
+    theme(
+      plot.title = element_text(size = 12),
+      axis.title.y = element_text(size = 8)
+    ) +
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
@@ -482,7 +537,10 @@ for (var in wq_variables) {
   combined_plot <- p_1 + p_2 + 
     # Stack the plots vertically
     plot_layout(ncol = 1, heights = c(1, 1)) +
-    plot_annotation(title = paste("Annual -", var))
+    plot_annotation(
+      title = "Annual Time Series - CCS Wellfleet",
+      theme = theme(plot.title = element_text(face = "bold"))
+    )
   
   print(combined_plot)
 }
@@ -492,11 +550,39 @@ for (var in wq_variables) {
 
 # For each relevant variable, plot all Summer ~monthly data over time
 for (var in wq_variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_wellfleet_full_summers[[var]], na.rm = TRUE)
+  y_min <- min(ccs_wellfleet_full_summers[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(ccs_wellfleet_full_summers, aes(x = collected_at,
                                       y = .data[[var]],
                                       color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
+
+    # add threshold line, if available
+    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
+
+    labs(
+      x = "Date",
+      y = wq_variables_meta[[var]],
+      color = "CCS Station ID",
+      title = paste(wq_variables_meta[[var]]),
+      subtitle = "Summer Data Time Series - CCS Wellfleet"
+      ) +
+    scale_x_datetime(
+      limits = c(start_year, end_year),
+      date_breaks = "2 year",
+      date_labels = "%Y",
+      labels = date_format("%Y")) +
+    scale_color_brewer(palette = "Set2") + 
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
     stat_poly_eq(
@@ -509,22 +595,11 @@ for (var in wq_variables) {
             ))),
       # formula = y ~ x,
       parse = TRUE,
-      size = 3
-    ) +
-
-    # add threshold line, if available
-    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
-
-    labs(x = "Date",
-         y = var,
-         color = "CCS Station ID",
-         title = paste("Summer", var, "Time Series - CCS Wellfleet")) +
-    scale_x_datetime(
-      limits = c(start_year, end_year),
-      date_breaks = "2 year",
-      date_labels = "%Y",
-      labels = date_format("%Y")) +
-    scale_color_brewer(palette = "Set2")
+      size = 3, 
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.025
+    )
 
   print(p)
 }
@@ -535,14 +610,38 @@ for (var in wq_variables) {
 # For each relevant variable, plot Summer mean and mean values
 for (var in wq_variables) {
   
-  # Create summer mean plot
   var_name <- paste0(var, "_mean")
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_wellfleet_summers[[var_name]], na.rm = TRUE)
+  y_min <- min(ccs_wellfleet_summers[[var_name]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Create summer mean plot
   p_1 <- ggplot(ccs_wellfleet_summers, aes(x = year_collected,
                                           y = .data[[var_name]],
                                           color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     
+    # add threshold line, if available
+    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
+    
+    labs(x = "Year",
+         y = wq_variables_meta[[var]],
+         color = "CCS Station ID",
+         title = adjust_label(wq_variables_meta[[var]], "Summer Mean")
+         ) +
+    scale_color_brewer(palette = "Set2") +
+    theme(
+      plot.title = element_text(size = 12),
+      axis.title.y = element_text(size = 8)
+    ) +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
     # Annotate plot with simple linear model p-values and R2 values
     stat_poly_eq(
       aes(group = internal_station_id, 
@@ -554,26 +653,47 @@ for (var in wq_variables) {
             ))),
       # formula = y ~ x,
       parse = TRUE,
-      size = 3
-    ) +
-    
-    # add threshold line, if available
-    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
-    
-    labs(x = "Year",
-         y = var,
-         color = "CCS Station ID",
-         title = paste("Summer", var_name, "Time Series - CCS Wellfleet")) +
-    scale_color_brewer(palette = "Set2")
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.06,
+      size = 2.5
+    ) 
+  
+  
   
   # Create summer median plot
   var_name <- paste0(var, "_median")
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_wellfleet_summers[[var_name]], na.rm = TRUE)
+  y_min <- min(ccs_wellfleet_summers[[var_name]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p_2 <- ggplot(ccs_wellfleet_summers, aes(x = year_collected,
                                           y = .data[[var_name]],
                                           color = as.factor(internal_station_id))) +
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     
+    # add threshold line, if available
+    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
+    
+    labs(x = "Year",
+         y = wq_variables_meta[[var]],
+         color = "CCS Station ID",
+         title = adjust_label(wq_variables_meta[[var]], "Summer Median")
+         ) +
+    scale_color_brewer(palette = "Set2") +
+    theme(
+      plot.title = element_text(size = 12),
+      axis.title.y = element_text(size = 8)
+    ) +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
     # Annotate plot with simple linear model p-values and R2 values
     stat_poly_eq(
       aes(group = internal_station_id, 
@@ -585,334 +705,332 @@ for (var in wq_variables) {
             ))),
       # formula = y ~ x,
       parse = TRUE,
-      size = 3
-    ) +
-    
-    # add threshold line, if available
-    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
-    
-    labs(x = "Year",
-         y = var,
-         color = "CCS Station ID",
-         title = paste("Summer", var_name, "Time Series - CCS Wellfleet")) +
-    scale_color_brewer(palette = "Set2")
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.06,
+      size = 2.5
+    ) 
+  
   
   combined_plot <- p_1 + p_2 + 
     plot_layout(ncol = 1, heights = c(1, 1)) +
-    plot_annotation(title = paste("Summer -", var))
+    plot_annotation(
+      title = "Summer Time Series - CCS Wellfleet",
+      theme = theme(plot.title = element_text(face = "bold"))
+    )
   
   print(combined_plot)
 }
 
 
-# ---- Plots by Variable (Incomplete) ----
-
-# _____________________________ Temperature _____________________________
-
-# All Data (~Monthly)
-ggplot(data = ccs_data_wellfleet,
-       mapping = aes(x = collected_at, 
-                     y = temperature_C,
-       color = as.factor(internal_station_id))) +
-  geom_point() +
-  
-  # add 25 Celsius threshold line
-  geom_hline(yintercept = 25, linetype = 'dotted', color = 'red', linewidth = 2) +
-  labs(x = "Date",
-       y = "Temperature (°C)",
-       color = "CCS Station ID",
-       title = paste("Temp (C) Time Series - CCS Wellfleet")) +
-  scale_x_datetime(
-    limits = c(start_year, end_year),
-    date_breaks = "2 year", 
-    date_labels = "%Y",
-    labels = date_format("%Y")) + # extract just the year for the labels
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Mean
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = temperature_C_mean,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Year",
-       y = "Annual Mean Temperature (°C)",
-       color = "CCS Station ID",
-       title = paste("Annual Mean Temp (C) Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Median
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = temperature_C_median,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Date",
-       y = "Annual Median Temperature (°C)",
-       color = "CCS Station ID",
-       title = paste("Annual Median Temp (C) Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-# _____________________________ Dissolved Oxygen _____________________________
-
-# All Data (~Monthly)
-ggplot(data = ccs_data_wellfleet,
-       mapping = aes(x = collected_at, 
-                     y = `dissolved_oxygen_mg/L`,
-                     color = as.factor(internal_station_id))) +
-  geom_point() +
-  
-  # add 6 mg/L threshold line
-  geom_hline(yintercept = 6, linetype = 'dotted', color = 'red', linewidth = 2) +
-  labs(x = "Date",
-       y = "DO (mg/L)",
-       color = "CCS Station ID",
-       title = paste("DO Time Series - CCS Wellfleet")) +
-  scale_x_datetime(
-    limits = c(start_year, end_year),
-    date_breaks = "2 year", 
-    date_labels = "%Y",
-    labels = date_format("%Y")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Mean
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = `dissolved_oxygen_mg/L_mean`,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Year",
-       y = "Annual Mean DO (mg/L)",
-       color = "CCS Station ID",
-       title = paste("Annual Mean DO Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Median
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = `dissolved_oxygen_mg/L_median`,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Date",
-       y = "Annual Median DO (mg/L)",
-       color = "CCS Station ID",
-       title = paste("Annual Median DO Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# _____________________________ Chlorophyll a _____________________________
-
-# All Data (~Monthly)
-ggplot(data = ccs_data_wellfleet,
-       mapping = aes(x = collected_at, 
-                     y = `chlorophyll_ug/L`,
-                     color = as.factor(internal_station_id))) +
-  geom_point() +
-  
-  # add 5.1 u/L threshold line
-  geom_hline(yintercept = 5.1, linetype = 'dotted', color = 'red', linewidth = 2) +
-  labs(x = "Date",
-       y = "Chlorophyll a (ug/L)",
-       color = "CCS Station ID",
-       title = paste("Chlorophyll Time Series - CCS Wellfleet")) +
-  scale_x_datetime(
-    limits = c(start_year, end_year),
-    date_breaks = "2 year", 
-    date_labels = "%Y",
-    labels = date_format("%Y")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Mean
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = `chlorophyll_ug/L_mean`,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Year",
-       y = "Annual Mean Chlorophyll a (ug/L)",
-       color = "CCS Station ID",
-       title = paste("Annual Mean Chlorophyll a Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Median
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = `chlorophyll_ug/L_median`,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Date",
-       y = "Annual Median Chlorophyll a (ug/L)",
-       color = "CCS Station ID",
-       title = paste("Annual Median Chlorophyll a Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# _____________________________ Total Nitrogen _____________________________
-# Data set units in uM (micromoles / L)
-# Threshold value of 0.071 mg/L converted to 21.42 uM
-  # MW N = 14.006720 µg/L N (https://www.ices.dk/data/tools/Pages/Unit-conversions.aspx)
-  # 1 mg N/L = 71.394 µM/L
-
-# All Data (~Monthly)
-ggplot(data = ccs_data_wellfleet,
-       mapping = aes(x = collected_at, 
-                     y = total_nitrogen_uM,
-                     color = as.factor(internal_station_id))) +
-  geom_point() +
-  
-  # add 21.42 uM threshold line
-  geom_hline(yintercept = 21.42, linetype = 'dotted', color = 'red', linewidth = 2) +
-  labs(x = "Date",
-       y = "Total N (uM)",
-       color = "CCS Station ID",
-       title = paste("Total Nitrogen Time Series - CCS Wellfleet")) +
-  scale_x_datetime(
-    limits = c(start_year, end_year),
-    date_breaks = "2 year", 
-    date_labels = "%Y",
-    labels = date_format("%Y")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Mean
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = total_nitrogen_uM_mean,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Year",
-       y = "Annual Mean Total N (uM)",
-       color = "CCS Station ID",
-       title = paste("Annual Mean Total N Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Median
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = total_nitrogen_uM_median,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Date",
-       y = "Annual Median Total N (uM)",
-       color = "CCS Station ID",
-       title = paste("Annual Median Total N Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# _____________________________ Total Phosphorus _____________________________
-# Data set units in uM (micromoles / L)
-# Threshold value of 0.071 mg/L converted to 2.29 uM
-  # MW P = 30.973762 µg/L P (https://www.ices.dk/data/tools/Pages/Unit-conversions.aspx)
-  # 1 mg P/L = 32.285 µM/L
-
-# All Data (~Monthly)
-ggplot(data = ccs_data_wellfleet,
-       mapping = aes(x = collected_at, 
-                     y = total_phosphorus_uM,
-                     color = as.factor(internal_station_id))) +
-  geom_point() +
-  
-  # add 2.29 uM threshold line
-  geom_hline(yintercept = 2.29, linetype = 'dotted', color = 'red', linewidth = 2) +
-  labs(x = "Date",
-       y = "Total P (uM)",
-       color = "CCS Station ID",
-       title = paste("Total Phorphorus Time Series - CCS Wellfleet")) +
-  scale_x_datetime(
-    limits = c(start_year, end_year),
-    date_breaks = "2 year", 
-    date_labels = "%Y",
-    labels = date_format("%Y")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Mean
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = total_phosphorus_uM_mean,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Year",
-       y = "Annual Mean Total P (uM)",
-       color = "CCS Station ID",
-       title = paste("Annual Mean Total P Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Median
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = total_phosphorus_uM_median,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Date",
-       y = "Annual Median Total P (uM)",
-       color = "CCS Station ID",
-       title = paste("Annual Median Total P Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# _____________________________ Turbidity _____________________________
-
-# All Data (~Monthly)
-ggplot(data = ccs_data_wellfleet,
-       mapping = aes(x = collected_at, 
-                     y = turbidty_NTU,
-                     color = as.factor(internal_station_id))) +
-  geom_point() +
-  
-  # add 5 NTU threshold line
-  geom_hline(yintercept = 5, linetype = 'dotted', color = 'red', linewidth = 2) +
-  labs(x = "Date",
-       y = "Turbidity (NTU)",
-       color = "CCS Station ID",
-       title = paste("Turbidity Time Series - CCS Wellfleet")) +
-  scale_x_datetime(
-    limits = c(start_year, end_year),
-    date_breaks = "2 year", 
-    date_labels = "%Y",
-    labels = date_format("%Y")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# _____________________________ Salinity _____________________________
-
-# All Data (~Monthly)
-ggplot(data = ccs_data_wellfleet,
-       mapping = aes(x = collected_at, 
-                     y = salinity,
-                     color = as.factor(internal_station_id))) +
-  geom_point() +
-  
-  labs(x = "Date",
-       y = "Salinity",
-       color = "CCS Station ID",
-       title = paste("Salinity Time Series - CCS Wellfleet")) +
-  scale_x_datetime(
-    limits = c(start_year, end_year),
-    date_breaks = "2 year", 
-    date_labels = "%Y",
-    labels = date_format("%Y")) +
-  scale_color_brewer(palette = "Set2")
-
-
-# Annual Mean
-ggplot(data = ccs_wellfleet_annual,
-       mapping = aes(x = year_collected, 
-                     y = salinity_mean,
-                     color = as.factor(internal_station_id))) +
-  geom_point(size = 3.5) +
-  labs(x = "Year",
-       y = "Annual Mean Salinity",
-       color = "CCS Station ID",
-       title = paste("Annual Mean Salinity Time Series - CCS Wellfleet")) +
-  scale_color_brewer(palette = "Set2")
+# # ---- Plots by Variable (Incomplete) ----
+# 
+# # _____________________________ Temperature _____________________________
+# 
+# # All Data (~Monthly)
+# ggplot(data = ccs_data_wellfleet,
+#        mapping = aes(x = collected_at, 
+#                      y = temperature_C,
+#        color = as.factor(internal_station_id))) +
+#   geom_point() +
+#   
+#   # add 25 Celsius threshold line
+#   geom_hline(yintercept = 25, linetype = 'dotted', color = 'red', linewidth = 2) +
+#   labs(x = "Date",
+#        y = "Temperature (°C)",
+#        color = "CCS Station ID",
+#        title = paste("Temp (C) Time Series - CCS Wellfleet")) +
+#   scale_x_datetime(
+#     limits = c(start_year, end_year),
+#     date_breaks = "2 year", 
+#     date_labels = "%Y",
+#     labels = date_format("%Y")) + # extract just the year for the labels
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Mean
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = temperature_C_mean,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Year",
+#        y = "Annual Mean Temperature (°C)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Mean Temp (C) Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Median
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = temperature_C_median,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Date",
+#        y = "Annual Median Temperature (°C)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Median Temp (C) Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# # _____________________________ Dissolved Oxygen _____________________________
+# 
+# # All Data (~Monthly)
+# ggplot(data = ccs_data_wellfleet,
+#        mapping = aes(x = collected_at, 
+#                      y = `dissolved_oxygen_mg/L`,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point() +
+#   
+#   # add 6 mg/L threshold line
+#   geom_hline(yintercept = 6, linetype = 'dotted', color = 'red', linewidth = 2) +
+#   labs(x = "Date",
+#        y = "DO (mg/L)",
+#        color = "CCS Station ID",
+#        title = paste("DO Time Series - CCS Wellfleet")) +
+#   scale_x_datetime(
+#     limits = c(start_year, end_year),
+#     date_breaks = "2 year", 
+#     date_labels = "%Y",
+#     labels = date_format("%Y")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Mean
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = `dissolved_oxygen_mg/L_mean`,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Year",
+#        y = "Annual Mean DO (mg/L)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Mean DO Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Median
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = `dissolved_oxygen_mg/L_median`,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Date",
+#        y = "Annual Median DO (mg/L)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Median DO Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # _____________________________ Chlorophyll a _____________________________
+# 
+# # All Data (~Monthly)
+# ggplot(data = ccs_data_wellfleet,
+#        mapping = aes(x = collected_at, 
+#                      y = `chlorophyll_ug/L`,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point() +
+#   
+#   # add 5.1 u/L threshold line
+#   geom_hline(yintercept = 5.1, linetype = 'dotted', color = 'red', linewidth = 2) +
+#   labs(x = "Date",
+#        y = "Chlorophyll a (ug/L)",
+#        color = "CCS Station ID",
+#        title = paste("Chlorophyll Time Series - CCS Wellfleet")) +
+#   scale_x_datetime(
+#     limits = c(start_year, end_year),
+#     date_breaks = "2 year", 
+#     date_labels = "%Y",
+#     labels = date_format("%Y")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Mean
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = `chlorophyll_ug/L_mean`,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Year",
+#        y = "Annual Mean Chlorophyll a (ug/L)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Mean Chlorophyll a Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Median
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = `chlorophyll_ug/L_median`,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Date",
+#        y = "Annual Median Chlorophyll a (ug/L)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Median Chlorophyll a Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # _____________________________ Total Nitrogen _____________________________
+# # Data set units in uM (micromoles / L)
+# # Threshold value of 0.071 mg/L converted to 21.42 uM
+#   # MW N = 14.006720 µg/L N (https://www.ices.dk/data/tools/Pages/Unit-conversions.aspx)
+#   # 1 mg N/L = 71.394 µM/L
+# 
+# # All Data (~Monthly)
+# ggplot(data = ccs_data_wellfleet,
+#        mapping = aes(x = collected_at, 
+#                      y = total_nitrogen_uM,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point() +
+#   
+#   # add 21.42 uM threshold line
+#   geom_hline(yintercept = 21.42, linetype = 'dotted', color = 'red', linewidth = 2) +
+#   labs(x = "Date",
+#        y = "Total N (uM)",
+#        color = "CCS Station ID",
+#        title = paste("Total Nitrogen Time Series - CCS Wellfleet")) +
+#   scale_x_datetime(
+#     limits = c(start_year, end_year),
+#     date_breaks = "2 year", 
+#     date_labels = "%Y",
+#     labels = date_format("%Y")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Mean
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = total_nitrogen_uM_mean,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Year",
+#        y = "Annual Mean Total N (uM)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Mean Total N Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Median
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = total_nitrogen_uM_median,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Date",
+#        y = "Annual Median Total N (uM)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Median Total N Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # _____________________________ Total Phosphorus _____________________________
+# # Data set units in uM (micromoles / L)
+# # Threshold value of 0.071 mg/L converted to 2.29 uM
+#   # MW P = 30.973762 µg/L P (https://www.ices.dk/data/tools/Pages/Unit-conversions.aspx)
+#   # 1 mg P/L = 32.285 µM/L
+# 
+# # All Data (~Monthly)
+# ggplot(data = ccs_data_wellfleet,
+#        mapping = aes(x = collected_at, 
+#                      y = total_phosphorus_uM,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point() +
+#   
+#   # add 2.29 uM threshold line
+#   geom_hline(yintercept = 2.29, linetype = 'dotted', color = 'red', linewidth = 2) +
+#   labs(x = "Date",
+#        y = "Total P (uM)",
+#        color = "CCS Station ID",
+#        title = paste("Total Phorphorus Time Series - CCS Wellfleet")) +
+#   scale_x_datetime(
+#     limits = c(start_year, end_year),
+#     date_breaks = "2 year", 
+#     date_labels = "%Y",
+#     labels = date_format("%Y")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Mean
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = total_phosphorus_uM_mean,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Year",
+#        y = "Annual Mean Total P (uM)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Mean Total P Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Median
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = total_phosphorus_uM_median,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Date",
+#        y = "Annual Median Total P (uM)",
+#        color = "CCS Station ID",
+#        title = paste("Annual Median Total P Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # _____________________________ Turbidity _____________________________
+# 
+# # All Data (~Monthly)
+# ggplot(data = ccs_data_wellfleet,
+#        mapping = aes(x = collected_at, 
+#                      y = turbidty_NTU,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point() +
+#   
+#   # add 5 NTU threshold line
+#   geom_hline(yintercept = 5, linetype = 'dotted', color = 'red', linewidth = 2) +
+#   labs(x = "Date",
+#        y = "Turbidity (NTU)",
+#        color = "CCS Station ID",
+#        title = paste("Turbidity Time Series - CCS Wellfleet")) +
+#   scale_x_datetime(
+#     limits = c(start_year, end_year),
+#     date_breaks = "2 year", 
+#     date_labels = "%Y",
+#     labels = date_format("%Y")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # _____________________________ Salinity _____________________________
+# 
+# # All Data (~Monthly)
+# ggplot(data = ccs_data_wellfleet,
+#        mapping = aes(x = collected_at, 
+#                      y = salinity,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point() +
+#   
+#   labs(x = "Date",
+#        y = "Salinity",
+#        color = "CCS Station ID",
+#        title = paste("Salinity Time Series - CCS Wellfleet")) +
+#   scale_x_datetime(
+#     limits = c(start_year, end_year),
+#     date_breaks = "2 year", 
+#     date_labels = "%Y",
+#     labels = date_format("%Y")) +
+#   scale_color_brewer(palette = "Set2")
+# 
+# 
+# # Annual Mean
+# ggplot(data = ccs_wellfleet_annual,
+#        mapping = aes(x = year_collected, 
+#                      y = salinity_mean,
+#                      color = as.factor(internal_station_id))) +
+#   geom_point(size = 3.5) +
+#   labs(x = "Year",
+#        y = "Annual Mean Salinity",
+#        color = "CCS Station ID",
+#        title = paste("Annual Mean Salinity Time Series - CCS Wellfleet")) +
+#   scale_color_brewer(palette = "Set2")
 
 
