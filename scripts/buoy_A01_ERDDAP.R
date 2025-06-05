@@ -24,6 +24,8 @@ library(dplyr) # for data manipulation and transformation
 library(tidyr) # for tidying and reshaping data
 library(rerddap) # for accessing ERDDAP servers
 library(ggplot2) # for visualization
+library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
+
 
 # ---- Set Global ggplot Themes ----
 
@@ -175,6 +177,14 @@ variables_meta <- list(
 )
 
 for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_aanderaa_o2_all_daily_summary[[var]], na.rm = TRUE)
+  y_min <- min(A01_aanderaa_o2_all_daily_summary[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(A01_aanderaa_o2_all_daily_summary,
               aes(x = date,
                   y = .data[[var]])) +
@@ -183,7 +193,20 @@ for (var in variables) {
     labs(x = "Date",
          y = variables_meta[[var]],
          title = paste("Daily Time Series - A01 Buoy", variables_meta[[var]], sep = "\n")) +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
   
   print(p)
 }
@@ -219,6 +242,14 @@ A01_aanderaa_o2_all_annual_summary <- A01_aanderaa_o2_all_annual_80p |>
   )
 
 for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_aanderaa_o2_all_annual_summary[[var]], na.rm = TRUE)
+  y_min <- min(A01_aanderaa_o2_all_annual_summary[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(A01_aanderaa_o2_all_annual_summary,
               aes(x = year,
                   y = .data[[var]])) +
@@ -228,7 +259,20 @@ for (var in variables) {
          y = variables_meta[[var]],
          title = paste("Annual Time Series - A01 Buoy", variables_meta[[var]], sep = "\n"),
          caption = "(only years with at least 80% complete data included)") +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
   
   print(p)
 }
@@ -354,6 +398,14 @@ variable_means_meta <- list(
 
 
 for (var in variable_means) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_met_all_daily_summary[[var]], na.rm = TRUE)
+  y_min <- min(A01_met_all_daily_summary[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(A01_met_all_daily_summary,
               aes(x = date,
                   y = .data[[var]])) +
@@ -364,7 +416,20 @@ for (var in variable_means) {
          title = paste("Daily Time Series - A01 Buoy", variable_means_meta[[var]], sep = "\n"),
          caption = "NOTE - Did NOT check that data was full/complete for each day.
          Need to determine the best approach for this, because days have different intervals of collection") +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") + 
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
   
   print(p)
 }
@@ -397,6 +462,14 @@ A01_met_all_annual_summary <- A01_met_all_daily_summary |>
 
 # Plot annual means
 for (var in variable_means) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_met_all_annual_summary[[var]], na.rm = TRUE)
+  y_min <- min(A01_met_all_annual_summary[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(A01_met_all_annual_summary,
               aes(x = year,
                   y = .data[[var]])) +
@@ -406,7 +479,20 @@ for (var in variable_means) {
          y = variable_means_meta[[var]],
          title = paste("Annual Time Series - A01 Buoy", variable_means_meta[[var]], sep = "\n"),
          caption = "(only years with at least 80% complete data included)") +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") + 
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
   
   print(p)
 }
@@ -414,6 +500,13 @@ for (var in variable_means) {
 
 # Plot simple mean wind direction for 2003 - 2014 for comparison with DKP
 for (var in list("wind_direction_mean_simple")) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_met_all_annual_summary[[var]], na.rm = TRUE)
+  y_min <- min(A01_met_all_annual_summary[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
   p <- ggplot(A01_met_all_annual_summary,
               aes(x = year,
                   y = .data[[var]])) +
@@ -425,7 +518,20 @@ for (var in list("wind_direction_mean_simple")) {
          y = variable_means_meta[[var]],
          title = paste("Annual Time Series - A01 Buoy", variable_means_meta[[var]], sep = "\n"),
          caption = "(only years with at least 80% complete data included)") +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
   
   print(p)
 }
@@ -525,6 +631,14 @@ variables_meta <- list(
 )
 
 for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_aanderaa_hist_daily[[var]], na.rm = TRUE)
+  y_min <- min(A01_aanderaa_hist_daily[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(A01_aanderaa_hist_daily,
               aes(x = date,
                   y = .data[[var]])) +
@@ -534,7 +648,20 @@ for (var in variables) {
     labs(x = "Date",
          y = variables_meta[[var]],
          title = paste("Daily Time Series - A01 Buoy", variables_meta[[var]], sep = "\n")) +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") + 
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
   
   print(p)
 }
