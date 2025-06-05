@@ -14,6 +14,7 @@ library(dplyr) # for data manipulation and transformation
 library(tidyr) # for tidying and reshaping data
 library(rerddap) # for accessing ERDDAP servers
 library(ggplot2) # for visualization
+library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 
 # ---- Set Global ggplot Themes ----
 
@@ -90,6 +91,14 @@ variables_meta <- list(
   
 # Plot all variables over time, color by buoy
 for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(buoy_data_annual[[var]], na.rm = TRUE)
+  y_min <- min(buoy_data_annual[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(buoy_data_annual,
               aes(x = year,
                   y = .data[[var]],
@@ -98,11 +107,32 @@ for (var in variables) {
     geom_smooth(method = "lm", se = TRUE, alpha = 0.1) +
     labs(x = "Date",
          y = variables_meta[[var]],
+         color = "Buoy",
          title = paste("Annual Time Series",
                        variables_meta[[var]], sep = "\n")) +
     scale_color_brewer(palette = "Set2") +
     scale_x_continuous(
-      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2))
+      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = buoy, 
+          color = buoy,
+          label = after_stat(
+            paste0(
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3, 
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.025
+    )
   
   print(p)
 }
@@ -110,6 +140,14 @@ for (var in variables) {
 
 # Plot line graphs
 for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(buoy_data_annual[[var]], na.rm = TRUE)
+  y_min <- min(buoy_data_annual[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(buoy_data_annual,
               aes(x = year,
                   y = .data[[var]],
@@ -125,7 +163,27 @@ for (var in variables) {
       values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green")
     ) +
     scale_x_continuous(
-      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2))
+      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = buoy, 
+          color = buoy,
+          label = after_stat(
+            paste0(
+              ..p.value.label.., "~~~",
+              ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3, 
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.025
+    )
   
   print(p)
 }
@@ -133,6 +191,14 @@ for (var in variables) {
 
 # Plot line graphs for wind direction
 for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(buoy_data_annual[[var]], na.rm = TRUE)
+  y_min <- min(buoy_data_annual[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(buoy_data_annual |> filter(year >= 2003, year <= 2014),
               aes(x = year,
                   y = .data[[var]],
@@ -148,7 +214,27 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
       values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green")
     ) +
     scale_x_continuous(
-      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2))
+      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = buoy, 
+          color = buoy,
+          label = after_stat(
+            paste0(
+              ..p.value.label.., "~~~",
+              ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3, 
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.025
+    )
   
   print(p)
 }
