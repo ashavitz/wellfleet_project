@@ -25,6 +25,7 @@ library(dplyr) # for data manipulation and transformation
 library(tidyr) # for tidying and reshaping data
 library(rerddap) # for accessing ERDDAP servers
 library(ggplot2) # for visualization
+library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 
 # ---- Set Global ggplot Themes ----
 
@@ -254,6 +255,14 @@ variable_means_meta <- list(
 
 
 for (var in variable_means) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(buoy_221_daily[[var]], na.rm = TRUE)
+  y_min <- min(buoy_221_daily[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(buoy_221_daily,
               aes(x = date,
                   y = .data[[var]])) +
@@ -263,7 +272,21 @@ for (var in variable_means) {
          y = variable_means_meta[[var]],
          title = paste("Daily Time Series - 221 Buoy (Cape Cod Bay)",
                        variable_means_meta[[var]], sep = "\n")) +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      formula = y ~ x,
+      parse = TRUE,
+      color = "blue")
   
   print(p)
 }
@@ -299,6 +322,14 @@ buoy_221_annual <- buoy_221_daily |>
 
 # Plot annual means
 for (var in variable_means) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(buoy_221_annual[[var]], na.rm = TRUE)
+  y_min <- min(buoy_221_annual[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
   p <- ggplot(buoy_221_annual,
               aes(x = year,
                   y = .data[[var]])) +
@@ -309,7 +340,21 @@ for (var in variable_means) {
          title = paste("Annual Time Series - 221 Buoy (Cape Cod Bay)",
                        variable_means_meta[[var]], sep = "\n"),
          caption = "(only years with at least 80% complete data included)") +
-    scale_color_brewer(palette = "Set2")
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      formula = y ~ x,
+      parse = TRUE,
+      color = "blue")
   
   print(p)
 }
