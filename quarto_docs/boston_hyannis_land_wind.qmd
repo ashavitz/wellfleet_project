@@ -1,0 +1,44 @@
+---
+title: "boston_hyannis_land_wind"
+author: "Aaron Shavitz"
+format: 
+  html:
+    code-fold: true
+    code-summary: "Show the code"
+---
+[Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
+
+# Historic Land-based Wind Data near Wellfleet
+
+```{r, echo=FALSE}
+# Using knitr package to read code chunks from buoy_A01_ERDDAP.R
+
+# Set the root directory to the current folder
+knitr::opts_knit$set(root.dir = here::here())
+
+# Read in the R script from the 'scripts' folder (relative to the root project directory)
+knitr::read_chunk("../scripts/boston_hyannis_land_wind.R")
+```
+
+```{r Header}
+```
+
+### Load Libraries
+```{r Load Libraries, message=FALSE, warning=FALSE}
+```
+
+### Set Global ggplot Themes
+```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
+```
+
+### Read in local files
+```{r Read in local files, message=FALSE, warning=FALSE}
+```
+
+### Calculate Annual Average Values
+```{r Calculate Annual Average Values, message=FALSE, warning=FALSE}
+```
+
+### Plot Average Annual Data
+```{r Plot Average Annual Data, message=FALSE, warning=FALSE}
+```
