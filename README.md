@@ -6,6 +6,7 @@
 - [NPS Duck Harbor Monitoring](quarto_docs/nps_eelgrass_monitor.html)
 - [SAFIS Dragging Activity](quarto_docs/safis_dragging_activity.html)
 - [NOAA Storm Events Data - Barnstable County](quarto_docs/storm_events_barnstable.html)
+- [Historic Land-based Wind Data near Wellfleet](quarto_docs/boston_hyannis_land_wind.html)
 
 - [Merged Buoy Data](quarto_docs/buoys_merged.html)
   - [A01 Buoy (Massachusetts Bay)](quarto_docs/buoy_A01_ERDDAP.html)
