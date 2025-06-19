@@ -61,10 +61,6 @@ dh_data <- dh_data |>
 # a few inconsistencies. Standardize by making all NA where Percent_Cover == 0
   mutate(Density_Source = ifelse(Percent_Cover == 0, NA, Density_Source),
          Wasting = ifelse(Percent_Cover == 0, NA, Wasting),
-# Scale reproductive shoot counts according to Density_Source         
-         Reproductive_Shoots = ifelse(Density_Source %in% c("BL", "BR", "TL", "TR"),
-                                      Reproductive_Shoots * 4,
-                                      Reproductive_Shoots),
 # Create separate columns for Wasting == c(High, Low, Tr, NA) in order to summarize n()
          wasting_high = ifelse(Wasting == "High", 1, 0),
          wasting_low = ifelse(Wasting == "Low", 1, 0),
