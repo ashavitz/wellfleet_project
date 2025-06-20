@@ -21,6 +21,7 @@ knitr::read_chunk("../scripts/buoy_44013_NDBC.R")
 ```
 
 ```{r Header}
+#| code-fold: false
 ```
 
 ### Load Libraries

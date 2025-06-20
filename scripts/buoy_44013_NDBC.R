@@ -11,11 +11,6 @@
 #'--------------------------------------
 
 # ---- TODO ----
-# TODO - Currently excluding "999.0" when reading in data is likely removing valid values from the
-# PRES and BAR columns.
-
-# TODO - Determine when and how recording cadences change to be able to properly calculate averages.
-
 
 #'--------------------------------------
 
@@ -247,45 +242,99 @@ for (var in variables) {
 #   summarize(count_obs = n())
 # 1997 and 2012 are missing large time periods of data
 
-buoy_data_annual <- buoy_data_daily |> 
-  group_by(YYYY) |> 
-  # 1997 and 2012 are missing large time periods of data. Excluding from annual summaries  
-  filter(!(YYYY %in% c(1997, 2012))) |> 
+
+# Determine valid years (each month has >= 80% complete data) for each variable
+# For each variable, calculate the annual mean only for years valid for that variable
+buoy_data_daily_props <- buoy_data_daily |> 
+  # Group by year and month  
+  group_by(YYYY, MM) |> 
+  # For each variable, determine how many real daily measurements are recorded (not NA or NaN)
   summarize(
-    # scalar variables: only mean if ≥80% non‑NA, else NA
-    across(all_of(scalar_variables),
-           ~ ifelse(
-             sum(!is.na(.x)) >= 0.8 * n(),
-             mean(.x, na.rm = TRUE),
-             NA_real_
-           )
-    ),
-    
-    # angular variables: only circular‐mean if ≥80% non‑NA, else NA
-    across(all_of(angular_variables),
-           ~ ifelse(
-             sum(!is.na(.x)) >= 0.8 * n(),
-             as.numeric(
-               circular::mean.circular(
-                 circular::circular(.x, units = "degrees", modulo = "2pi"),
-                 na.rm = TRUE
-                 )
-               ),
-             NA_real_
-           )
+    across(
+      .cols = all_of(variables),
+      .fns = ~sum(!is.na(.)),
+      .names = "{.col}"
     ),
     .groups = "drop"
   ) |> 
+  # Create a column for days in the month determined with days_in_month()
+  mutate(
+    days_in_month = days_in_month(ymd(paste(YYYY, MM, "01", sep = "-")))) |> 
+  # For each variable, calculate proportion of real daily measurements for each month 
+  mutate(
+    across(
+      .cols = all_of(variables),
+      .fns = ~. / days_in_month,
+      .names = "{.col}_prop"  # or use {.col} to overwrite
+    )
+  )
+  
+# Create a df showing which years are valid,
+# based on each month having at least 80% complete daily data AND there being 12 total months
+validity_by_year <- buoy_data_daily_props |> 
+  select(YYYY, MM, ends_with("_prop")) |> 
+  pivot_longer(
+    cols = ends_with("_prop"),
+    names_to = "variable",
+    values_to = "prop"
+  ) |> 
+  group_by(YYYY, variable) |> 
+  summarize(
+    n_months = n(),
+    all_months_above_80 = all(prop >= 0.8),
+    .groups = "drop"
+  ) |> 
+  mutate(
+    status = ifelse(n_months == 12 & all_months_above_80, "valid", "not valid")
+  ) |> 
+  mutate(variable = sub("_prop$", "", variable))
+
+# Calculate annual means
+buoy_data_annual <- buoy_data_daily |> 
+  group_by(YYYY) |> 
+  summarize(
+    across(
+      all_of(scalar_variables),
+      ~ mean(.x, na.rm = TRUE)
+    ),
+    across(
+      all_of(angular_variables),
+      ~ as.numeric(
+        circular::mean.circular(
+          circular::circular(.x, units = "degrees", modulo = "2pi"),
+          na.rm = TRUE
+        )
+      )
+    ),
+    .groups = "drop"
+  ) |> 
+  pivot_longer(
+    cols = -YYYY,
+    names_to = "variable",
+    values_to = "annual_mean"
+  ) |> 
+  left_join(validity_by_year, by = c("YYYY", "variable")) |> 
+  # For invalid year-variables, change the calculated mean to NA
+  mutate(
+    annual_mean = ifelse(status == "valid", annual_mean, NA_real_)
+  ) |> 
+  select(-c(n_months, all_months_above_80, status)) |> 
+  # Pivot back wider for plotting
+  pivot_wider(names_from = variable, values_from = annual_mean) |> 
   relocate(WDIR, .before = WSPD) |> 
   relocate(MWD, .before = ATMP)
-
+  
 
 # Plot annual mean values for each variable
 for (var in variables) {
+  
+  # Determine y_max to create vertical padding so stat_poly_eq annotations will be visible
+  y_max <- max(buoy_data_annual[[var]], na.rm = TRUE) * 1.1
+  
   p <- ggplot(buoy_data_annual,
               aes(x = YYYY,
                   y = .data[[var]])) +
-    geom_point() +
+    geom_point(na.rm = TRUE) +
     geom_smooth(method = "lm", se = FALSE) +
     
     # Annotate plot with simple linear model p-values and R2 values
@@ -305,7 +354,10 @@ for (var in variables) {
                        variables_meta[[var]], sep = "\n")) +
     scale_color_brewer(palette = "Set2") +
     scale_x_continuous(
-      breaks = seq(min(buoy_data_annual$YYYY), max(buoy_data_annual$YYYY), by = 2))
+      breaks = seq(min(buoy_data_annual$YYYY), max(buoy_data_annual$YYYY), by = 2)) +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max))
   
   print(p)
 }
@@ -316,9 +368,10 @@ for (var in list("WDIR_simple")) {
   p <- ggplot(filter(buoy_data_annual, YYYY %in% c(2003:2014)),
               aes(x = YYYY,
                   y = .data[[var]])) +
-    geom_point(color = "blue") +
-    geom_line(color = "blue") +
-    geom_smooth(method = "lm", se = FALSE) +
+    geom_point(color = "blue", na.rm = TRUE) +
+    # geom_line only includes non-na variables to ensure continuous connection
+    geom_line(data = filter(buoy_data_annual, !is.na(.data[[var]]) & YYYY %in% c(2003:2014)), color = "blue") +
+    geom_smooth(method = "lm", se = FALSE, na.rm = TRUE) +
     
     # Annotate plot with simple linear model p-values and R2 values
     stat_poly_eq(
