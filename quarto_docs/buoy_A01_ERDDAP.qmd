@@ -21,6 +21,7 @@ knitr::read_chunk("../scripts/buoy_A01_ERDDAP.R")
 ```
 
 ```{r Header}
+#| code-fold: false
 ```
 
 ```{r Custom Functions, echo=FALSE, message=FALSE, warning=FALSE}
