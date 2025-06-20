@@ -153,7 +153,7 @@ for (var in variables) {
                   y = .data[[var]],
                   color = buoy)) +
     geom_point() +
-    geom_line() +
+    geom_line(data = filter(buoy_data_annual, !is.na(.data[[var]]))) +
     geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
     labs(x = "Date",
          y = variables_meta[[var]],
@@ -204,7 +204,7 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
                   y = .data[[var]],
                   color = buoy)) +
     geom_point() +
-    geom_line() +
+    geom_line(data = filter(buoy_data_annual, !is.na(.data[[var]]) & year %in% c(2003:2014))) +
     geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
     labs(x = "Date",
          y = variables_meta[[var]],

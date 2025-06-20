@@ -21,6 +21,7 @@ knitr::read_chunk("../scripts/buoys_merged.R")
 ```
 
 ```{r Header}
+#| code-fold: false
 ```
 
 ### Load Libraries
