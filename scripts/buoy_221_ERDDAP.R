@@ -292,32 +292,96 @@ for (var in variable_means) {
 }
 
 
-# Annual plots
 
-# For each year with at least 80% complete data (80% of days have data) calculate annual mean
-# Calculate annual mean for all variables
-buoy_221_annual <- buoy_221_daily |> 
-  mutate(year = year(date)) |> 
-  group_by(year) |> 
+# Annual Means
+
+# Determine valid years (where each month has >= 80% complete data) for each variable
+# For each variable, calculate the annual mean only for years valid for that variable
+
+# Create a year and month variable for daily data frame
+buoy_221_daily <- buoy_221_daily |> 
+  mutate(
+    year = year(date),
+    month = month(date)
+    )
+
+# Determine proportions of real daily measurements per month for each variable
+buoy_221_props <- buoy_221_daily |> 
+  # Group by year and month  
+  group_by(year, month) |> 
+  # For each variable, determine how many real daily measurements are recorded (not NA or NaN)
   summarize(
-    across(all_of(scalar_variable_means),
-           
-           # Calculate mean if there are non-NA variable observations for at least 80% of a 365 day year
-           list(mean = function(x) if (sum(!is.na(x)) >= 0.8 * 365) {mean(x, na.rm = TRUE)}
-                else {NA_real_}),
-           .names = "{.col}"
-    ),
-    across(all_of(angular_variable_means),
-           list(mean = function (x) if (sum(!is.na(x)) >= 0.8 * 365) {
-             
-             # Use circular package to calculate circular mean
-             as.numeric(circular::mean.circular(
-               circular::circular(x, units = "degrees", modulo = "2pi"), na.rm = TRUE))} 
-             else {NA_real_}),
-           .names = "{.col}"
+    across(
+      .cols = all_of(variable_means),
+      .fns = ~sum(!is.na(.)),
+      .names = "{.col}"
     ),
     .groups = "drop"
+  ) |> 
+  # Create a column for days in the month determined with days_in_month()
+  mutate(
+    days_in_month = days_in_month(ymd(paste(year, month, "01", sep = "-")))) |> 
+  # For each variable, calculate proportion of real daily measurements for each month 
+  mutate(
+    across(
+      .cols = all_of(variable_means),
+      .fns = ~. / days_in_month,
+      .names = "{.col}_prop"  # or use {.col} to overwrite
+    )
   )
+
+# Create a df showing which years are valid,
+# based on each month having at least 80% complete daily data AND there being 12 total months
+validity_by_year <- buoy_221_props |> 
+  select(year, month, ends_with("_prop")) |> 
+  pivot_longer(
+    cols = ends_with("_prop"),
+    names_to = "variable",
+    values_to = "prop"
+  ) |> 
+  group_by(year, variable) |> 
+  summarize(
+    n_months = n(),
+    all_months_above_80 = all(prop >= 0.8),
+    .groups = "drop"
+  ) |> 
+  mutate(
+    status = ifelse(n_months == 12 & all_months_above_80, "valid", "not valid")
+  ) |> 
+  mutate(variable = sub("_prop$", "", variable))
+
+# Calculate annual means
+buoy_221_annual <- buoy_221_daily |> 
+  group_by(year) |> 
+  summarize(
+    across(
+      all_of(scalar_variable_means),
+      ~ mean(.x, na.rm = TRUE)
+    ),
+    across(
+      all_of(angular_variable_means),
+      ~ as.numeric(
+        circular::mean.circular(
+          circular::circular(.x, units = "degrees", modulo = "2pi"),
+          na.rm = TRUE
+        )
+      )
+    ),
+    .groups = "drop"
+  ) |> 
+  pivot_longer(
+    cols = -year,
+    names_to = "variable",
+    values_to = "annual_mean"
+  ) |> 
+  left_join(validity_by_year, by = c("year", "variable")) |> 
+  # For invalid year-variables, change the calculated mean to NA
+  mutate(
+    annual_mean = ifelse(status == "valid", annual_mean, NA_real_)
+  ) |> 
+  select(-c(n_months, all_months_above_80, status)) |> 
+  # Pivot back wider for plotting
+  pivot_wider(names_from = variable, values_from = annual_mean)
 
 
 # Plot annual means
@@ -366,5 +430,3 @@ for (var in variable_means) {
 # ---- Export Annual Data ----
 # Write annual summary data to csv
 # write_csv(buoy_221_annual, here::here("data", "summary_data", "buoy_221_annual.csv"))
-
-

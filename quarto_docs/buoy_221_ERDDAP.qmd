@@ -21,6 +21,7 @@ knitr::read_chunk("../scripts/buoy_221_ERDDAP.R")
 ```
 
 ```{r Header}
+#| code-fold: false
 ```
 
 ### Importing Files via ERDDAP
