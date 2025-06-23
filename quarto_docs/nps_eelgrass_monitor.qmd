@@ -20,7 +20,8 @@ knitr::opts_knit$set(root.dir = here::here())
 knitr::read_chunk("../scripts/nps_eelgrass_monitor.R")
 ```
 
-```{r Header, message=FALSE, warning=FALSE}
+```{r Header}
+#| code-fold: false
 ```
 
 ### Load Libraries

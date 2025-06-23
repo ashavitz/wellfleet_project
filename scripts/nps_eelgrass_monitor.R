@@ -417,36 +417,47 @@ ggplot(water_temp_daily,
   geom_point()
 
 
-# NOTE - For Annual and Summer mean temperature, consider only including Summers/Years in which 
-# at least X% of values IN EACH MONTH are available.
-# Alternatively, should do simple linear data imputation.
-
-# The vast majority of months have at least 27 daily measurements. Use as cut off.
-
-# water_temp_daily |> 
-#   group_by(Year, Month, Transect) |> 
-#   summarize(count = n()) |> 
-#   ggplot(aes(y = count)) +
-#   geom_histogram()
-
-
 # ANNUAL 
 
-# Determine which transect years have at least least 27 daily measurements per month (as noted above) 
-valid_years <- water_temp_daily |> 
+# Determine valid years (where each month has >= 80% complete data) for each variable
+# Calculate the annual mean only for valid years
+
+water_temp_props <- water_temp_daily |> 
+  # Group by year and month  
   group_by(Year, Month, Transect) |> 
-  summarize(n_measurements = n(), .groups = "drop") |> 
+  # Determine how many real daily measurements are recorded (not NA or NaN)
+  summarize(Temp_C_count = sum(!is.na(Temp_C)), .groups = "drop") |> 
+  # Create a column for days in the month determined with days_in_month()
+  mutate(
+    days_in_month = days_in_month(ymd(paste(Year, Month, "01", sep = "-")))) |> 
+  # Calculate proportion of real daily measurements for each month 
+  mutate(Temp_C_prop = Temp_C_count / days_in_month)
+
+# Create a df showing which years are valid,
+# based on each month having at least 80% complete daily data AND there being 12 total months
+validity_by_year <- water_temp_props |> 
+  select(Year, Month, Transect, ends_with("_prop")) |> 
   group_by(Year, Transect) |> 
-  summarize(all_months_valid = all(n_measurements >=27) && n_distinct(Month) == 12,
-            .groups = "drop")
-  
+  summarize(
+    n_months = n(),
+    all_months_above_80 = all(Temp_C_prop >= 0.8),
+    .groups = "drop"
+  ) |> 
+  mutate(
+    status = ifelse(n_months == 12 & all_months_above_80, "valid", "not valid")
+  )
+
 # Calculate annual mean temperature for valid years
 water_temp_annual <- water_temp_daily |>
   group_by(Year, Transect) |> 
   summarize(Temp_C = mean(Temp_C), .groups = "drop") |> 
-  left_join(valid_years, by = c("Transect", "Year")) |> 
-  mutate(Temp_C = ifelse(all_months_valid, Temp_C, NA_real_)) |> 
-  select(-all_months_valid)
+  left_join(validity_by_year, by = c("Year", "Transect")) |> 
+  # For invalid years, change the calculated mean to NA
+  mutate(
+    Temp_C = ifelse(status == "valid", Temp_C, NA_real_)
+  ) |> 
+  select(-c(n_months, all_months_above_80, status))
+
 
 # Plot annual mean temperatures
 ggplot(water_temp_annual,
@@ -458,24 +469,47 @@ ggplot(water_temp_annual,
 
 # SUMMER (June - September)
 
-# Determine which transect years have at least least 27 daily measurements per month (as noted above)
-# (for summer months only)
-valid_summers <- water_temp_daily |> 
+# Determine valid summers (where each month has >= 80% complete data) for each variable
+# Calculate the summer mean only for valid summers
+
+water_temp_props <- water_temp_daily |> 
+  # Group by year and month  
   filter(Month %in% c(6,7,8,9)) |> 
   group_by(Year, Month, Transect) |> 
-  summarize(n_measurements = n(), .groups = "drop") |> 
-  group_by(Year, Transect) |> 
-  summarize(all_months_valid = all(n_measurements >=27) && n_distinct(Month) == 4,
-            .groups = "drop")
+  # Determine how many real daily measurements are recorded (not NA or NaN)
+  summarize(Temp_C_count = sum(!is.na(Temp_C)), .groups = "drop") |> 
+  # Create a column for days in the month determined with days_in_month()
+  mutate(
+    days_in_month = days_in_month(ymd(paste(Year, Month, "01", sep = "-")))) |> 
+  # Calculate proportion of real daily measurements for each month 
+  mutate(Temp_C_prop = Temp_C_count / days_in_month)
 
-# Calculate summer mean temperature for valid years
+# Create a df showing which summers are valid,
+# based on each month having at least 80% complete daily data AND there being 4 total months
+validity_by_year <- water_temp_props |> 
+  select(Year, Month, Transect, ends_with("_prop")) |> 
+  group_by(Year, Transect) |> 
+  summarize(
+    n_months = n(),
+    all_months_above_80 = all(Temp_C_prop >= 0.8),
+    .groups = "drop"
+  ) |> 
+  mutate(
+    status = ifelse(n_months == 4 & all_months_above_80, "valid", "not valid")
+  )
+
+# Calculate summer mean temperature for valid summers
 water_temp_summer <- water_temp_daily |>
-  filter(Month %in% c(6,7,8,9)) |>
+  filter(Month %in% c(6,7,8,9)) |> 
   group_by(Year, Transect) |> 
   summarize(Temp_C = mean(Temp_C), .groups = "drop") |> 
-  left_join(valid_summers, by = c("Transect", "Year")) |> 
-  mutate(Temp_C = ifelse(all_months_valid, Temp_C, NA_real_)) |> 
-  select(-all_months_valid)
+  left_join(validity_by_year, by = c("Year", "Transect")) |> 
+  # For invalid summers, change the calculated mean to NA
+  mutate(
+    Temp_C = ifelse(status == "valid", Temp_C, NA_real_)
+  ) |> 
+  select(-c(n_months, all_months_above_80, status))
+
 
 # Plot summer mean temperatures
 ggplot(water_temp_summer,
