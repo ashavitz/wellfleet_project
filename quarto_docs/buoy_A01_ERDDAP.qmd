@@ -35,6 +35,10 @@ knitr::read_chunk("../scripts/buoy_A01_ERDDAP.R")
 ```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
 ```
 
+### A01 CTD - CTD Temperature and Salinity @ 1m and 20m depths
+```{r A01 CTD 2001 - 2025, message=FALSE, warning=FALSE}
+```
+
 ### A01 Aanderaa - Historic Surface Currents
 ```{r A01 Aanderaa - Realtime Surface Currents and O2, message=FALSE, warning=FALSE}
 ```

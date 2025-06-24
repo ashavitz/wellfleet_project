@@ -98,6 +98,279 @@ make_compass_plot <- function(df, direction_var, speed_var, year_var,
   return(p)
 }
 
+# ---- A01 CTD 2001 - 2025 ----
+
+# Get information about the A01_sbe37_all data set
+info_A01_CTD <- rerddap::info("A01_sbe37_all",
+                                   url = "neracoos.org/erddap")
+
+# Get time, temperature, salinity, and depth data
+# and QC flags for each variable other than time and depth
+A01_CTD <- 
+  tabledap(info_A01_CTD,
+           fields = c("time",
+                      "temperature", "temperature_qc",
+                      "salinity", "salinity_qc",
+                      "depth")
+           )
+
+
+# Clean imported data
+A01_CTD <- A01_CTD |> 
+  
+  # Remove any duplicated rows of data
+  distinct() |> 
+  
+  # convert time column to date time, and create date, year, month, and day columns
+  mutate(
+    time = ymd_hms(time, tz = "UTC"), 
+    date = as.Date(time),
+    year = year(time),
+    month = month(time),
+    day = day(time),
+    
+    # convert to numeric
+    across(c(temperature, salinity, depth), as.numeric),
+    
+    # Convert non-"good" quality data to NAs. qc flags of 0 are considered "good"
+    temperature = ifelse(temperature_qc != 0, NA, temperature),
+    salinity = ifelse(salinity_qc != 0, NA, salinity)
+    ) |> 
+  
+  # Remove QC flag columns and move ymd columns to start
+  select(-temperature_qc, -salinity_qc) |> 
+  relocate(date, year, month, day, .before = time)
+
+
+# Only 1m and 20m depths have substantial quantities of data. Remove other depths for analysis.
+A01_CTD <- A01_CTD |> 
+  filter(depth %in% c(1, 20))
+
+
+# Calculate daily mean for all variables at each depth
+A01_CTD_daily <- A01_CTD |> 
+  group_by(date, year, month, day, depth) |> 
+  summarize(
+    temperature = mean(temperature, na.rm = TRUE),
+    salinity = mean(salinity, na.rm = TRUE),
+    .groups = "drop"
+    )
+
+# Plot daily mean values for each variable
+variables <- c("temperature", "salinity")
+variables_meta <- list(
+  temperature = "Mean Temperature (degC)",
+  salinity = "Mean Salinity (psu)"
+  )
+
+for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_CTD_daily[[var]], na.rm = TRUE)
+  y_min <- min(A01_CTD_daily[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
+  p <- ggplot(A01_CTD_daily,
+              aes(x = date,
+                  y = .data[[var]])) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = variables_meta[[var]],
+         title = paste("Daily Time Series - A01 Buoy", variables_meta[[var]], sep = "\n")) +
+    scale_color_brewer(palette = "Set2") +
+    
+    # Facet by depth
+    facet_wrap(~depth) +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
+  
+  print(p)
+}
+
+
+# Annual Means
+
+# Determine valid years (where each month has >= 80% complete data) for each variable and depth
+# For each variable and depth, calculate the annual mean only for years valid for that variable
+
+A01_CTD_props <- A01_CTD_daily |> 
+  # Group by year, month, and depth
+  group_by(year, month, depth) |> 
+  # For each variable, determine how many real daily measurements are recorded (not NA or NaN)
+  summarize(
+    across(
+      .cols = all_of(variables),
+      .fns = ~sum(!is.na(.)),
+      .names = "{.col}"
+    ),
+    .groups = "drop"
+  ) |> 
+  # Create a column for days in the month determined with days_in_month()
+  mutate(
+    days_in_month = days_in_month(ymd(paste(year, month, "01", sep = "-")))) |> 
+  # For each variable, calculate proportion of real daily measurements for each month 
+  mutate(
+    across(
+      .cols = all_of(variables),
+      .fns = ~. / days_in_month,
+      .names = "{.col}_prop"
+    )
+  )
+
+# Create a df showing which years are valid,
+# based on each month having at least 80% complete daily data AND there being 12 total months
+validity_by_year <- A01_CTD_props |> 
+  select(year, month, depth, ends_with("_prop")) |> 
+  pivot_longer(
+    cols = ends_with("_prop"),
+    names_to = "variable",
+    values_to = "prop"
+  ) |> 
+  group_by(year, depth, variable) |> 
+  summarize(
+    n_months = n(),
+    all_months_above_80 = all(prop >= 0.8),
+    .groups = "drop"
+  ) |> 
+  mutate(
+    status = ifelse(n_months == 12 & all_months_above_80, "valid", "not valid")
+  ) |> 
+  mutate(variable = sub("_prop$", "", variable))
+
+# Calculate annual means
+A01_CTD_annual <- A01_CTD_daily |> 
+  group_by(year, depth) |> 
+  summarize(
+    temperature = mean(temperature, na.rm = TRUE),
+    salinity = mean(salinity, na.rm = TRUE),
+    .groups = "drop"
+  ) |> 
+  pivot_longer(
+    cols = c(temperature, salinity),
+    names_to = "variable",
+    values_to = "annual_mean"
+  ) |> 
+  left_join(validity_by_year, by = c("year", "depth", "variable")) |> 
+  # For invalid year-depth-variables, change the calculated mean to NA
+  mutate(
+    annual_mean = ifelse(status == "valid", annual_mean, NA_real_)
+  ) |> 
+  select(-c(n_months, all_months_above_80, status)) |> 
+  # Pivot back wider for plotting
+  pivot_wider(names_from = variable, values_from = annual_mean)
+
+
+# Plot annual mean data
+for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_CTD_annual[[var]], na.rm = TRUE)
+  y_min <- min(A01_CTD_annual[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
+  p <- ggplot(A01_CTD_annual,
+              aes(x = year,
+                  y = .data[[var]])) +
+    geom_point(size = 3) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = variables_meta[[var]],
+         title = paste("Annual Time Series - A01 Buoy", variables_meta[[var]], sep = "\n"),
+         caption = "(only years in which each month contains at least 80% complete daily data)") +
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Facet by depth
+    facet_wrap(~depth) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
+  
+  print(p)
+}
+
+# Separate temperature into different variables by depth
+A01_CTD_annual_wide <- A01_CTD_annual |>
+  pivot_wider(
+    id_cols = year,
+    names_from = depth,
+    values_from = c(temperature, salinity)
+  ) |> 
+  # Rename to add "m" at the end of variable names to indicate units
+  rename_with(~ paste0(., "m"), -year) 
+
+# Reestablish variables and variable meta data
+variables <- c("temperature_1m", "temperature_20m", "salinity_1m", "salinity_20m")
+variables_meta <- list(
+  temperature_1m = "Mean Temperature @1m depth (degC)",
+  temperature_20m = "Mean Temperature @20m depth (degC)",
+  salinity_1m = "Mean Salinity @1m depth (psu)",
+  salinity_20m = "Mean Salinity @20m depth (psu)"
+)
+
+# Plot annual mean data (again)
+for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_CTD_annual_wide[[var]], na.rm = TRUE)
+  y_min <- min(A01_CTD_annual_wide[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
+  p <- ggplot(A01_CTD_annual_wide,
+              aes(x = year,
+                  y = .data[[var]])) +
+    geom_point(size = 3) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = variables_meta[[var]],
+         title = paste("Annual Time Series - A01 Buoy", variables_meta[[var]], sep = "\n"),
+         caption = "(only years in which each month contains at least 80% complete daily data)") +
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
+  
+  print(p)
+}
+
+
 # ---- A01 Aanderaa - Realtime Surface Currents and O2 ----
 
 # Get information about the A01_aanderaa_o2_all data set
@@ -237,7 +510,7 @@ A01_aanderaa_o2_props <- A01_aanderaa_o2_all_daily_summary |>
     across(
       .cols = all_of(variables),
       .fns = ~. / days_in_month,
-      .names = "{.col}_prop"  # or use {.col} to overwrite
+      .names = "{.col}_prop"
     )
   )
 
@@ -357,6 +630,17 @@ qc_variables <- paste0(variables, "_qc")
 # Get all data
 A01_met_all <- tabledap(info_A01_met_all,
                         fields = c("time", variables, qc_variables))
+
+# # Examine data recording time intervals
+# intervals <- A01_met_all |> 
+#   select(time) |> 
+#   mutate(
+#     time = ymd_hms(time),
+#     time_lagged = lag(time),
+#     time_difference_minutes = as.numeric(difftime(time, time_lagged, units = "mins"))
+#     ) |> 
+#   group_by(time_difference_minutes) |> 
+#   summarize(count = n())
 
 # Clean imported data
 A01_met_all <- A01_met_all |> 
@@ -507,7 +791,7 @@ A01_met_props <- A01_met_all_daily_summary |>
     across(
       .cols = all_of(variable_means),
       .fns = ~. / days_in_month,
-      .names = "{.col}_prop"  # or use {.col} to overwrite
+      .names = "{.col}_prop"
     )
   )
 
@@ -866,13 +1150,11 @@ A01_wave_acc <- A01_wave_acc |>
 
 
 
-
-
 # ---- Export Annual Data ----
 # Merge annual summary data frames by year
-A01_buoy_annual <- full_join(A01_met_all_annual_summary,
-                             A01_aanderaa_o2_all_annual_summary,
-                             by = "year")
+A01_buoy_annual <- 
+  full_join(A01_CTD_annual_wide, A01_met_all_annual_summary, by = "year") |> 
+  full_join(A01_aanderaa_o2_all_annual_summary, by = "year")
 
 # Write annual summary data to csv
 # write_csv(A01_buoy_annual, here::here("data", "summary_data", "buoy_a01_annual.csv"))
