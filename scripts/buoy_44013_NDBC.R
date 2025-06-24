@@ -265,7 +265,7 @@ buoy_data_daily_props <- buoy_data_daily |>
     across(
       .cols = all_of(variables),
       .fns = ~. / days_in_month,
-      .names = "{.col}_prop"  # or use {.col} to overwrite
+      .names = "{.col}_prop"
     )
   )
   
