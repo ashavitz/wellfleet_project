@@ -87,7 +87,7 @@ variables_meta <- list(
   sst_mean = "Sea surface temperature (degC)",
   temperature_20m = "Water Temperature @20m (degC)",
   wind_direction_simple_mean = "Simple Mean Wind Direction (degT)",
-  wind_direction_mean = "Circular Mean Wind Direction (degT)", 
+  wind_direction_mean = "Mean Wind Direction, circular (degT)", 
   wind_speed_mean = "Wind speed (m/s)")
 
 
