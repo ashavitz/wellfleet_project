@@ -8,13 +8,13 @@
 #'--------------------------------------
 
 # ---- Load Libraries ----
-library(readr) # for reading in files
-library(lubridate) # for date time formats
 library(dplyr) # for data manipulation and transformation
-library(tidyr) # for tidying and reshaping data
-library(rerddap) # for accessing ERDDAP servers
 library(ggplot2) # for visualization
 library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
+library(lubridate) # for date time formats
+library(readr) # for reading in files
+library(rerddap) # for accessing ERDDAP servers
+library(tidyr) # for tidying and reshaping data
 
 # ---- Set Global ggplot Themes ----
 
@@ -45,10 +45,10 @@ buoy_221_annual <- buoy_221_annual |>
   mutate(buoy = "221")
 
 buoy_a01_annual <- buoy_a01_annual |> 
-  select(year, air_temperature_mean, temperature_mean,
+  select(year, air_temperature_mean, temperature_1m, temperature_20m,
          wind_direction_mean_simple, wind_direction_mean, wind_speed_mean) |> 
   rename(air_temp_mean = air_temperature_mean,
-         sst_mean = temperature_mean,
+         sst_mean = temperature_1m,
          wind_direction_simple_mean = wind_direction_mean_simple) |> 
   mutate(buoy = "A01")
 
@@ -77,6 +77,7 @@ buoy_data_annual <- bind_rows(buoy_221_annual, buoy_44013_annual, buoy_a01_annua
 # Store variables of and variable metadata
 variables <- c("air_temp_mean",
                "sst_mean",
+               "temperature_20m",
                "wind_direction_simple_mean", 
                "wind_direction_mean",
                "wind_speed_mean")
@@ -84,22 +85,30 @@ variables <- c("air_temp_mean",
 variables_meta <- list(
   air_temp_mean = "Air temperature (degC)", 
   sst_mean = "Sea surface temperature (degC)",
+  temperature_20m = "Water Temperature @20m (degC)",
   wind_direction_simple_mean = "Simple Mean Wind Direction (degT)",
   wind_direction_mean = "Circular Mean Wind Direction (degT)", 
   wind_speed_mean = "Wind speed (m/s)")
 
-  
+
 # Plot all variables over time, color by buoy
 for (var in variables) {
   
+  # For each variable, only include a buoy in the plot (and thus legend) 
+  # if it has at least 2 real (non-NA) measurements (2, so a line can be drawn)
+  plot_data <- buoy_data_annual |>
+    group_by(buoy) |>
+    filter(sum(!is.na(.data[[var]])) >= 2) |>
+    ungroup()
+  
   # Determine y axis range and create vertical padded y_max so annotations will be visible
-  y_max <- max(buoy_data_annual[[var]], na.rm = TRUE)
-  y_min <- min(buoy_data_annual[[var]], na.rm = TRUE)
+  y_max <- max(plot_data[[var]], na.rm = TRUE)
+  y_min <- min(plot_data[[var]], na.rm = TRUE)
   range_size = y_max - y_min
   y_max_buffered <- y_max + (range_size * 0.2)
   
   # Plot
-  p <- ggplot(buoy_data_annual,
+  p <- ggplot(plot_data,
               aes(x = year,
                   y = .data[[var]],
                   color = buoy)) +
@@ -110,9 +119,11 @@ for (var in variables) {
          color = "Buoy",
          title = paste("Annual Time Series",
                        variables_meta[[var]], sep = "\n")) +
-    scale_color_brewer(palette = "Set2") +
+    scale_color_manual(
+      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green3")
+    ) +
     scale_x_continuous(
-      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
+      breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
@@ -141,29 +152,36 @@ for (var in variables) {
 # Plot line graphs
 for (var in variables) {
   
+  # For each variable, only include a buoy in the plot (and thus legend) 
+  # if it has at least 2 real (non-NA) measurements (2, so a line can be drawn)
+  plot_data <- buoy_data_annual |>
+    group_by(buoy) |>
+    filter(sum(!is.na(.data[[var]])) >= 2) |>
+    ungroup()
+  
   # Determine y axis range and create vertical padded y_max so annotations will be visible
-  y_max <- max(buoy_data_annual[[var]], na.rm = TRUE)
-  y_min <- min(buoy_data_annual[[var]], na.rm = TRUE)
+  y_max <- max(plot_data[[var]], na.rm = TRUE)
+  y_min <- min(plot_data[[var]], na.rm = TRUE)
   range_size = y_max - y_min
   y_max_buffered <- y_max + (range_size * 0.2)
   
   # Plot
-  p <- ggplot(buoy_data_annual,
+  p <- ggplot(plot_data,
               aes(x = year,
                   y = .data[[var]],
                   color = buoy)) +
     geom_point() +
-    geom_line(data = filter(buoy_data_annual, !is.na(.data[[var]]))) +
+    geom_line(data = filter(plot_data, !is.na(.data[[var]]))) +
     geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
     labs(x = "Date",
          y = variables_meta[[var]],
          title = paste("Annual Time Series",
                        variables_meta[[var]], sep = "\n")) +
     scale_color_manual(
-      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green")
+      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green3")
     ) +
     scale_x_continuous(
-      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
+      breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
@@ -211,7 +229,7 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
          title = paste("Annual Time Series",
                        variables_meta[[var]], sep = "\n")) +
     scale_color_manual(
-      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green")
+      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green3")
     ) +
     scale_x_continuous(
       breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
