@@ -12,18 +12,17 @@
 
 
 # ---- Load Libraries ----
-
-library(readr) # for reading in files
-library(lubridate) # for date time formats
+library(broom) # for tidy model outputs
 library(dplyr) # for data manipulation and transformation
-library(tidyr) # for tidying and reshaping data
 library(ggplot2) # for data visualization
-library(RColorBrewer) # for data viz color palettes
+library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
+library(lubridate) # for date time formats
+library(paletteer) # for color palettes
 library(patchwork) # for displaying graphs together
 library(purrr) # for map
-library(broom) # for tidy model outputs
-library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
-
+library(RColorBrewer) # for data viz color palettes
+library(readr) # for reading in files
+library(tidyr) # for tidying and reshaping data
 
 # ---- Set Global ggplot Themes ----
 
@@ -386,7 +385,7 @@ for (var in wq_variables) {
       date_breaks = "2 year", 
       date_labels = "%Y",
       labels = date_format("%Y")) + # extract just the year for the labels
-    scale_color_brewer(palette = "Set2") +
+    scale_color_paletteer_d("yarrr::google") +
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
@@ -441,7 +440,7 @@ for (var in wq_variables) {
       color = "CCS Station ID",
       title = adjust_label(wq_variables_meta[[var]], "Mean"),
       ) +
-    scale_color_brewer(palette = "Set2") +
+    scale_color_paletteer_d("yarrr::google") +
     theme(
       plot.title = element_text(size = 12),
       axis.title.y = element_text(size = 8)
@@ -507,7 +506,7 @@ for (var in wq_variables) {
      color = "CCS Station ID",
      title = adjust_label(wq_variables_meta[[var]], "Median")
     ) +
-    scale_color_brewer(palette = "Set2") +
+    scale_color_paletteer_d("yarrr::google") +
     theme(
       plot.title = element_text(size = 12),
       axis.title.y = element_text(size = 8)
@@ -579,7 +578,7 @@ for (var in wq_variables) {
       date_breaks = "2 year",
       date_labels = "%Y",
       labels = date_format("%Y")) +
-    scale_color_brewer(palette = "Set2") + 
+    scale_color_paletteer_d("yarrr::google") + 
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
@@ -633,7 +632,7 @@ for (var in wq_variables) {
          color = "CCS Station ID",
          title = adjust_label(wq_variables_meta[[var]], "Summer Mean")
          ) +
-    scale_color_brewer(palette = "Set2") +
+    scale_color_paletteer_d("yarrr::google") +
     theme(
       plot.title = element_text(size = 12),
       axis.title.y = element_text(size = 8)
@@ -685,7 +684,7 @@ for (var in wq_variables) {
          color = "CCS Station ID",
          title = adjust_label(wq_variables_meta[[var]], "Summer Median")
          ) +
-    scale_color_brewer(palette = "Set2") +
+    scale_color_paletteer_d("yarrr::google") +
     theme(
       plot.title = element_text(size = 12),
       axis.title.y = element_text(size = 8)

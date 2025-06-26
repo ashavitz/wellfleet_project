@@ -12,6 +12,7 @@ library(dplyr) # for data manipulation and transformation
 library(ggplot2) # for visualization
 library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 library(lubridate) # for date time formats
+library(paletteer) # for color palettes
 library(readr) # for reading in files
 library(rerddap) # for accessing ERDDAP servers
 library(tidyr) # for tidying and reshaping data
@@ -136,8 +137,9 @@ for (var in variables) {
                        variables_meta[[var]], sep = "\n"),
          caption = "(only years in which each month contains at least 80% complete daily data)"
     ) +
+    # manually applying color palette from yarrr::google
     scale_color_manual(
-      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green4")
+      values = c("A01" = "#F9B90AFF", "NDBC 44013" = "#3D79F3FF", "221" = "#E6352FFF")
     ) +
     scale_x_continuous(
       breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
@@ -196,8 +198,9 @@ for (var in variables) {
                        variables_meta[[var]], sep = "\n"),
          caption = "(only years in which each month contains at least 80% complete daily data)"
     ) +
+    # manually applying color palette from yarrr::google
     scale_color_manual(
-      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green4")
+      values = c("A01" = "#F9B90AFF", "NDBC 44013" = "#3D79F3FF", "221" = "#E6352FFF")
     ) +
     scale_x_continuous(
       breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
@@ -249,8 +252,9 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
                        variables_meta[[var]], sep = "\n"),
          caption = "(only years in which each month contains at least 80% complete daily data)"
     ) +
+    # manually applying color palette from yarrr::google
     scale_color_manual(
-      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green4")
+      values = c("A01" = "#F9B90AFF", "NDBC 44013" = "#3D79F3FF", "221" = "#E6352FFF")
     ) +
     scale_x_continuous(
       breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +

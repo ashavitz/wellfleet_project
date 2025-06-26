@@ -12,11 +12,13 @@
 #'--------------------------------------
 
 # ---- Load Libraries ----
-library(readr) # for reading in files
-library(lubridate) # for date time formats
 library(dplyr) # for data manipulation and transformation
-library(tidyr) # for tidying and reshaping data
 library(ggplot2) # for visualization
+library(lubridate) # for date time formats
+library(paletteer) # for color palettes
+library(readr) # for reading in files
+library(tidyr) # for tidying and reshaping data
+
 
 
 # ---- Set Global ggplot Themes ----
@@ -90,14 +92,16 @@ ggplot(dh_data_summary,
        aes(x = Date, y = Percent_Cover, color = Transect)) +
   geom_line() +
   labs(title = "Mean Percent Cover Over Time",
-       y = "Mean Percent Cover")
+       y = "Mean Percent Cover") +
+  scale_color_paletteer_d("yarrr::google")
 
 ggplot(dh_data_summary,
        aes(x = Date, y = Percent_Cover, color = Transect)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   labs(title = "Mean Percent Cover Over Time (with smoothing)",
-       y = "Mean Percent Cover")
+       y = "Mean Percent Cover") +
+  scale_color_paletteer_d("yarrr::google")
 
 
 # Plot reproductive shoots and proportion of reproductive shoots
@@ -120,14 +124,16 @@ ggplot(dh_data_summary_fruiting,
        aes(x = Year, y = Reproductive_Shoots, color = Transect)) +
   geom_line() +
   labs(title = "Mean Count Reproductive Shoots Over Time",
-       y = "Mean Count Reproductive Shoots")
+       y = "Mean Count Reproductive Shoots") +
+  scale_color_paletteer_d("yarrr::google")
 
 ggplot(dh_data_summary_fruiting,
        aes(x = Year, y = Reproductive_Shoots, color = Transect)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   labs(title = "Mean Count Reproductive Shoots Over Time (with smoothing)",
-       y = "Mean Count Reproductive Shoots")
+       y = "Mean Count Reproductive Shoots") +
+  scale_color_paletteer_d("yarrr::google")
 
 
 # Plot proportion of reproductive shoots out of shoot density (total counted shoots)
@@ -414,7 +420,8 @@ water_temp_daily <- water_temp_data |>
 # Plot all daily temperature over time
 ggplot(water_temp_daily, 
        aes(x = Date, y = Temp_C, color = Transect)) +
-  geom_point()
+  geom_point() +
+  scale_color_paletteer_d("yarrr::google")
 
 
 # ANNUAL 
@@ -464,7 +471,8 @@ ggplot(water_temp_annual,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
-  labs(title = "Annual Mean Temperatures by Transect")
+  labs(title = "Annual Mean Temperatures by Transect") +
+  scale_color_paletteer_d("yarrr::google")
 
 
 # SUMMER (June - September)
@@ -516,7 +524,8 @@ ggplot(water_temp_summer,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
-  labs(title = "Summer (June - Sep) Mean Temperatures by Transect")
+  labs(title = "Summer (June - Sep) Mean Temperatures by Transect") +
+  scale_color_paletteer_d("yarrr::google")
 
 
 
@@ -544,7 +553,8 @@ ggplot(water_temp_annual,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
-  labs(title = "Annual Mean Temperatures by Transect")
+  labs(title = "Annual Mean Temperatures by Transect") +
+  scale_color_paletteer_d("yarrr::google")
 
 
 ### Transect Temperature & Wasting Disease
