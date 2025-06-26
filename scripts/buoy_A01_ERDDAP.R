@@ -1126,35 +1126,207 @@ A01_wave_acc <-
                       "dominant_wave_period", "dominant_wave_period_qc")
   )
 
+
 # Clean imported data
 A01_wave_acc <- A01_wave_acc |> 
+  
+  # Remove any duplicated rows of data
+  distinct() |> 
+  
+  # convert time column to date time, and create date, year, month, and day columns
   mutate(
-    time = ymd_hms(time, tz = "UTC"), # convert time column to date time
-    date = as.Date(time), # create date column based on time column
-    across(c(significant_wave_height, dominant_wave_period),
-           as.numeric), # convert to numeric
+    time = ymd_hms(time, tz = "UTC"), 
+    date = as.Date(time),
+    year = year(time),
+    month = month(time),
+    day = day(time),
+    
+    # convert to numeric
+    across(c(significant_wave_height, dominant_wave_period), as.numeric),
+    
     # Convert non-"good" quality data to NAs. qc flags of 0 are considered "good"
-    significant_wave_height = ifelse(
-      significant_wave_height_qc != 0, NA, significant_wave_height),
-    dominant_wave_period = ifelse(
-      dominant_wave_period_qc != 0, NA, dominant_wave_period),
+    significant_wave_height = ifelse(significant_wave_height_qc != 0, NA, significant_wave_height),
+    dominant_wave_period = ifelse(dominant_wave_period_qc != 0, NA, dominant_wave_period)
   ) |> 
-  # Remove QC flag columns
-  select(-significant_wave_height_qc,
-         -dominant_wave_period_qc)
+  
+  # Remove QC flag columns and move ymd columns to start
+  select(-significant_wave_height_qc, -dominant_wave_period_qc) |> 
+  relocate(date, year, month, day, .before = time)
 
 
+# Calculate daily mean for all variables at each depth
+A01_wave_acc_daily <- A01_wave_acc |> 
+  group_by(date, year, month, day) |> 
+  summarize(
+    significant_wave_height = mean(significant_wave_height, na.rm = TRUE),
+    dominant_wave_period = mean(dominant_wave_period, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Plot daily mean values for each variable
+variables <- c("significant_wave_height", "dominant_wave_period")
+variables_meta <- list(
+  significant_wave_height = "Mean Significant Wave Height (m)",
+  dominant_wave_period = "Mean Dominant Waver Period (s)"
+)
+
+for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_wave_acc_daily[[var]], na.rm = TRUE)
+  y_min <- min(A01_wave_acc_daily[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
+  p <- ggplot(A01_wave_acc_daily,
+              aes(x = date,
+                  y = .data[[var]])) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = variables_meta[[var]],
+         title = paste("Daily Time Series - A01 Buoy", variables_meta[[var]], sep = "\n")) +
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
+  
+  print(p)
+}
 
 
+# Annual Means
+
+# Determine valid years (where each month has >= 80% complete data) for each variable
+# For each variable, calculate the annual mean only for years valid for that variable
+
+A01_wave_acc_props <- A01_wave_acc_daily |> 
+  # Group by year and month
+  group_by(year, month) |> 
+  # For each variable, determine how many real daily measurements are recorded (not NA or NaN)
+  summarize(
+    across(
+      .cols = all_of(variables),
+      .fns = ~sum(!is.na(.)),
+      .names = "{.col}"
+    ),
+    .groups = "drop"
+  ) |> 
+  # Create a column for days in the month determined with days_in_month()
+  mutate(
+    days_in_month = days_in_month(ymd(paste(year, month, "01", sep = "-")))) |> 
+  # For each variable, calculate proportion of real daily measurements for each month 
+  mutate(
+    across(
+      .cols = all_of(variables),
+      .fns = ~. / days_in_month,
+      .names = "{.col}_prop"
+    )
+  )
+
+# Create a df showing which years are valid,
+# based on each month having at least 80% complete daily data AND there being 12 total months
+validity_by_year <- A01_wave_acc_props |> 
+  select(year, month, ends_with("_prop")) |> 
+  pivot_longer(
+    cols = ends_with("_prop"),
+    names_to = "variable",
+    values_to = "prop"
+  ) |> 
+  group_by(year, variable) |> 
+  summarize(
+    n_months = n(),
+    all_months_above_80 = all(prop >= 0.8),
+    .groups = "drop"
+  ) |> 
+  mutate(
+    status = ifelse(n_months == 12 & all_months_above_80, "valid", "not valid")
+  ) |> 
+  mutate(variable = sub("_prop$", "", variable))
+
+# Calculate annual means
+A01_wave_acc_annual <- A01_wave_acc_daily |> 
+  group_by(year) |> 
+  summarize(
+    significant_wave_height = mean(significant_wave_height, na.rm = TRUE),
+    dominant_wave_period = mean(dominant_wave_period, na.rm = TRUE),
+    .groups = "drop"
+  ) |> 
+  pivot_longer(
+    cols = c(significant_wave_height, dominant_wave_period),
+    names_to = "variable",
+    values_to = "annual_mean"
+  ) |> 
+  left_join(validity_by_year, by = c("year", "variable")) |> 
+  # For invalid year-variables, change the calculated mean to NA
+  mutate(
+    annual_mean = ifelse(status == "valid", annual_mean, NA_real_)
+  ) |> 
+  select(-c(n_months, all_months_above_80, status)) |> 
+  # Pivot back wider for plotting
+  pivot_wider(names_from = variable, values_from = annual_mean)
 
 
+# Plot annual mean data
+for (var in variables) {
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(A01_wave_acc_annual[[var]], na.rm = TRUE)
+  y_min <- min(A01_wave_acc_annual[[var]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Plot
+  p <- ggplot(A01_wave_acc_annual,
+              aes(x = year,
+                  y = .data[[var]])) +
+    geom_point(size = 3) +
+    geom_smooth(method = "lm", se = FALSE) +
+    labs(x = "Date",
+         y = variables_meta[[var]],
+         title = paste("Annual Time Series - A01 Buoy", variables_meta[[var]], sep = "\n"),
+         caption = "(only years in which each month contains at least 80% complete daily data)") +
+    scale_color_brewer(palette = "Set2") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(
+        label = after_stat(
+          paste0(..p.value.label.., "~~~", ..rr.label..)
+        )
+      ),
+      parse = TRUE,
+      color = "blue")
+  
+  print(p)
+}
 
 
 # ---- Export Annual Data ----
-# Merge annual summary data frames by year
+# Join all annual summary data frames by year
 A01_buoy_annual <- 
-  full_join(A01_CTD_annual_wide, A01_met_all_annual_summary, by = "year") |> 
-  full_join(A01_aanderaa_o2_all_annual_summary, by = "year")
+  purrr::reduce(
+    list(A01_CTD_annual_wide,
+         A01_met_all_annual_summary,
+         A01_aanderaa_o2_all_annual_summary,
+         A01_wave_acc_annual),
+    full_join, by = "year") |> 
+  arrange(year)
+  
 
 # Write annual summary data to csv
 # write_csv(A01_buoy_annual, here::here("data", "summary_data", "buoy_a01_annual.csv"))

@@ -39,27 +39,35 @@ buoy_44013_annual <- read_csv("data/summary_data/buoy_44013_annual.csv")
   
 # Standardize headers and units to prepare to bind rows
 buoy_221_annual <- buoy_221_annual |> 
-  select(year, mean_air_temp, mean_sst) |> 
+  select(year, mean_air_temp, mean_sst, mean_wave_hs, mean_wave_tp, mean_wave_ta) |> 
   rename(air_temp_mean = mean_air_temp,
-         sst_mean = mean_sst) |> 
+         sst_mean = mean_sst,
+         sig_wave_height_mean = mean_wave_hs, 
+         dominant_wave_period_mean = mean_wave_tp,
+         avg_wave_period_mean = mean_wave_ta) |> 
   mutate(buoy = "221")
 
 buoy_a01_annual <- buoy_a01_annual |> 
   select(year, air_temperature_mean, temperature_1m, temperature_20m,
-         wind_direction_mean_simple, wind_direction_mean, wind_speed_mean) |> 
+         wind_direction_mean_simple, wind_direction_mean, wind_speed_mean, significant_wave_height, dominant_wave_period) |> 
   rename(air_temp_mean = air_temperature_mean,
          sst_mean = temperature_1m,
-         wind_direction_simple_mean = wind_direction_mean_simple) |> 
+         wind_direction_simple_mean = wind_direction_mean_simple,
+         sig_wave_height_mean = significant_wave_height,
+         dominant_wave_period_mean = dominant_wave_period) |> 
   mutate(buoy = "A01")
 
 buoy_44013_annual <- buoy_44013_annual |> 
-  select(YYYY, ATMP, WTMP, WDIR_simple, WDIR, WSPD) |> 
+  select(YYYY, ATMP, WTMP, WDIR_simple, WDIR, WSPD, WVHT, DPD, APD) |> 
   rename(year = YYYY, 
          air_temp_mean = ATMP, 
          sst_mean = WTMP,
          wind_direction_simple_mean = WDIR_simple,
          wind_direction_mean = WDIR, 
-         wind_speed_mean = WSPD) |> 
+         wind_speed_mean = WSPD,
+         sig_wave_height_mean = WVHT,
+         dominant_wave_period_mean = DPD,
+         avg_wave_period_mean = APD) |> 
   mutate(buoy = "NDBC 44013")
 
 
@@ -72,7 +80,8 @@ buoy_44013_annual <- buoy_44013_annual |>
   
   
 # Bind rows to merge data frames into one
-buoy_data_annual <- bind_rows(buoy_221_annual, buoy_44013_annual, buoy_a01_annual)
+buoy_data_annual <- bind_rows(buoy_221_annual, buoy_44013_annual, buoy_a01_annual) |> 
+  relocate(buoy, .after = year)
 
 # Store variables of and variable metadata
 variables <- c("air_temp_mean",
@@ -80,7 +89,10 @@ variables <- c("air_temp_mean",
                "temperature_20m",
                "wind_direction_simple_mean", 
                "wind_direction_mean",
-               "wind_speed_mean")
+               "wind_speed_mean",
+               "sig_wave_height_mean",
+               "dominant_wave_period_mean",
+               "avg_wave_period_mean")
 
 variables_meta <- list(
   air_temp_mean = "Air temperature (degC)", 
@@ -88,7 +100,10 @@ variables_meta <- list(
   temperature_20m = "Water Temperature @20m (degC)",
   wind_direction_simple_mean = "Simple Mean Wind Direction (degT)",
   wind_direction_mean = "Mean Wind Direction, circular (degT)", 
-  wind_speed_mean = "Wind speed (m/s)")
+  wind_speed_mean = "Wind speed (m/s)",
+  sig_wave_height_mean = "Mean Significant Wave Height (m)",
+  dominant_wave_period_mean = "Mean Dominant Wave Period (s)",
+  avg_wave_period_mean = "Mean Average Wave Period (s)")
 
 
 # Plot all variables over time, color by buoy
@@ -118,9 +133,11 @@ for (var in variables) {
          y = variables_meta[[var]],
          color = "Buoy",
          title = paste("Annual Time Series",
-                       variables_meta[[var]], sep = "\n")) +
+                       variables_meta[[var]], sep = "\n"),
+         caption = "(only years in which each month contains at least 80% complete daily data)"
+    ) +
     scale_color_manual(
-      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green3")
+      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green4")
     ) +
     scale_x_continuous(
       breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
@@ -176,9 +193,11 @@ for (var in variables) {
     labs(x = "Date",
          y = variables_meta[[var]],
          title = paste("Annual Time Series",
-                       variables_meta[[var]], sep = "\n")) +
+                       variables_meta[[var]], sep = "\n"),
+         caption = "(only years in which each month contains at least 80% complete daily data)"
+    ) +
     scale_color_manual(
-      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green3")
+      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green4")
     ) +
     scale_x_continuous(
       breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
@@ -227,9 +246,11 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
     labs(x = "Date",
          y = variables_meta[[var]],
          title = paste("Annual Time Series",
-                       variables_meta[[var]], sep = "\n")) +
+                       variables_meta[[var]], sep = "\n"),
+         caption = "(only years in which each month contains at least 80% complete daily data)"
+    ) +
     scale_color_manual(
-      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green3")
+      values = c("A01" = "orange", "NDBC 44013" = "blue", "221" = "green4")
     ) +
     scale_x_continuous(
       breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
