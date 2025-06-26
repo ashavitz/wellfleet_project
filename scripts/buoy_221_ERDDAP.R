@@ -211,7 +211,7 @@ buoy_221_wave_daily <-
   summarize(
     mean_wave_hs = mean(waveHs),
     mean_wave_tp = mean(waveTp),
-    mean_wave_Ta = mean(waveTa)
+    mean_wave_ta = mean(waveTa)
   ) |> 
   ungroup()
 
@@ -248,7 +248,7 @@ variable_means_meta <- list(
   mean_wave_hs = "Mean Wave Significant Height (m)",
   mean_wave_tp = "Mean Wave Period (s)
             (variance spectral density max)",
-  mean_wave_Ta = "Mean Wave Period (s)
+  mean_wave_ta = "Mean Wave Period (s)
     (variance spectral density first frequency moment)",
   mean_acm_direction = "Current Direction 0.75m depth (degT)"
 )
