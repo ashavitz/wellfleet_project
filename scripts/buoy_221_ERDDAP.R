@@ -403,7 +403,7 @@ for (var in variable_means) {
          y = variable_means_meta[[var]],
          title = paste("Annual Time Series - 221 Buoy (Cape Cod Bay)",
                        variable_means_meta[[var]], sep = "\n"),
-         caption = "(only years with at least 80% complete data included)") +
+         caption = "(only years in which each month contains at least 80% complete daily data)") +
     scale_color_brewer(palette = "Set2") +
     
     # Add vertical padding
