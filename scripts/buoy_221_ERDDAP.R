@@ -23,7 +23,6 @@ library(dplyr) # for data manipulation and transformation
 library(ggplot2) # for visualization
 library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 library(lubridate) # for date time formats
-library(paletteer) # for color palettes
 library(readr) # for reading in files
 library(rerddap) # for accessing ERDDAP servers
 library(tidyr) # for tidying and reshaping data
@@ -274,7 +273,6 @@ for (var in variable_means) {
          y = variable_means_meta[[var]],
          title = paste("Daily Time Series - 221 Buoy (Cape Cod Bay)",
                        variable_means_meta[[var]], sep = "\n")) +
-    scale_color_paletteer_d("yarrr::google") +
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
@@ -406,7 +404,6 @@ for (var in variable_means) {
          title = paste("Annual Time Series - 221 Buoy (Cape Cod Bay)",
                        variable_means_meta[[var]], sep = "\n"),
          caption = "(only years in which each month contains at least 80% complete daily data)") +
-    scale_color_paletteer_d("yarrr::google") +
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
