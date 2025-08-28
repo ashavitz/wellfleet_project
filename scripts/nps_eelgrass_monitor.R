@@ -576,6 +576,8 @@ ggplot(water_temp_summer,
 # Compare transect annual mean temps to remote sensing SST
 
 # Load NOAA CoastWatch SST data for gps point near Duck Harbor (41.94, -70.09)
+# (NASA Jet Propulsion Laboratory’s (JPL) Multi-scale Ultra-high Resolution (MUR) 
+#  Sea Surface Temperature Daily 1km East Coast EEZ data set.)
 # Originally accessed via NOAA CoastWatch ERDDAP
 # https://coastwatch.noaa.gov/erddap/info/noaacwecnMURdaily/index.html
 sst_data_dh <- read_csv("data/noaa_coastwatch_sst/sst_data_dh.csv") |> mutate(site = "duck_harbor") |> 
@@ -585,7 +587,7 @@ sst_data_dh <- read_csv("data/noaa_coastwatch_sst/sst_data_dh.csv") |> mutate(si
 sst_dh_annual <-sst_data_dh |> 
   group_by(Year) |> 
   summarize(Temp_C = mean(sst), .groups = "drop") |> 
-  mutate(Transect = "CoastWatch SST") |> 
+  mutate(Transect = "SST (NASA JPL MUR)") |> 
   relocate(Transect, .after = Year)
 
 # Bind temperature data frames
