@@ -413,7 +413,7 @@ for (var in wq_variables) {
 
 # ---- Plot Annual Mean and Median ----
 
-# For each relevant variable, plot Annual mean and mean values
+# For each relevant variable, plot Annual mean and median values
 for (var in wq_variables) {
   
   # Set variable name to _mean
@@ -606,7 +606,7 @@ for (var in wq_variables) {
 
 # ---- Plot Summer Mean and Median ----
 
-# For each relevant variable, plot Summer mean and mean values
+# For each relevant variable, plot Summer mean and median values
 for (var in wq_variables) {
   
   var_name <- paste0(var, "_mean")
@@ -720,6 +720,70 @@ for (var in wq_variables) {
   
   print(combined_plot)
 }
+
+
+# ---- Plot Summer Mean ----
+
+# For each relevant variable, plot Summer mean and mean values
+for (var in wq_variables) {
+  
+  var_name <- paste0(var, "_mean")
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_wellfleet_summers[[var_name]], na.rm = TRUE)
+  y_min <- min(ccs_wellfleet_summers[[var_name]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Create summer mean plot
+  p_1 <- ggplot(ccs_wellfleet_summers, aes(x = year_collected,
+                                           y = .data[[var_name]],
+                                           color = as.factor(internal_station_id))) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    
+    # add threshold line, if available
+    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
+    
+    labs(
+      x = "Date",
+      y = wq_variables_meta[[var]],
+      color = "CCS Station ID",
+      title = paste(wq_variables_meta[[var]]),
+      subtitle = "Annual Summer Mean Time Series - CCS Wellfleet"
+    ) +
+    scale_x_continuous(
+      breaks = seq(
+        min(ccs_wellfleet_summers$year_collected), 
+        max(ccs_wellfleet_summers$year_collected), 
+        by = 2
+      )
+    ) +
+    scale_color_paletteer_d("yarrr::google") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    stat_poly_eq(
+      aes(group = internal_station_id, 
+          color = internal_station_id,
+          label = after_stat(
+            paste0("Station: ", grp.label, "~~~",
+                   ..p.value.label.., "~~~",
+                   ..rr.label..
+            ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3, 
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.025
+    ) 
+  
+  print(p_1)
+}
+
 
 
 # # ---- Plots by Variable (Incomplete) ----

@@ -63,11 +63,9 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r Plot All Summer Data, message=FALSE, warning=FALSE}
 ```
 
-### Plot Summer Mean and Median
-```{r Plot Summer Mean and Median, message=FALSE, warning=FALSE}
+### Plot Summer Mean
+```{r Plot Summer Mean, message=FALSE, warning=FALSE}
 ```
-
-
 
 
 
