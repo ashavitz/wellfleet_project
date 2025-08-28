@@ -247,10 +247,8 @@ variable_means_meta <- list(
   max_acm_speed = "Max Current Speed 0.75m depth (m/s)",
   mean_acm_vertical_speed = "Mean Vertical Current Speed 0.75m depth (m/s)",
   mean_wave_hs = "Mean Wave Significant Height (m)",
-  mean_wave_tp = "Mean Wave Period (s)
-            (variance spectral density max)",
-  mean_wave_ta = "Mean Wave Period (s)
-    (variance spectral density first frequency moment)",
+  mean_wave_tp = "Mean Wave Period (s) - (variance spectral density max)",
+  mean_wave_ta = "Mean Wave Period (s) - (variance spectral density first frequency moment)",
   mean_acm_direction = "Current Direction 0.75m depth (degT)"
 )
 
@@ -404,6 +402,13 @@ for (var in variable_means) {
          title = paste("Annual Time Series - 221 Buoy (Cape Cod Bay)",
                        variable_means_meta[[var]], sep = "\n"),
          caption = "(only years in which each month contains at least 80% complete daily data)") +
+    scale_x_continuous(
+      breaks = seq(
+        min(buoy_221_annual$year), 
+        max(buoy_221_annual$year), 
+        by = 1
+      )
+    ) +
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
