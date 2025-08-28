@@ -14,6 +14,7 @@
 # ---- Load Libraries ----
 library(dplyr) # for data manipulation and transformation
 library(ggplot2) # for visualization
+library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 library(lubridate) # for date time formats
 library(paletteer) # for color palettes
 library(readr) # for reading in files
@@ -524,8 +525,51 @@ ggplot(water_temp_summer,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
-  labs(title = "Summer (June - Sep) Mean Temperatures by Transect") +
+  labs(
+    title = "Summer (June - Sep) Mean Bottom Temperature", 
+    y = "Temperature (°C)"
+    ) +
   scale_color_paletteer_d("yarrr::google")
+
+
+# Plot summer mean temperatureswith lm trendline and p value
+
+# Determine y axis range and create vertical padded y_max so annotations will be visible
+y_max <- max(water_temp_summer$Temp_C, na.rm = TRUE)
+y_min <- min(water_temp_summer$Temp_C, na.rm = TRUE)
+range_size = y_max - y_min
+y_max_buffered <- y_max + (range_size * 0.2)
+
+ggplot(water_temp_summer,
+       aes(x = Year, y = Temp_C, color = Transect)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
+  labs(
+    title = "Summer (June - Sep) Mean Bottom Temperature", 
+    y = "Temperature (°C)"
+  ) +
+  scale_color_paletteer_d("yarrr::google") + 
+  
+  # Add vertical padding
+  scale_y_continuous(limits = c(NA, y_max_buffered)) +
+  
+  # Annotate plot with simple linear model p-values and R2 values
+  stat_poly_eq(
+    aes(group = Transect, 
+        color = Transect,
+        label = after_stat(
+          paste0("Transect: ", grp.label, "~~~",
+                 ..p.value.label.., "~~~",
+                 ..rr.label..
+          ))),
+    # formula = y ~ x,
+    parse = TRUE,
+    size = 3, 
+    label.x = "left",
+    label.y = "top",
+    vstep = 0.025
+  ) 
 
 
 
@@ -553,8 +597,51 @@ ggplot(water_temp_annual,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
-  labs(title = "Annual Mean Temperatures by Transect") +
+  labs(
+    title = "Annual Mean Bottom Temperature by Transect", 
+    y = "Temperature (°C)"
+  ) +
   scale_color_paletteer_d("yarrr::google")
+
+
+# Plot annual mean temperatures with lm trendline and p value
+
+# Determine y axis range and create vertical padded y_max so annotations will be visible
+y_max <- max(water_temp_annual$Temp_C, na.rm = TRUE)
+y_min <- min(water_temp_annual$Temp_C, na.rm = TRUE)
+range_size = y_max - y_min
+y_max_buffered <- y_max + (range_size * 0.2)
+
+ggplot(water_temp_annual,
+       aes(x = Year, y = Temp_C, color = Transect)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
+  labs(
+    title = "Annual Mean Bottom Temperature by Transect", 
+    y = "Temperature (°C)"
+  ) +
+  scale_color_paletteer_d("yarrr::google") +
+  
+  # Add vertical padding
+  scale_y_continuous(limits = c(NA, y_max_buffered)) +
+  
+  # Annotate plot with simple linear model p-values and R2 values
+  stat_poly_eq(
+    aes(group = Transect, 
+        color = Transect,
+        label = after_stat(
+          paste0("Transect: ", grp.label, "~~~",
+                 ..p.value.label.., "~~~",
+                 ..rr.label..
+          ))),
+    # formula = y ~ x,
+    parse = TRUE,
+    size = 3, 
+    label.x = "left",
+    label.y = "top",
+    vstep = 0.025
+  ) 
 
 
 ### Transect Temperature & Wasting Disease
