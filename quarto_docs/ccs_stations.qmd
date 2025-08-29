@@ -43,6 +43,10 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r Filter Only "Full" Summers With Exactly One Monthly Measurement June - September}
 ```
 
+### Log10 Transform Variables
+```{r Log10 Transform Variables, message=FALSE, warning=FALSE}
+```
+
 ### Create metadata variables for labeling
 ```{r Create metadata variables for labeling, message=FALSE, warning=FALSE}
 ```
