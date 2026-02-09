@@ -1,20 +1,57 @@
 TODO:
-  - Revise data import to include all data, replacing non-"good" qc data with NAs
-  - When calculating statistics (e.g. means) from shorter time series data, remove 
-    intervals without complete data (e.g. if summarizing for a day from 5 min data,
-    only include days with complete data)
-  - Create time series graphs from 1995 (or earliest date if after 1995) for all variables
+  - Cleaning up existing plots:
+    - Set standard color pallette (color brewer Set2)
+    - Ensure p & R2 values are prefaced with matching legend labels 
+      (and ensure each relevant plot contains the lm data)
+    - Set unique point shapes for colorless viewability (not necessary)
+    - Standarize point sizes
+    - Separate CCS annual means from medians
+    - Clean up axis labels, etc.
   
 
+
+
+
+
+____________
+Archived:
+
+TODO:
+  - Log transform wind/current speeds in ERDDAp
+  - Get eelgrass polygons into R and compare number of crossing from vessel data.
+  - Clean up labeling in CCS graphs (add variable metadata)
+  - Look at how NPS report examined sediment type and sediment changes
+  
+  
+  Meeting with Jill and Presseda:
+  - Check if CCS total sum of nitrate_nitrite and ammonium equal total N
+  - Plot summer DO vs temp? How do they vary seasonally together?
+  - How do temperature and nitrate_nitrite (or total N) vary seasonally together?
+  - Need to look at extreme weather events***
+  - Look at sediment type
+  - Share out link
+  - NPS sediment type - Did it change over time? Did the percent cover change differently with
+    sediment type?
+  - Extreme weather event frequency
+  
+
+Workflow Plan:
+  - Find land based wind direction and speed data longer time series
+  - Begin to document data collection and analysis process
+  - Begin to lay out report
+    - Go by data source
+      - Make map of the sites (in consistent format)
+      - Metadata of site
+      - Data organization process
 
 Questions:
-  - How should daily/monthly means be calculated when there is variable patchiness in the data? For example, if I do
-    a simple mean, some days may be missing all values from a portion of the day, which would skew the data.
-    - Consider options: impute missing data, use only days with complete data, other?
-  - For simplicity, I have been simply importing data where all observations of all variables have "good" qc ratings. 
-    However, this will exclude some "good" values, because there are instances where one variable is "good" 
-    while others are not. Is it better practice to import all data, and then mark non-"good" variables as NA?
-    
-  - Which CCS variables to use for DIN? For DIP? (phosphate?)
-  
-    
+  - There are multiple years where the CCS data only has 11 months of data collected.
+    Should I include? How?
+  - Which plots do we know we plan to include in final report? So I can finalize formatting and 
+    begin writing up data analysis
+
+
+
+NOTES from Wellfleet Planning Call:
+- Shellfish dragging occurs in circular motion
+- Take a look at land based wind direction and speed measurements

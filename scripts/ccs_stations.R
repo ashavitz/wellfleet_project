@@ -54,7 +54,7 @@ ccs_data_all <- read_csv(file_path_ccs_data, col_names = TRUE)
     #' 2 : 5S
     #' 3 : 5SX
 
-#' Other neaerby station IDs and Names
+#' Other nearby station IDs and Names
     #' 4 : 6M
     #' 5 : 6S
     #' 11 : Blackfish Creek
