@@ -260,22 +260,26 @@ ggplot(dh_wasting_long,
     limits = c(0, 1)) + 
   scale_fill_manual(
     values = c(
-      "prop_wasting_high" = "red",
-      "prop_wasting_low" = "skyblue",
-      "prop_wasting_trace" = "lightgreen",
-      "prop_wasting_none" = "gray"),
+      "prop_wasting_trace" = "#b2e2b4",
+      "prop_wasting_low"   = "#31a354",
+      "prop_wasting_high"  = "#6b4f1d"),
     labels = c(
       "prop_wasting_high" = "High",
       "prop_wasting_low" = "Low",
       "prop_wasting_trace" = "Trace",
       "prop_wasting_none" = "None")) +
   facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
-  labs(title = "Wasting Status Proportion by Year",
-       x = "Year",
-       y = "Proportion") +
+  labs(x = "Year",
+       y = "Proportion",
+       # title = "Wasting Status Proportion by Year",
+       fill = "Wasting Disease\nPrevalence") +
   theme(
-    strip.text = element_text(size = 8),
-    plot.title = element_text(hjust = 0.5, face = "bold")
+    strip.text = element_text(size = 14),
+    # plot.title = element_text(hjust = 0.5, face = "bold"),
+    legend.title = element_text(size = 14),
+    legend.text  = element_text(size = 12), 
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
   )
 
 ggplot(dh_data_summary_wasting,
