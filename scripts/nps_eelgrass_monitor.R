@@ -68,8 +68,11 @@ dh_data <- dh_data |>
          wasting_high = ifelse(Wasting == "High", 1, 0),
          wasting_low = ifelse(Wasting == "Low", 1, 0),
          wasting_trace = ifelse(Wasting == "Tr", 1, 0),
-         wasting_none = ifelse(Wasting == "0", 1, 0)
-)
+         wasting_none = ifelse(Wasting == "0", 1, 0),
+# calculate proportion of reproductive shoots at the quadrat level
+         repro_shoot_prop = Reproductive_Shoots / `Shoot Density_0.25m2`
+  )|> 
+  relocate(repro_shoot_prop, .after = Reproductive_Shoots)
 
 
 # ---- Visualize Monitoring Data ----
@@ -77,16 +80,13 @@ dh_data <- dh_data |>
 # Calculate mean % cover & mean count of reproductive shoots per transect per year
 dh_data_summary <- dh_data |> 
   group_by(Transect, Date) |> 
-  summarize(across(c(Percent_Cover, Reproductive_Shoots, `Shoot Density_0.25m2`),
+  summarize(across(c(Percent_Cover, Reproductive_Shoots, `Shoot Density_0.25m2`, repro_shoot_prop),
                    \(x) mean(x, na.rm = TRUE)),
             wasting_high = sum(wasting_high, na.rm = TRUE),
             wasting_low = sum(wasting_low, na.rm = TRUE),
             wasting_trace = sum(wasting_trace, na.rm = TRUE),
             wasting_none = sum(wasting_none, na.rm = TRUE),
-            .groups = "drop") |> 
-  # calculate proportion of total shoot density
-  mutate(repro_shoot_prop = Reproductive_Shoots / `Shoot Density_0.25m2`) |> 
-  relocate(repro_shoot_prop, .before = wasting_high)
+            .groups = "drop")
 
 # Plot mean % cover over time
 ggplot(dh_data_summary,
