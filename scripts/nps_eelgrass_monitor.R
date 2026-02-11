@@ -586,7 +586,7 @@ sst_data_dh <- read_csv("data/noaa_coastwatch_sst/sst_data_dh.csv") |> mutate(si
 # Calculate annual means and restructure data to match transect data frame
 sst_dh_annual <-sst_data_dh |> 
   group_by(Year) |> 
-  summarize(Temp_C = mean(sst), .groups = "drop") |> 
+  summarize(Temp_C = mean(analysed_sst), .groups = "drop") |> 
   mutate(Transect = "SST (NASA JPL MUR)") |> 
   relocate(Transect, .after = Year)
 
