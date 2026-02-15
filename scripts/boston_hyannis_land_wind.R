@@ -126,8 +126,9 @@ for (var in variables) {
     geom_point() +
     geom_smooth(method = "lm") +
     labs(
-      x = "Date",
-      y = variables_meta[[var]]
+      x = "",
+      y = variables_meta[[var]],
+      color = ""
     ) +
     facet_wrap(~location) +
     # Add vertical padding
