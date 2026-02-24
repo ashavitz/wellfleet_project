@@ -19,7 +19,7 @@ library(lubridate) # for date time formats
 library(paletteer) # for color palettes
 library(readr) # for reading in files
 library(tidyr) # for tidying and reshaping data
-
+library(mgcv) # for gams
 
 
 # ---- Set Global ggplot Themes ----
@@ -89,19 +89,46 @@ dh_data_summary <- dh_data |>
             .groups = "drop")
 
 # Plot mean % cover over time
+# Line graph
 ggplot(dh_data_summary,
        aes(x = Date, y = Percent_Cover, color = Transect)) +
   geom_line() +
-  labs(title = "Mean Percent Cover Over Time",
-       y = "Mean Percent Cover") +
+  labs(
+    title = "Mean Percent Cover Over Time",
+    y = "Mean Percent Cover"
+    ) +
   scale_color_paletteer_d("yarrr::google")
 
+# Default smooth line (the default for geom_smooth() is LOESS if <1,000 observations)
 ggplot(dh_data_summary,
        aes(x = Date, y = Percent_Cover, color = Transect)) +
   geom_point() +
   geom_smooth(se = FALSE) +
-  labs(title = "Mean Percent Cover Over Time (with smoothing)",
-       y = "Mean Percent Cover") +
+  labs(
+    # title = "Mean Percent Cover Over Time (with smoothing)",
+    y = "Mean Percent Cover",
+    x = ""
+    ) +
+  scale_color_paletteer_d("yarrr::google")
+
+# Constrain smooth line between 100% and 0%
+# In order to do this, need to use a binomial or quasibinomial model
+# geom_smooth() documentation says:
+#   "If you have fewer than 1,000 observations
+#   but want to use the same gam() model that method = NULL would use, 
+#   then set method = "gam", formula = y ~ s(x, bs = "cs")."
+# Quasibinomial family selected in order to allow for more flexibility
+ggplot(dh_data_summary,
+       aes(Date, Percent_Cover/100, color = Transect)) +
+  geom_point() +
+  geom_smooth(
+    method = "gam",
+    formula = y ~ s(x, bs = "cs"),
+    method.args = list(family = quasibinomial),
+    se = FALSE
+  ) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(y = "Mean Percent Cover", x = "") +
   scale_color_paletteer_d("yarrr::google")
 
 
