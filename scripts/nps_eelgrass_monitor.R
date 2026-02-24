@@ -128,7 +128,10 @@ ggplot(dh_data_summary,
     se = FALSE
   ) +
   scale_y_continuous(labels = scales::percent) +
-  labs(y = "Mean Percent Cover", x = "") +
+  labs(
+    y = "Mean Percent Cover",
+    x = ""
+    ) +
   scale_color_paletteer_d("yarrr::google")
 
 
@@ -147,7 +150,7 @@ dh_data_summary_fruiting <- dh_data_summary |>
   mutate(non_repro_shoot_prop = 1 - repro_shoot_prop)
 
 
-# Plot mean count of reproductive over time
+# Plot mean count of reproductive over time (annual)
 ggplot(dh_data_summary_fruiting,
        aes(x = Year, y = Reproductive_Shoots, color = Transect)) +
   geom_line() +
@@ -155,12 +158,42 @@ ggplot(dh_data_summary_fruiting,
        y = "Mean Count Reproductive Shoots") +
   scale_color_paletteer_d("yarrr::google")
 
+# Plot mean count of reproductive over time (annual), with smooth fit line
 ggplot(dh_data_summary_fruiting,
        aes(x = Year, y = Reproductive_Shoots, color = Transect)) +
   geom_point() +
   geom_smooth(se = FALSE) +
   labs(title = "Mean Count Reproductive Shoots Over Time (with smoothing)",
        y = "Mean Count Reproductive Shoots") +
+  scale_color_paletteer_d("yarrr::google")
+
+# Plot proportion of reproductive shoots over time (all monitoring events), with smooth fit line
+ggplot(filter(dh_data_summary, month(Date) %in% c(5,6,7,8,9)),
+       aes(x = Date, y = repro_shoot_prop, color = Transect)) +
+  geom_point() +
+  geom_smooth(se = FALSE) +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    y = "Reproductive Shoot Proportion", 
+    x = ""
+  ) +
+  scale_color_paletteer_d("yarrr::google")
+
+# Plot proportion of reproductive shoots over time (all monitoring events), with line graph
+ggplot(
+  filter(
+    dh_data_summary,
+    month(Date) %in% c(5,6,7,8,9),
+    !is.na(repro_shoot_prop)
+  ),
+       aes(x = Date, y = repro_shoot_prop, color = Transect)) +
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(
+    y = "Reproductive Shoot Proportion", 
+    x = ""
+  ) +
   scale_color_paletteer_d("yarrr::google")
 
 
@@ -235,21 +268,25 @@ ggplot(filter(dh_fruiting_long, Metric != "Percent_Cover"),
     limits = c(0, 1)
   ) +
   facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
-  labs(title = "Proportion of Reproductive Shoots by Year",
-       caption = "Only May through September Included",
-       x = "Year",
-       y = "Proportion of Total Shoots",
-       fill = "Cover Type"
-       ) +
+  labs(
+      # title = "Proportion of Reproductive Shoots by Year",
+      # caption = "Only May through September Included",
+      x = "Year",
+      y = "Proportion",
+      fill = "Cover Type"
+      ) +
   scale_fill_manual(
     values = c("non_repro_shoot_prop" = "#A9B7A9", "repro_shoot_prop" = "darkgreen"),
     labels = c("non_repro_shoot_prop" = "Non-Reproductive Shoots", 
                "repro_shoot_prop" = "Reproductive Shoots")
-  ) +
-  theme(
-    strip.text = element_text(size = 8),
-    plot.title = element_text(hjust = 0.5, face = "bold")
-  )
+  ) 
+# +
+#   theme(
+#     strip.text = element_text(size = 14),
+#     # plot.title = element_text(hjust = 0.5, face = "bold"),
+#     legend.title = element_text(size = 14),
+#     legend.text  = element_text(size = 12)
+#   )
 
 # ggplot(dh_data_summary_fruiting,
 #        aes(x = as.character(Year), y = repro_shoot_prop, fill = Transect)) +
@@ -261,8 +298,6 @@ ggplot(filter(dh_fruiting_long, Metric != "Percent_Cover"),
 #   labs(title = "Proportion of Reproductive Shoots by Year",
 #        caption = "Only May through September Included")
 
-
-# Wasting disease
 
 # Summarize proportions of each classification of wasting level by year
 dh_data_summary_wasting <- dh_data_summary |> 
@@ -295,16 +330,22 @@ ggplot(dh_wasting_long,
       "prop_wasting_low" = "Low",
       "prop_wasting_trace" = "Trace",
       "prop_wasting_none" = "None")) +
-  facet_wrap(~Transect, labeller = labeller(Transect = transect_labels)) +
-  labs(x = "Year",
-       y = "Proportion",
-       # title = "Wasting Status Proportion by Year",
-       fill = "Wasting Disease\nPrevalence") +
+  facet_wrap(
+    ~Transect,
+    ncol = 1,
+    labeller = labeller(Transect = transect_labels)
+  ) +
+  labs(
+    # title = "Wasting Status Proportion by Year",
+    x = "",
+    y = "Proportion",
+    fill = "Wasting Disease\nPrevalence") +
   theme(
-    strip.text = element_text(size = 14),
-    # plot.title = element_text(hjust = 0.5, face = "bold"),
-    legend.title = element_text(size = 14),
-    legend.text  = element_text(size = 12), 
+    strip.text = element_text(size = 11),
+    # # plot.title = element_text(hjust = 0.5, face = "bold"),
+    # legend.title = element_text(size = 14),
+    # legend.text  = element_text(size = 12),
+    axis.text.x = element_text(size = 9),
     panel.grid.major.x = element_blank(),
     panel.grid.minor.x = element_blank()
   )
