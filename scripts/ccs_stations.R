@@ -76,9 +76,9 @@ ccs_data_wellfleet <- filter(ccs_data_all,
   mutate(year_collected = year(collected_at),
          month = month(collected_at),
          internal_station_id = case_when(
-           internal_station_id == 1 ~ "1 (5N)",
-           internal_station_id == 2 ~ "2 (5S)",
-           internal_station_id == 3 ~ "3 (5SX)"
+           internal_station_id == 1 ~ "CCS 5N",
+           internal_station_id == 2 ~ "CCS 5S",
+           internal_station_id == 3 ~ "CCS 5SX"
            )
          ) |>
   relocate(year_collected, month, .after = collected_at)
@@ -375,11 +375,13 @@ for (var in wq_variables) {
     # add threshold line, if available
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
     
-    labs(x = "Date",
-         y = wq_variables_meta[[var]],
-         color = "CCS Station ID",
-         title = wq_variables_meta[[var]],
-         subtitle = "All Data Time Series - CCS Wellfleet") +
+    labs(
+      x = "",
+      y = wq_variables_meta[[var]],
+      color = "CCS Station ID",
+      # title = wq_variables_meta[[var]],
+      # subtitle = "All Data Time Series - CCS Wellfleet"
+      ) +
     scale_x_datetime(
       limits = c(start_year, end_year),
       date_breaks = "2 year", 
@@ -391,14 +393,17 @@ for (var in wq_variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
     stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
+      aes(label = after_stat(
+            paste0(
+              shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+              ":", "~~~",
+              ..p.value.label.., "~~~",
+              ..rr.label..
+              ))),
       # formula = y ~ x,
       parse = TRUE,
       size = 3, 
@@ -435,7 +440,7 @@ for (var in wq_variables) {
     geom_smooth(method = "lm", se = FALSE) +
     
     labs(
-      x = "Year",
+      x = "",
       y = wq_variables_meta[[var]],
       color = "CCS Station ID",
       title = adjust_label(wq_variables_meta[[var]], "Mean"),
@@ -450,14 +455,17 @@ for (var in wq_variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
     # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
     stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
+      aes(label = after_stat(
+        paste0(
+          shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+          ":", "~~~",
+          ..p.value.label.., "~~~",
+          ..rr.label..
+        ))),
       # formula = y ~ x,
       parse = TRUE,
       label.x = "left",
@@ -501,7 +509,7 @@ for (var in wq_variables) {
     geom_point() +
     geom_smooth(method = "lm", se = FALSE) +
     labs(
-      x = "Year",
+      x = "",
      y = wq_variables_meta[[var]],
      color = "CCS Station ID",
      title = adjust_label(wq_variables_meta[[var]], "Median")
@@ -516,14 +524,17 @@ for (var in wq_variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
     stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
+      aes(label = after_stat(
+        paste0(
+          shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+          ":", "~~~",
+          ..p.value.label.., "~~~",
+          ..rr.label..
+        ))),
       # formula = y ~ x,
       parse = TRUE,
       label.x = "left",
@@ -535,11 +546,12 @@ for (var in wq_variables) {
   # Combine the plots using patchwork with adjusted spacing
   combined_plot <- p_1 + p_2 + 
     # Stack the plots vertically
-    plot_layout(ncol = 1, heights = c(1, 1)) +
-    plot_annotation(
-      title = "Annual Time Series - CCS Wellfleet",
-      theme = theme(plot.title = element_text(face = "bold"))
-    )
+    plot_layout(ncol = 1, heights = c(1, 1)) 
+  # +
+  #   plot_annotation(
+  #     title = "Annual Time Series - CCS Wellfleet",
+  #     theme = theme(plot.title = element_text(face = "bold"))
+  #   )
   
   print(combined_plot)
 }
@@ -567,11 +579,11 @@ for (var in wq_variables) {
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
 
     labs(
-      x = "Date",
+      x = "",
       y = wq_variables_meta[[var]],
       color = "CCS Station ID",
-      title = paste(wq_variables_meta[[var]]),
-      subtitle = "Summer Data Time Series - CCS Wellfleet"
+      # title = paste(wq_variables_meta[[var]]),
+      # subtitle = "Summer Data Time Series - CCS Wellfleet"
       ) +
     scale_x_datetime(
       limits = c(start_year, end_year),
@@ -584,14 +596,17 @@ for (var in wq_variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
     stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
+      aes(label = after_stat(
+        paste0(
+          shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+          ":", "~~~",
+          ..p.value.label.., "~~~",
+          ..rr.label..
+        ))),
       # formula = y ~ x,
       parse = TRUE,
       size = 3, 
@@ -627,7 +642,7 @@ for (var in wq_variables) {
     # add threshold line, if available
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
     
-    labs(x = "Year",
+    labs(x = "",
          y = wq_variables_meta[[var]],
          color = "CCS Station ID",
          title = adjust_label(wq_variables_meta[[var]], "Summer Mean")
@@ -642,14 +657,17 @@ for (var in wq_variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
     stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
+      aes(label = after_stat(
+        paste0(
+          shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+          ":", "~~~",
+          ..p.value.label.., "~~~",
+          ..rr.label..
+        ))),
       # formula = y ~ x,
       parse = TRUE,
       label.x = "left",
@@ -679,7 +697,7 @@ for (var in wq_variables) {
     # add threshold line, if available
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
     
-    labs(x = "Year",
+    labs(x = "",
          y = wq_variables_meta[[var]],
          color = "CCS Station ID",
          title = adjust_label(wq_variables_meta[[var]], "Summer Median")
@@ -694,14 +712,17 @@ for (var in wq_variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
     stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
+      aes(label = after_stat(
+        paste0(
+          shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+          ":", "~~~",
+          ..p.value.label.., "~~~",
+          ..rr.label..
+        ))),
       # formula = y ~ x,
       parse = TRUE,
       label.x = "left",
@@ -712,11 +733,12 @@ for (var in wq_variables) {
   
   
   combined_plot <- p_1 + p_2 + 
-    plot_layout(ncol = 1, heights = c(1, 1)) +
-    plot_annotation(
-      title = "Summer Time Series - CCS Wellfleet",
-      theme = theme(plot.title = element_text(face = "bold"))
-    )
+    plot_layout(ncol = 1, heights = c(1, 1)) 
+  # +
+  #   plot_annotation(
+  #     title = "Summer Time Series - CCS Wellfleet",
+  #     theme = theme(plot.title = element_text(face = "bold"))
+  #   )
   
   print(combined_plot)
 }
@@ -746,11 +768,11 @@ for (var in wq_variables) {
     geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
     
     labs(
-      x = "Date",
+      x = "",
       y = wq_variables_meta[[var]],
       color = "CCS Station ID",
-      title = paste(wq_variables_meta[[var]]),
-      subtitle = "Annual Summer Mean Time Series - CCS Wellfleet"
+      # title = paste(wq_variables_meta[[var]]),
+      # subtitle = "Annual Summer Mean Time Series - CCS Wellfleet"
     ) +
     scale_x_continuous(
       breaks = seq(
@@ -765,14 +787,17 @@ for (var in wq_variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
     stat_poly_eq(
-      aes(group = internal_station_id, 
-          color = internal_station_id,
-          label = after_stat(
-            paste0("Station: ", grp.label, "~~~",
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
+      aes(label = after_stat(
+        paste0(
+          shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+          ":", "~~~",
+          ..p.value.label.., "~~~",
+          ..rr.label..
+        ))),
       # formula = y ~ x,
       parse = TRUE,
       size = 3, 
