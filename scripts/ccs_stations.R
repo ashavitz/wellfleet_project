@@ -274,7 +274,7 @@ wq_variables <- c(wq_variables,
 # ---- Create metadata variables for labeling ----
 wq_variables_meta <- list(
   temperature_C = "Temperature (°C)",
-  salinity = "Salinity (PSU)",
+  salinity = "Salinity (ppt)",
   `dissolved_oxygen_mg/L` = "Dissolved Oxygen (mg/L)",
   `chlorophyll_ug/L` = "Chlorophyll (µg/L)",
   `pheophytin_ug/L` = "Pheophytin (µg/L)",
@@ -284,13 +284,13 @@ wq_variables_meta <- list(
   ortho_phosphate_uM = "Orthophosphate (µM)",
   total_nitrogen_uM = "Total Nitrogen (µM)",
   total_phosphorus_uM = "Total Phosphorus (µM)",
-  `log10_chlorophyll_ug/L` = "log10 Chlorophyll [log10(µg/L)]",
-  `log10_pheophytin_ug/L` = "log10 Pheophytin [log10(µg/L)]",
-  log10_nitrate_nitrite_uM = "log10 Nitrate + Nitrite [log10(µM)]",
-  log10_ammonium_uM = "log10 Ammonium [log10(µM)]",
-  log10_ortho_phosphate_uM = "log10 Orthophosphate [log10(µM)]",
-  log10_total_nitrogen_uM = "log10 Total Nitrogen [log10(µM)]",
-  log10_total_phosphorus_uM = "log10 Total Phosphorus [log10(µM)]"
+  `log10_chlorophyll_ug/L` = "log10(Chlorophyll [µg/L])",
+  `log10_pheophytin_ug/L` = "log10(Pheophytin [µg/L])",
+  log10_nitrate_nitrite_uM = "log10(Nitrate + Nitrite [µM])",
+  log10_ammonium_uM = "log10(Ammonium [µM])",
+  log10_ortho_phosphate_uM = "log10(Orthophosphate [µM])",
+  log10_total_nitrogen_uM = "log10(Total Nitrogen [µM])",
+  log10_total_phosphorus_uM = "log10(Total Phosphorus [µM])"
 )
 
 # Function for customizing this labeling for plotting:
@@ -409,7 +409,7 @@ for (var in wq_variables) {
       size = 3, 
       label.x = "left",
       label.y = "top",
-      vstep = 0.025
+      vstep = 0.04
     )
   
   print(p)
@@ -471,7 +471,7 @@ for (var in wq_variables) {
       label.x = "left",
       label.y = "top",
       vstep = 0.06,
-      size = 2.5
+      size = 1.5
     ) 
   
   
@@ -540,7 +540,7 @@ for (var in wq_variables) {
       label.x = "left",
       label.y = "top",
       vstep = 0.06,
-      size = 2.5
+      size = 1.5
     ) 
     
   # Combine the plots using patchwork with adjusted spacing
@@ -612,7 +612,7 @@ for (var in wq_variables) {
       size = 3, 
       label.x = "left",
       label.y = "top",
-      vstep = 0.025
+      vstep = 0.04
     )
 
   print(p)
@@ -673,7 +673,7 @@ for (var in wq_variables) {
       label.x = "left",
       label.y = "top",
       vstep = 0.06,
-      size = 2.5
+      size = 1.5
     ) 
   
   
@@ -728,7 +728,7 @@ for (var in wq_variables) {
       label.x = "left",
       label.y = "top",
       vstep = 0.06,
-      size = 2.5
+      size = 1.5
     ) 
   
   
@@ -803,7 +803,7 @@ for (var in wq_variables) {
       size = 3, 
       label.x = "left",
       label.y = "top",
-      vstep = 0.025
+      vstep = 0.04
     ) 
   
   print(p_1)
