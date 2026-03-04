@@ -35,12 +35,16 @@ knitr::read_chunk("../scripts/buoys_merged.R")
 ```{r Load Libraries, message=FALSE, warning=FALSE}
 ```
 
-### Set Global ggplot Themes
-```{r Set Global ggplot Themes, message=FALSE, warning=FALSE}
+### Load Buoy Data
+```{r Load Buoy Data, message=FALSE, warning=FALSE}
 ```
 
-### Load and Visualize Buoy Data
-```{r Load and Visualize Buoy Data, message=FALSE, warning=FALSE}
+### Set Global ggplot Themes and Plotting Objects
+```{r Set Global ggplot Themes and Plotting Objects, message=FALSE, warning=FALSE}
+```
+
+### Visualize Buoy Data
+```{r Visualize Buoy Data, message=FALSE, warning=FALSE}
 ```
 
 ### Plots for Final Report

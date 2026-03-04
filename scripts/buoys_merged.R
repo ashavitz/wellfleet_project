@@ -18,20 +18,8 @@ library(readr) # for reading in files
 library(rerddap) # for accessing ERDDAP servers
 library(tidyr) # for tidying and reshaping data
 
-# ---- Set Global ggplot Themes ----
 
-# Set ggplot theme to minimal, rotate x axis labels, and center plot titles
-theme_set(
-  theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      plot.title = element_text(hjust = 0.5),
-      plot.subtitle = element_text(hjust = 0.5)
-    )
-)
-
-
-# ---- Load and Visualize Buoy Data ----
+# ---- Load Buoy Data ----
 
 # Load data for each buoy
 buoy_221_annual <- read_csv("data/summary_data/buoy_221_annual.csv")
@@ -47,7 +35,8 @@ buoy_221_annual <- buoy_221_annual |>
          sig_wave_height_mean = mean_wave_hs, 
          dominant_wave_period_mean = mean_wave_tp,
          avg_wave_period_mean = mean_wave_ta) |> 
-  mutate(buoy = "CDIP 221")
+  mutate(buoy = "CDIP 221",
+         location = "Cape Cod Bay")
 
 buoy_a01_annual <- buoy_a01_annual |> 
   select(year, air_temperature_mean, temperature_1m, temperature_20m,
@@ -57,7 +46,8 @@ buoy_a01_annual <- buoy_a01_annual |>
          wind_direction_simple_mean = wind_direction_mean_simple,
          sig_wave_height_mean = significant_wave_height,
          dominant_wave_period_mean = dominant_wave_period) |> 
-  mutate(buoy = "NERACOOS A01")
+  mutate(buoy = "NERACOOS A01",
+         location = "Massachusetts Bay")
 
 buoy_44013_annual <- buoy_44013_annual |> 
   select(YYYY, ATMP, WTMP, WDIR_simple, WDIR, WSPD, WVHT, DPD, APD) |> 
@@ -70,7 +60,8 @@ buoy_44013_annual <- buoy_44013_annual |>
          sig_wave_height_mean = WVHT,
          dominant_wave_period_mean = DPD,
          avg_wave_period_mean = APD) |> 
-  mutate(buoy = "NOAA 44013")
+  mutate(buoy = "NOAA 44013",
+         location = "Outer Boston Harbor")
 
 
 # Details on Variables:
@@ -83,7 +74,7 @@ buoy_44013_annual <- buoy_44013_annual |>
   
 # Bind rows to merge data frames into one
 buoy_data_annual <- bind_rows(buoy_221_annual, buoy_44013_annual, buoy_a01_annual) |> 
-  relocate(buoy, .after = year)
+  relocate(c(buoy, location), .after = year)
 
 # Store variables of and variable metadata
 variables <- c("air_temp_mean",
@@ -97,24 +88,68 @@ variables <- c("air_temp_mean",
                "avg_wave_period_mean")
 
 variables_meta <- list(
-  air_temp_mean = "Air temperature (degC)", 
-  sst_mean = "Sea surface temperature (degC)",
-  temperature_20m = "Water Temperature @20m (degC)",
-  wind_direction_simple_mean = "Simple Mean Wind Direction (degT)",
-  wind_direction_mean = "Mean Wind Direction, circular (degT)", 
+  air_temp_mean = "Air temperature (°C)", 
+  sst_mean = "Sea surface temperature (°C)",
+  temperature_20m = "Water Temperature @20m (°C)",
+  wind_direction_simple_mean = "Simple Mean Wind Direction (°T)",
+  wind_direction_mean = "Mean Wind Direction, circular (°T)", 
   wind_speed_mean = "Wind speed (m/s)",
   sig_wave_height_mean = "Mean Significant Wave Height (m)",
   dominant_wave_period_mean = "Mean Dominant Wave Period (s)",
   avg_wave_period_mean = "Mean Average Wave Period (s)")
 
 
+# ---- Set Global ggplot Themes and Plotting Objects ----
+
+# Set ggplot theme to minimal, rotate x axis labels, and center plot titles
+theme_set(
+  theme_minimal() +
+    theme(
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      plot.title = element_text(hjust = 0.5),
+      plot.subtitle = element_text(hjust = 0.5)
+    )
+)
+
+# Establish colors to use for plotting
+# NOte: manually applying color palette from yarrr::google
+buoy_colors <- c(
+  "Massachusetts Bay" = "#F9B90AFF",
+  "Outer Boston Harbor" = "#3D79F3FF",
+  "Cape Cod Bay" = "#E6352FFF"
+)
+
+# Annotate plot with simple linear model p-values and R2 values
+# Since parse = TRUE, this will read the annotation as plotmath format
+# So to include site labels, shQuote(levels(factor(...))) ensures the
+# correct station ID is passed to the annotation as a quote, which won't be parsed
+plot_stat_annotation <- stat_poly_eq(
+  aes(
+    label = after_stat(
+    paste0(
+      shQuote(levels(factor(buoy_data_annual$location))[as.integer(grp.label)]),
+      ":", "~~~",
+      ..p.value.label.., "~~~",
+      ..rr.label..
+    ))),
+  # formula = y ~ x,
+  parse = TRUE,
+  size = 3, 
+  label.x = "left",
+  label.y = "top",
+  vstep = 0.04
+  )
+
+# ---- Visualize Buoy Data ----
+
 # Plot all variables over time, color by buoy
+# Scatterplots with linear lines of best fit:
 for (var in variables) {
   
   # For each variable, only include a buoy in the plot (and thus legend) 
   # if it has at least 2 real (non-NA) measurements (2, so a line can be drawn)
   plot_data <- buoy_data_annual |>
-    group_by(buoy) |>
+    group_by(location) |>
     filter(sum(!is.na(.data[[var]])) >= 2) |>
     ungroup()
   
@@ -128,20 +163,18 @@ for (var in variables) {
   p <- ggplot(plot_data,
               aes(x = year,
                   y = .data[[var]],
-                  color = buoy)) +
+                  color = location)) +
     geom_point() +
     geom_smooth(method = "lm", se = TRUE, alpha = 0.1) +
-    labs(x = "Date",
-         y = variables_meta[[var]],
-         color = "Buoy",
-         title = paste("Annual Time Series",
-                       variables_meta[[var]], sep = "\n"),
-         caption = "(only years in which each month contains at least 80% complete daily data)"
-    ) +
-    # manually applying color palette from yarrr::google
-    scale_color_manual(
-      values = c("NERACOOS A01" = "#F9B90AFF", "NOAA 44013" = "#3D79F3FF", "CDIP 221" = "#E6352FFF")
-    ) +
+    labs(
+      x = "",
+      y = variables_meta[[var]],
+      color = "Buoy",
+      # title = paste("Annual Time Series",
+      #               variables_meta[[var]], sep = "\n"),
+      # caption = "(only years in which each month contains at least 80% complete daily data)"
+      ) +
+    scale_color_manual(values = buoy_colors) +
     scale_x_continuous(
       breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
     
@@ -149,33 +182,20 @@ for (var in variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
-    stat_poly_eq(
-      aes(group = buoy, 
-          color = buoy,
-          label = after_stat(
-            paste0(
-                   ..p.value.label.., "~~~",
-                   ..rr.label..
-            ))),
-      # formula = y ~ x,
-      parse = TRUE,
-      size = 3, 
-      label.x = "left",
-      label.y = "top",
-      vstep = 0.04
-    )
+    plot_stat_annotation
   
   print(p)
 }
 
 
-# Plot line graphs
+# Plot all variables over time, color by buoy
+# Line graphs overlaid by linear lines of best fit:
 for (var in variables) {
   
   # For each variable, only include a buoy in the plot (and thus legend) 
   # if it has at least 2 real (non-NA) measurements (2, so a line can be drawn)
   plot_data <- buoy_data_annual |>
-    group_by(buoy) |>
+    group_by(location) |>
     filter(sum(!is.na(.data[[var]])) >= 2) |>
     ungroup()
   
@@ -189,20 +209,19 @@ for (var in variables) {
   p <- ggplot(plot_data,
               aes(x = year,
                   y = .data[[var]],
-                  color = buoy)) +
+                  color = location)) +
     geom_point() +
     geom_line(data = filter(plot_data, !is.na(.data[[var]]))) +
     geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
-    labs(x = "Date",
-         y = variables_meta[[var]],
-         title = paste("Annual Time Series",
-                       variables_meta[[var]], sep = "\n"),
-         caption = "(only years in which each month contains at least 80% complete daily data)"
-    ) +
-    # manually applying color palette from yarrr::google
-    scale_color_manual(
-      values = c("NERACOOS A01" = "#F9B90AFF", "NOAA 44013" = "#3D79F3FF", "CDIP 221" = "#E6352FFF")
-    ) +
+    labs(
+      x = "",
+      y = variables_meta[[var]],
+      color = "Buoy",
+      # title = paste("Annual Time Series",
+      #               variables_meta[[var]], sep = "\n"),
+      # caption = "(only years in which each month contains at least 80% complete daily data)"
+      ) +
+    scale_color_manual(values = buoy_colors) +
     scale_x_continuous(
       breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
     
@@ -210,27 +229,13 @@ for (var in variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
-    stat_poly_eq(
-      aes(group = buoy, 
-          color = buoy,
-          label = after_stat(
-            paste0(
-              ..p.value.label.., "~~~",
-              ..rr.label..
-            ))),
-      # formula = y ~ x,
-      parse = TRUE,
-      size = 3, 
-      label.x = "left",
-      label.y = "top",
-      vstep = 0.04
-    )
+    plot_stat_annotation
   
   print(p)
 }
 
 
-# Plot line graphs for wind direction
+# Plot line graphs for wind direction up to 2014 (for comparison with previous reports)
 for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
   
   # Determine y axis range and create vertical padded y_max so annotations will be visible
@@ -243,7 +248,7 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
   p <- ggplot(buoy_data_annual |> filter(year >= 2003, year <= 2014),
               aes(x = year,
                   y = .data[[var]],
-                  color = buoy)) +
+                  color = location)) +
     geom_point() +
     geom_line(data = filter(buoy_data_annual, !is.na(.data[[var]]) & year %in% c(2003:2014))) +
     geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
@@ -253,10 +258,7 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
                        variables_meta[[var]], sep = "\n"),
          caption = "(only years in which each month contains at least 80% complete daily data)"
     ) +
-    # manually applying color palette from yarrr::google
-    scale_color_manual(
-      values = c("NERACOOS A01" = "#F9B90AFF", "NOAA 44013" = "#3D79F3FF", "CDIP 221" = "#E6352FFF")
-    ) +
+    scale_color_manual(values = buoy_colors) +
     scale_x_continuous(
       breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
     
@@ -264,27 +266,44 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
-    stat_poly_eq(
-      aes(group = buoy, 
-          color = buoy,
-          label = after_stat(
-            paste0(
-              ..p.value.label.., "~~~",
-              ..rr.label..
-            ))),
-      # formula = y ~ x,
-      parse = TRUE,
-      size = 3, 
-      label.x = "left",
-      label.y = "top",
-      vstep = 0.04
-    )
+    plot_stat_annotation
   
   print(p)
 }
 
 
 ### ---- Plots for Final Report ----
+
+# Establish themes and layers for plotting
+theme_set(
+  theme_minimal() +
+    theme(
+      axis.text.x  = element_text(size = 12, angle = 45, hjust = 1),
+      axis.text.y  = element_text(size = 12),
+      legend.title = element_text(size = 16),
+      legend.text  = element_text(size = 12)
+    )
+)
+
+# Annotate plot with simple linear model p-values and R2 values
+# Since parse = TRUE, this will read the annotation as plotmath format
+# So to include site labels, shQuote(levels(factor(...))) ensures the
+# correct station ID is passed to the annotation as a quote, which won't be parsed
+plot_stat_annotation <- stat_poly_eq(
+  aes(
+    label = after_stat(
+      paste0(
+        shQuote(levels(factor(buoy_data_annual$location))[as.integer(grp.label)]),
+        ":", "~~~",
+        ..p.value.label.., "~~~",
+        ..rr.label..
+      ))),
+  parse = TRUE,
+  size = 4,
+  label.x = "left",
+  label.y = "top",
+  vstep = 0.05
+)
 
 
 # Plot time series of mean annual air temperature
@@ -294,7 +313,7 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
 # (non-NA) measurements (2, so a line can be drawn)
 plot_data <- buoy_data_annual |>
   filter(!is.na(air_temp_mean)) |> 
-  group_by(buoy) |>
+  group_by(location) |>
   filter(n() >= 2) |>
   ungroup()
   
@@ -305,46 +324,26 @@ range_size = y_max - y_min
 y_max_buffered <- y_max + (range_size * 0.2)
   
 # Plot
-p1 <- ggplot(plot_data, aes(x = year, y = air_temp_mean, color = buoy)) +
+p1 <- ggplot(plot_data, aes(x = year, y = air_temp_mean, color = location)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
   labs(
     x = "",
     y = "Air Temperature (°C)",
-    color = "Buoy"
+    color = "Buoy",
+    tag = "a)"
     ) +
-# manually applying color palette from yarrr::google
-scale_color_manual(
-  values = c("NERACOOS A01" = "#F9B90AFF", "NOAA 44013" = "#3D79F3FF", "CDIP 221" = "#E6352FFF")
-) +
-scale_x_continuous(
-  breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
+  scale_color_manual(values = buoy_colors) +
+  scale_x_continuous(
+    breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
 
-# Add vertical padding
-scale_y_continuous(limits = c(NA, y_max_buffered)) +
+  # Add vertical padding
+  scale_y_continuous(limits = c(NA, y_max_buffered)) +
 
-# Annotate plot with simple linear model p-values and R2 values
-stat_poly_eq(
-  aes(group = buoy, 
-      color = buoy,
-      label = after_stat(
-        paste0(
-          ..p.value.label.., "~~~",
-          ..rr.label..
-        ))),
-  # formula = y ~ x,
-  parse = TRUE,
-  size = 4, 
-  label.x = "left",
-  label.y = "top",
-  vstep = 0.05
-) +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(size = 11),
-    axis.text.y = element_text(size = 12)
-  )
+  # Annotate plot with simple linear model p-values and R2 values
+  plot_stat_annotation +
+  theme(legend.position = "none")
 
 
 # Plot time series of mean annual surface water temperature
@@ -354,7 +353,7 @@ stat_poly_eq(
 # (non-NA) measurements (2, so a line can be drawn)
 plot_data <- buoy_data_annual |>
   filter(!is.na(sst_mean)) |> 
-  group_by(buoy) |>
+  group_by(location) |>
   filter(n() >= 2) |>
   ungroup()
 
@@ -365,19 +364,17 @@ range_size = y_max - y_min
 y_max_buffered <- y_max + (range_size * 0.2)
 
 # Plot
-p2 <- ggplot(plot_data, aes(x = year, y = sst_mean, color = buoy)) +
+p2 <- ggplot(plot_data, aes(x = year, y = sst_mean, color = location)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
   labs(
     x = "",
     y = "Water Temperature (°C)",
-    color = "Buoy"
+    color = "Buoy",
+    tag = "b)"
   ) +
-  # manually applying color palette from yarrr::google
-  scale_color_manual(
-    values = c("NERACOOS A01" = "#F9B90AFF", "NOAA 44013" = "#3D79F3FF", "CDIP 221" = "#E6352FFF")
-  ) +
+  scale_color_manual(values = buoy_colors) +
   scale_x_continuous(
     breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
   
@@ -385,26 +382,172 @@ p2 <- ggplot(plot_data, aes(x = year, y = sst_mean, color = buoy)) +
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
   # Annotate plot with simple linear model p-values and R2 values
-  stat_poly_eq(
-    aes(group = buoy, 
-        color = buoy,
-        label = after_stat(
-          paste0(
-            ..p.value.label.., "~~~",
-            ..rr.label..
-          ))),
-    # formula = y ~ x,
-    parse = TRUE,
-    size = 4, 
-    label.x = "left",
-    label.y = "top",
-    vstep = 0.05
-  ) +
-  theme(
-    legend.title = element_text(size = 16),
-    legend.text  = element_text(size = 12),
-    axis.text.x = element_text(size = 12),
-    axis.text.y = element_text(size = 12)
-  )
+  plot_stat_annotation
 
 p1 + p2
+
+
+
+# Plot time series of mean annual wind speed and direction
+
+# Prepare data for plotting
+# Only include a buoy in the plot (and thus legend) if it has at least 2 real 
+# (non-NA) measurements (2, so a line can be drawn)
+plot_data <- buoy_data_annual |>
+  filter(!is.na(wind_speed_mean)) |> 
+  group_by(location) |>
+  filter(n() >= 2) |>
+  ungroup()
+
+# Determine y axis range and create vertical padded y_max so annotations will be visible
+y_max <- max(plot_data$wind_speed_mean, na.rm = TRUE)
+y_min <- min(plot_data$wind_speed_mean, na.rm = TRUE)
+range_size = y_max - y_min
+y_max_buffered <- y_max + (range_size * 0.2)
+
+# Plot
+p3 <- ggplot(plot_data, aes(x = year, y = wind_speed_mean, color = location)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
+  labs(
+    x = "",
+    y = "Wind Speed (m/s)",
+    color = "Buoy",
+    tag = "a)"
+  ) +
+  scale_color_manual(values = buoy_colors) +
+  scale_x_continuous(
+    breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
+  
+  # Add vertical padding
+  scale_y_continuous(limits = c(NA, y_max_buffered)) +
+  
+  # Annotate plot with simple linear model p-values and R2 values
+  plot_stat_annotation +
+  theme(legend.position = "none")
+
+
+# Plot time series of circular mean annual wind direction 
+
+# Prepare data for plotting
+# Only include a buoy in the plot (and thus legend) if it has at least 2 real 
+# (non-NA) measurements (2, so a line can be drawn)
+plot_data <- buoy_data_annual |>
+  filter(!is.na(wind_direction_mean)) |> 
+  group_by(location) |>
+  filter(n() >= 2) |>
+  ungroup()
+
+# Determine y axis range and create vertical padded y_max so annotations will be visible
+y_max <- max(plot_data$wind_direction_mean, na.rm = TRUE)
+y_min <- min(plot_data$wind_direction_mean, na.rm = TRUE)
+range_size = y_max - y_min
+y_max_buffered <- y_max + (range_size * 0.2)
+
+# Plot
+p4 <- ggplot(plot_data, aes(x = year, y = wind_direction_mean, color = location)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
+  labs(
+    x = "",
+    y = "Wind Direction, circular (°T)",
+    color = "Buoy",
+    tag = "b)"
+  ) +
+  scale_color_manual(values = buoy_colors) +
+  scale_x_continuous(
+    breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
+  
+  # Add vertical padding
+  scale_y_continuous(limits = c(NA, y_max_buffered)) +
+  
+  # Annotate plot with simple linear model p-values and R2 values
+  plot_stat_annotation
+
+p3 + p4
+
+
+
+
+# Plot time series of mean average wave period 
+
+# Prepare data for plotting
+# Only include a buoy in the plot (and thus legend) if it has at least 2 real 
+# (non-NA) measurements (2, so a line can be drawn)
+plot_data <- buoy_data_annual |>
+  filter(!is.na(avg_wave_period_mean)) |> 
+  group_by(location) |>
+  filter(n() >= 2) |>
+  ungroup()
+
+# Determine y axis range and create vertical padded y_max so annotations will be visible
+y_max <- max(plot_data$avg_wave_period_mean, na.rm = TRUE)
+y_min <- min(plot_data$avg_wave_period_mean, na.rm = TRUE)
+range_size = y_max - y_min
+y_max_buffered <- y_max + (range_size * 0.2)
+
+# Plot
+p5 <- ggplot(plot_data, aes(x = year, y = avg_wave_period_mean, color = location)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
+  labs(
+    x = "",
+    y = "Average Wave Period (s)",
+    color = "Buoy",
+    tag = "a)"
+  ) +
+  scale_color_manual(values = buoy_colors) +
+  scale_x_continuous(
+    breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
+  
+  # Add vertical padding
+  scale_y_continuous(limits = c(NA, y_max_buffered)) +
+  
+  # Annotate plot with simple linear model p-values and R2 values
+  plot_stat_annotation +
+  theme(legend.position = "none")
+
+
+# Plot time series of mean significant wave height
+
+# Prepare data for plotting
+# Only include a buoy in the plot (and thus legend) if it has at least 2 real 
+# (non-NA) measurements (2, so a line can be drawn)
+plot_data <- buoy_data_annual |>
+  filter(!is.na(sig_wave_height_mean)) |> 
+  group_by(location) |>
+  filter(n() >= 2) |>
+  ungroup()
+
+# Determine y axis range and create vertical padded y_max so annotations will be visible
+y_max <- max(plot_data$sig_wave_height_mean, na.rm = TRUE)
+y_min <- min(plot_data$sig_wave_height_mean, na.rm = TRUE)
+range_size = y_max - y_min
+y_max_buffered <- y_max + (range_size * 0.25)
+
+# Plot
+p6 <- ggplot(plot_data, aes(x = year, y = sig_wave_height_mean, color = location)) +
+  geom_point() +
+  geom_line() +
+  geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
+  labs(
+    x = "",
+    y = "Significant Wave Height (m)",
+    color = "Buoy", 
+    tag = "b)"
+  ) +
+  scale_color_manual(values = buoy_colors) +
+  scale_x_continuous(
+    breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
+  
+  # Add vertical padding
+  scale_y_continuous(limits = c(NA, y_max_buffered)) +
+  
+  # Annotate plot with simple linear model p-values and R2 values
+  plot_stat_annotation
+
+p5 + p6
+
