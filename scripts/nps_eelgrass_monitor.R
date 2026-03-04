@@ -604,7 +604,7 @@ ggplot(water_temp_summer,
   scale_color_paletteer_d("yarrr::google")
 
 
-# Plot summer mean temperatureswith lm trendline and p value
+# Plot summer mean temperatures with lm trendline and p value
 
 # Determine y axis range and create vertical padded y_max so annotations will be visible
 y_max <- max(water_temp_summer$Temp_C, na.rm = TRUE)
@@ -612,7 +612,10 @@ y_min <- min(water_temp_summer$Temp_C, na.rm = TRUE)
 range_size = y_max - y_min
 y_max_buffered <- y_max + (range_size * 0.2)
 
-ggplot(water_temp_summer,
+# Remove transect B due to limited temperature time series (only two years)
+water_temp_summer_A_C <- filter(water_temp_summer, Transect != "B")
+
+ggplot(water_temp_summer_A_C,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
@@ -621,20 +624,22 @@ ggplot(water_temp_summer,
     title = "Summer (June - Sep) Mean Bottom Temperature", 
     y = "Temperature (°C)"
   ) +
-  scale_color_paletteer_d("yarrr::google") + 
+  # manually applying color palette from yarrr::google
+  scale_color_manual(values = c("A" = "#3D79F3FF", "C" = "#F9B90AFF")) +
   
   # Add vertical padding
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
   # Annotate plot with simple linear model p-values and R2 values
   stat_poly_eq(
-    aes(group = Transect, 
-        color = Transect,
-        label = after_stat(
-          paste0("Transect: ", grp.label, "~~~",
-                 ..p.value.label.., "~~~",
-                 ..rr.label..
-          ))),
+    aes(
+      label = after_stat(
+      paste0("Transect: ",
+             shQuote(levels(factor(water_temp_summer_A_C$Transect))[as.integer(grp.label)]),
+             "~~~",
+             ..p.value.label.., "~~~",
+             ..rr.label..
+             ))),
     # formula = y ~ x,
     parse = TRUE,
     size = 3, 
@@ -662,12 +667,13 @@ sst_dh_annual <-sst_data_dh |>
   mutate(Transect = "SST (NASA JPL MUR)") |> 
   relocate(Transect, .after = Year)
 
-# Bind temperature data frames
-water_temp_annual <- water_temp_annual |> 
+# Bind temperature data frames and remove transect B due to limited temperature time series (only two years)
+water_temp_annual_A_C <- water_temp_annual |> 
+  filter(Transect != "B") |> 
   bind_rows(sst_dh_annual)
 
 # Plot annual mean temperatures
-ggplot(water_temp_annual,
+ggplot(water_temp_annual_A_C,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
@@ -675,18 +681,22 @@ ggplot(water_temp_annual,
     title = "Annual Mean Bottom Temperature by Transect", 
     y = "Temperature (°C)"
   ) +
-  scale_color_paletteer_d("yarrr::google")
+  # manually applying color palette from yarrr::google
+  scale_color_manual(
+    values = c("A" = "#3D79F3FF",
+               "C" = "#F9B90AFF",
+               "SST (NASA JPL MUR)" = "#0F9D58"))
 
 
 # Plot annual mean temperatures with lm trendline and p value
 
 # Determine y axis range and create vertical padded y_max so annotations will be visible
-y_max <- max(water_temp_annual$Temp_C, na.rm = TRUE)
-y_min <- min(water_temp_annual$Temp_C, na.rm = TRUE)
+y_max <- max(water_temp_annual_A_C$Temp_C, na.rm = TRUE)
+y_min <- min(water_temp_annual_A_C$Temp_C, na.rm = TRUE)
 range_size = y_max - y_min
 y_max_buffered <- y_max + (range_size * 0.2)
 
-ggplot(water_temp_annual,
+ggplot(water_temp_annual_A_C,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
@@ -695,20 +705,25 @@ ggplot(water_temp_annual,
     title = "Annual Mean Bottom Temperature by Transect", 
     y = "Temperature (°C)"
   ) +
-  scale_color_paletteer_d("yarrr::google") +
-  
+  # manually applying color palette from yarrr::google
+  scale_color_manual(
+    values = c("A" = "#3D79F3FF",
+               "C" = "#F9B90AFF",
+               "SST (NASA JPL MUR)" = "#0F9D58")) +
   # Add vertical padding
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
   # Annotate plot with simple linear model p-values and R2 values
   stat_poly_eq(
-    aes(group = Transect, 
-        color = Transect,
-        label = after_stat(
-          paste0("Transect: ", grp.label, "~~~",
-                 ..p.value.label.., "~~~",
-                 ..rr.label..
-          ))),
+    aes(
+      label = after_stat(
+      paste0(
+        "Transect: ",
+        shQuote(levels(factor(water_temp_annual_A_C$Transect))[as.integer(grp.label)]),
+         "~~~",
+        ..p.value.label.., "~~~",
+        ..rr.label..
+      ))),
     # formula = y ~ x,
     parse = TRUE,
     size = 3, 
