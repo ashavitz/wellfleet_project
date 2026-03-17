@@ -5,6 +5,13 @@ format:
   html:
     code-fold: true
     code-summary: "Show the code"
+    fig-format: png
+    fig-dpi: 300
+    
+execute:
+  dev: ragg_png
+  fig-width: 6.5
+  fig-height: 4
 ---
 [Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
 
@@ -41,4 +48,8 @@ knitr::read_chunk("../scripts/boston_hyannis_land_wind.R")
 
 ### Plot Average Annual Data
 ```{r Plot Average Annual Data, message=FALSE, warning=FALSE}
+```
+
+### Plot For Final Report
+```{r Plots for Final Report, message=FALSE, warning=FALSE, fig.width=6.5, fig.height=9}
 ```

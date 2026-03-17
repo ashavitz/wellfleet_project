@@ -54,3 +54,7 @@ knitr::read_chunk("../scripts/nps_eelgrass_monitor.R")
 ### Load and Visualize Water Temp Data
 ```{r Load and Visualize Water Temp Data, message=FALSE, warning=FALSE}
 ```
+
+### Additional Plots for Final Report
+```{r Additional Plots for Final Report, message=FALSE, warning=FALSE, fig.width=13, fig.height=4}
+```

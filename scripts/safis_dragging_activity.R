@@ -33,7 +33,6 @@ library(dplyr) # for data manipulation and transformation
 library(tidyr) # for tidying and reshaping data
 library(ggplot2) # for visualization
 
-
 # ---- Set Global ggplot Themes ----
 
 # Set ggplot theme to minimal, rotate x axis labels, and center plot titles
@@ -51,7 +50,9 @@ theme_set(
 
 # Load data
 # Note: Live pound data for 2012 could not be provided as it wouold violate confidentiality
-dredge_data <- read_csv("data/safis/DMF_CC_Shellfish_Dredging_data.csv")
+dredge_data <- read_csv("data/safis/DMF_CC_Shellfish_Dredging_data.csv") |> 
+  # Calculate a proxy catch per unit effort value (CPUE)
+  mutate(CPUE_proxy = `LIVE POUNDS` / `TRIP COUNT`)
 
 # Time series bar plots of live pounds and trip count data on dual axis plot
 ggplot(dredge_data,
@@ -77,12 +78,15 @@ ggplot(dredge_data,
   
   # Create second axis scaled by 1/1000 to align with Trip Count
   scale_y_continuous(
+    labels = scales::comma,
     sec.axis = sec_axis(~ . / 1000, name = "Trip Count"),
     expand = c(0,0)) + 
-  labs(title = "Dragging Activity for Shellfish Growing Areas CCB 6,8,9,17,20",
-       x = "Year",
-       y = "Live Pounds",
-       caption = "2012 Trip Count Data Unavailable due to Confidentiality") + 
+  labs(
+    # title = "Dragging Activity for Shellfish Growing Areas CCB 6,8,9,17,20",
+    x = "",
+    y = "Live Pounds",
+    # caption = "2012 Trip Count Data Unavailable due to Confidentiality"
+    ) + 
   
   # Set fill color manually and define legend
   scale_fill_manual(
@@ -90,3 +94,64 @@ ggplot(dredge_data,
     values = c("Live Pounds" = "skyblue", 
                "Trip Count" = "orange",
                "Data Unavailable" = "grey"))
+
+
+
+# Version 2
+# Time series bar plots of live pounds and trip count data on dual axis plot
+# Include CPUE proxy line
+
+cpue_scale <- 10
+
+
+ggplot(dredge_data,
+       aes(x = as.character(YEAR))) +
+  geom_bar(aes(y = `LIVE POUNDS`, fill = "Live Pounds"),
+           stat = "identity",, width = 0.4, position = position_nudge(x = -0.2)) +
+  
+  # Plot trip count scaled by 1000 to align with Live Pounds axis
+  geom_bar(aes(y = `TRIP COUNT` * 1000, fill = "Trip Count"),
+           stat = "identity", width = 0.4, position = position_nudge(x = 0.2)) +
+  
+  # Add a transparent bar or rectangle for 2012
+  geom_bar(data = subset(dredge_data, YEAR == 2012),
+           aes(y = 200000, fill = "Data Unavailable"),
+           stat = "identity", alpha = 0.4,
+           width = 0.4, position = position_nudge(x = -0.2)) +
+  
+  # Add text label over the bar
+  geom_text(data = subset(dredge_data, YEAR == 2012),
+            aes(y = 160000, label = "Unavailable:\nConfidential"),
+            position = position_nudge(x = -0.2),
+            size = 3, color = "red") +
+  
+  geom_line(
+    aes(y = CPUE_proxy * cpue_scale, group = 1, color = "CPUE"),
+    linewidth = 0.5
+  ) +
+  
+  # Create second axis scaled by 1/1000 to align with Trip Count
+  scale_y_continuous(
+    labels = scales::comma,
+    sec.axis = sec_axis(~ . / 1000, name = "Trip Count"),
+    expand = c(0,0)) + 
+  labs(
+    # title = "Dragging Activity for Shellfish Growing Areas CCB 6,8,9,17,20",
+    x = "",
+    y = "Live Pounds",
+    # caption = "2012 Trip Count Data Unavailable due to Confidentiality"
+  ) + 
+  
+  # Set fill color manually and define legend
+  scale_fill_manual(
+    name = "Metric",
+    values = c(
+      "Live Pounds" = "skyblue", 
+      "Trip Count" = "orange",
+      "Data Unavailable" = "grey"
+      )
+    ) +
+  scale_color_manual(
+    name = "Metric",
+    values = c("CPUE" = "black")
+  )

@@ -42,12 +42,20 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r csv import from CCS, message=FALSE, warning=FALSE}
 ```
 
-### Filter Only "Full" Years With Exactly One Monthly Measurement
-```{r Filter Only "Full" Years With at least One Monthly Measurement}
+### Filter Only "Full" Years With at Least One Monthly Measurement
+```{r Filter Only "Full" Years With at Least One Monthly Measurement}
 ```
 
-### Filter Only "Full" Summers With Exactly One Monthly Measurement (June - September)
-```{r Filter Only "Full" Summers With Exactly One Monthly Measurement June - September}
+### Filter Only "Full" Summers With at Least One Monthly Measurement June - September
+```{r Filter Only "Full" Summers With at Least One Monthly Measurement June - September}
+```
+
+### Filter Only "Full" Springs With at Least One Monthly Measurement March - June
+```{r Filter Only "Full" Springs With at Least One Monthly Measurement March - June}
+```
+
+### Filter Only "Full" Autumns With at Least One Monthly Measurement October - December
+```{r Filter Only "Full" Autumns With at Least One Monthly Measurement October - December}
 ```
 
 ### Log10 Transform Variables
@@ -78,6 +86,16 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r Plot Summer Mean, message=FALSE, warning=FALSE}
 ```
 
+### Plot Spring Mean
+```{r Plot Spring Mean, message=FALSE, warning=FALSE}
+```
 
+### Plot Autumn Mean
+```{r Plot Autumn Mean, message=FALSE, warning=FALSE}
+```
+
+### Plots for Final Report
+```{r Plots for Final Report, message=FALSE, warning=FALSE, fig.width=13, fig.height=4}
+```
 
 

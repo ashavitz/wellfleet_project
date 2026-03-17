@@ -17,6 +17,7 @@ library(ggplot2) # for visualization
 library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 library(lubridate) # for date time formats
 library(paletteer) # for color palettes
+library(patchwork) # for displaying graphs together
 library(readr) # for reading in files
 library(tidyr) # for tidying and reshaping data
 library(mgcv) # for gams
@@ -409,9 +410,11 @@ ggplot(par_data, aes(x = date_time, y = Kd)) +
            label = "Fair", color = "orange", size = 3) + 
   annotate("text", x = as.POSIXct("2020-01-01", tz = "UTC"), y = threshold_poor_fair + 0.05,
            label = "Poor", color = "red", size = 3) +
-  labs(title = "PAR Attenuation (Kd) at Duck Harbor",
-       x = "Datetime (Annual Intervals Displayed)",
-       y = expression("Kd (m"^{-1}*")"))
+  labs(
+    # title = "PAR Attenuation (Kd) at Duck Harbor",
+    x = "",
+    y = expression("PAR Attenuation, Kd (m"^{-1}*")")
+    )
 
 
 # Create data frame with just Kd values, day of year, year,
@@ -534,7 +537,8 @@ water_temp_annual <- water_temp_daily |>
   left_join(validity_by_year, by = c("Year", "Transect")) |> 
   # For invalid years, change the calculated mean to NA
   mutate(
-    Temp_C = ifelse(status == "valid", Temp_C, NA_real_)
+    Temp_C = ifelse(status == "valid", Temp_C, NA_real_),
+    Transect_Name = paste("Transect", Transect)
   ) |> 
   select(-c(n_months, all_months_above_80, status))
 
@@ -587,7 +591,8 @@ water_temp_summer <- water_temp_daily |>
   left_join(validity_by_year, by = c("Year", "Transect")) |> 
   # For invalid summers, change the calculated mean to NA
   mutate(
-    Temp_C = ifelse(status == "valid", Temp_C, NA_real_)
+    Temp_C = ifelse(status == "valid", Temp_C, NA_real_),
+    Transect_Name = paste("Transect", Transect)
   ) |> 
   select(-c(n_months, all_months_above_80, status))
 
@@ -615,31 +620,34 @@ y_max_buffered <- y_max + (range_size * 0.2)
 # Remove transect B due to limited temperature time series (only two years)
 water_temp_summer_A_C <- filter(water_temp_summer, Transect != "B")
 
-ggplot(water_temp_summer_A_C,
+p1 <- ggplot(water_temp_summer_A_C,
        aes(x = Year, y = Temp_C, color = Transect)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
   labs(
-    title = "Summer (June - Sep) Mean Bottom Temperature", 
+    # title = "Summer (June - Sep) Mean Bottom Temperature", 
+    x = "",
     y = "Temperature (°C)"
   ) +
   # manually applying color palette from yarrr::google
   scale_color_manual(values = c("A" = "#3D79F3FF", "C" = "#F9B90AFF")) +
   
   # Add vertical padding
-  scale_y_continuous(limits = c(NA, y_max_buffered)) +
-  
+  scale_y_continuous(limits = c(NA, y_max_buffered))
+
+p1 +
   # Annotate plot with simple linear model p-values and R2 values
   stat_poly_eq(
     aes(
       label = after_stat(
-      paste0("Transect: ",
-             shQuote(levels(factor(water_temp_summer_A_C$Transect))[as.integer(grp.label)]),
-             "~~~",
-             ..p.value.label.., "~~~",
-             ..rr.label..
-             ))),
+      paste0(
+        shQuote(levels(factor(water_temp_summer_A_C$Transect_Name))[as.integer(grp.label)]),
+        ":~~~",
+        ..p.value.label..,
+        "~~~",
+        ..rr.label..
+        ))),
     # formula = y ~ x,
     parse = TRUE,
     size = 3, 
@@ -647,7 +655,6 @@ ggplot(water_temp_summer_A_C,
     label.y = "top",
     vstep = 0.025
   ) 
-
 
 
 # Compare transect annual mean temps to remote sensing SST
@@ -664,7 +671,10 @@ sst_data_dh <- read_csv("data/noaa_coastwatch_sst/sst_data_dh.csv") |> mutate(si
 sst_dh_annual <-sst_data_dh |> 
   group_by(Year) |> 
   summarize(Temp_C = mean(analysed_sst), .groups = "drop") |> 
-  mutate(Transect = "SST (NASA JPL MUR)") |> 
+  mutate(
+    Transect = "SST (NASA JPL MUR)",
+    Transect_Name = "SST (NASA JPL MUR)"
+    ) |> 
   relocate(Transect, .after = Year)
 
 # Bind temperature data frames and remove transect B due to limited temperature time series (only two years)
@@ -690,47 +700,61 @@ ggplot(water_temp_annual_A_C,
 
 # Plot annual mean temperatures with lm trendline and p value
 
+# Male Transect_Name a factor and set level order for plotting
+water_temp_annual_A_C$Transect_Name <- factor(
+  water_temp_annual_A_C$Transect_Name,
+  levels = c("Transect A", "Transect C", "SST (NASA JPL MUR)")
+)
+
 # Determine y axis range and create vertical padded y_max so annotations will be visible
 y_max <- max(water_temp_annual_A_C$Temp_C, na.rm = TRUE)
 y_min <- min(water_temp_annual_A_C$Temp_C, na.rm = TRUE)
 range_size = y_max - y_min
-y_max_buffered <- y_max + (range_size * 0.2)
+y_max_buffered <- y_max + (range_size * 0.25)
 
-ggplot(water_temp_annual_A_C,
-       aes(x = Year, y = Temp_C, color = Transect)) +
+p2 <- ggplot(water_temp_annual_A_C,
+       aes(x = Year, y = Temp_C, color = Transect_Name)) +
   geom_point() +
   geom_line() +
   geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
   labs(
-    title = "Annual Mean Bottom Temperature by Transect", 
-    y = "Temperature (°C)"
+    # title = "Annual Mean Bottom Temperature by Transect",
+    x = "",
+    y = "Temperature (°C)",
+    color = "Temperature Source",
   ) +
   # manually applying color palette from yarrr::google
   scale_color_manual(
-    values = c("A" = "#3D79F3FF",
-               "C" = "#F9B90AFF",
-               "SST (NASA JPL MUR)" = "#0F9D58")) +
+    values = c(
+      "Transect A" = "#3D79F3FF",
+      "Transect C" = "#F9B90AFF",
+      "SST (NASA JPL MUR)" = "#0F9D58"
+    )
+  ) +
   # Add vertical padding
-  scale_y_continuous(limits = c(NA, y_max_buffered)) +
-  
-  # Annotate plot with simple linear model p-values and R2 values
+  scale_y_continuous(limits = c(NA, y_max_buffered))
+
+p2 +
   stat_poly_eq(
     aes(
       label = after_stat(
-      paste0(
-        "Transect: ",
-        shQuote(levels(factor(water_temp_annual_A_C$Transect))[as.integer(grp.label)]),
-         "~~~",
-        ..p.value.label.., "~~~",
-        ..rr.label..
-      ))),
-    # formula = y ~ x,
+        paste0(
+          shQuote(levels(water_temp_annual_A_C$Transect_Name)[as.integer(grp.label)]),
+          ":~~~",
+          ..p.value.label..,
+          "~~~",
+          ..rr.label..
+        )
+      )
+    ),
     parse = TRUE,
-    size = 3, 
+    size = 3,
     label.x = "left",
     label.y = "top",
     vstep = 0.025
-  ) 
+  )
+
+p2
 
 
 ### Transect Temperature & Wasting Disease
@@ -1021,4 +1045,73 @@ Summer Mean Temp") +
     strip.text = element_text(size = 8),
     plot.title = element_text(hjust = 0.5, face = "bold")
   )
-       
+
+### ---- Additional Plots for Final Report ----
+
+# Build figure of summertime and annual mean bottom temperatures
+
+# Establish themes and layers for plotting
+theme_set(
+  theme_minimal() +
+    theme(
+      axis.text.x  = element_text(size = 12, angle = 45, hjust = 1),
+      axis.text.y  = element_text(size = 12),
+      axis.title.y = element_text(size = 14),
+      legend.title = element_text(size = 16),
+      legend.text  = element_text(size = 12)
+    )
+)
+
+# Annotate plot with simple linear model p-values and R2 values
+# Since parse = TRUE, this will read the annotation as plotmath format
+# So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+# correct station ID is passed to the annotation as a quote, which won't be parsed
+plot_stat_annotation_1 <- stat_poly_eq(
+  aes(
+    label = after_stat(
+      paste0(
+        shQuote(levels(factor(water_temp_summer_A_C$Transect_Name))[as.integer(grp.label)]),
+        ":~~~",
+        ..p.value.label..,
+        "~~~",
+        ..rr.label..
+      ))),
+  parse = TRUE,
+  size = 4, 
+  label.x = "left",
+  label.y = "top",
+  vstep = 0.05
+)
+
+
+plot_stat_annotation_2 <- stat_poly_eq(
+  aes(
+    label = after_stat(
+      paste0(
+        shQuote(levels(water_temp_annual_A_C$Transect_Name)[as.integer(grp.label)]),
+        ":~~~",
+        ..p.value.label..,
+        "~~~",
+        ..rr.label..
+      )
+    )
+  ),
+  parse = TRUE,
+  size = 4,
+  label.x = "left",
+  label.y = "top",
+  vstep = 0.05
+)
+
+# Build plots
+p1 <- p1 + 
+  theme(legend.position = "none") +
+  labs(tag = "a)") +
+  plot_stat_annotation_1
+
+p2 <- p2 +
+  labs(tag = "b)", y = "") +
+  plot_stat_annotation_2
+
+
+p1 + p2

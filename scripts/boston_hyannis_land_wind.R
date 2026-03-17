@@ -20,6 +20,8 @@ library(tidyr) # for tidying and reshaping data
 library(ggplot2) # for visualization
 library(ggpmisc) # for annotating plots with p & R2 of fitted polynomial via stat_poly_eq()
 library(circular) # for calculating circular means
+library(patchwork) # for displaying graphs 
+library(stringr)
 
 
 # ---- Set Global ggplot Themes ----
@@ -106,6 +108,9 @@ variables_meta <- list(mean_AWND = "Average Annual Wind Speed (m/s)",
                        mean_WSF2 = "Average Annual Fastest 2-minute Wind Speed (m/s)",
                        mean_WDF2 = "Average Annual Fastest 2-minute Wind Direction (°T)")
 
+# Create an empty list to store plots generated in the loop below
+plots_list <- list()
+
 # Plot each variable
 for (var in variables) {
   
@@ -121,13 +126,13 @@ for (var in variables) {
     )
   
   # Plot
-  p <- ggplot(wind_data_annual,
+  plots_list[[var]] <- ggplot(wind_data_annual,
          aes(x = year, y = .data[[var]], color = location)) +
     geom_point() +
     geom_smooth(method = "lm") +
     labs(
       x = "",
-      y = variables_meta[[var]],
+      y = str_wrap(variables_meta[[var]], width = 30),
       color = ""
     ) +
     facet_wrap(~location) +
@@ -145,8 +150,31 @@ for (var in variables) {
         )
       ),
       parse = TRUE,
-      color = "blue")
+      color = "blue") +
+    # Remove facet strip labels
+    theme(
+      # strip.text = element_blank()
+      legend.position = "none"
+      )
   
-  print(p)
+  print(plots_list[[var]])
 }
+
+
+# ---- Plots for Final Report ----
+
+p1 <- plots_list[[1]] +
+  labs(tag = "a)")
+
+p2 <- plots_list[[2]] +
+  labs(tag = "b)")
+
+p3 <- plots_list[[3]] +
+  labs(tag = "c)")
+
+# Print plots vertically stacked
+p1 / p2 / p3
+
+
+
 

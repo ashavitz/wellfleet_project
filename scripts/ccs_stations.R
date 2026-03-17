@@ -131,7 +131,7 @@ end_year   <- max(ccs_data_wellfleet$collected_at, na.rm = TRUE)
 # 
 # # Note - No duplicate data rows identified for the 3 wellfleet sites examined
 
-# ---- Filter Only "Full" Years With at least One Monthly Measurement ----
+# ---- Filter Only "Full" Years With at Least One Monthly Measurement ----
 
 # NOTE - For each station, the following block only includes years with a full 12 months of data
 #      - Many years have 11 months of data (and some 10 or fewer), which could be included
@@ -168,7 +168,7 @@ ccs_wellfleet_annual <- ccs_wellfleet_full_years |>
     .groups = "drop"
   )
 
-# ---- Filter Only "Full" Summers With Exactly One Monthly Measurement June - September ----
+# ---- Filter Only "Full" Summers With at Least One Monthly Measurement June - September ----
 
 # Filter out non-summer months
 ccs_wellfleet_summers <- filter(ccs_data_wellfleet, month %in% 6:9)
@@ -193,6 +193,81 @@ ccs_wellfleet_full_summers <- ccs_wellfleet_summers |>
 
 # Calculate (summer) mean & median for all water quality variables
 ccs_wellfleet_summers <- ccs_wellfleet_full_summers |> 
+  group_by(internal_station_id, year_collected) |> 
+  summarize(
+    across(
+      all_of(wq_variables),
+      list(
+        mean = function(x) if (any(is.na(x))) NA_real_ else mean(x),
+        median = function(x) if (any(is.na(x))) NA_real_ else median(x)
+      )
+    ),
+    .groups = "drop"
+  )
+
+# ---- Filter Only "Full" Springs With at Least One Monthly Measurement March - June----
+
+# Filter out non-spring months
+ccs_wellfleet_springs <- filter(ccs_data_wellfleet, month %in% 3:6)
+
+ccs_wellfleet_full_springs <- ccs_wellfleet_springs |> 
+  # Count how many measurements per station, year, and month
+  group_by(internal_station_id, year_collected, month) |>
+  summarize(n_measurements = n(), 
+            # average across each month to reduce months with multiple measurements to one average
+            across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+            .groups = "drop"
+  ) |>
+  # For each station and year, check how many months had exactly one measurement
+  group_by(internal_station_id, year_collected) |>
+  summarize(months_with_one_measurement = sum(n_measurements == 1), .groups = "drop") |>
+  # Keep only station-years with exactly one measurement per month (4 months, no extras)
+  filter(months_with_one_measurement == 4) |>
+  select(internal_station_id, year_collected) |>
+  # Join back to original data to filter only good station-years, removing id column
+  inner_join(ccs_wellfleet_springs, by = c("internal_station_id", "year_collected")) 
+
+
+# Calculate (spring) mean & median for all water quality variables
+ccs_wellfleet_springs <- ccs_wellfleet_full_springs |> 
+  group_by(internal_station_id, year_collected) |> 
+  summarize(
+    across(
+      all_of(wq_variables),
+      list(
+        mean = function(x) if (any(is.na(x))) NA_real_ else mean(x),
+        median = function(x) if (any(is.na(x))) NA_real_ else median(x)
+      )
+    ),
+    .groups = "drop"
+  )
+
+
+# ---- Filter Only "Full" Autumns With at Least One Monthly Measurement October - December----
+
+# Filter out non-autumn months
+ccs_wellfleet_autumns <- filter(ccs_data_wellfleet, month %in% 10:12)
+
+ccs_wellfleet_full_autumns <- ccs_wellfleet_autumns |> 
+  # Count how many measurements per station, year, and month
+  group_by(internal_station_id, year_collected, month) |>
+  summarize(n_measurements = n(), 
+            # average across each month to reduce months with multiple measurements to one average
+            across(where(is.numeric), ~ mean(.x, na.rm = TRUE)),
+            .groups = "drop"
+  ) |>
+  # For each station and year, check how many months had exactly one measurement
+  group_by(internal_station_id, year_collected) |>
+  summarize(months_with_one_measurement = sum(n_measurements == 1), .groups = "drop") |>
+  # Keep only station-years with exactly one measurement per month (3 months, no extras)
+  filter(months_with_one_measurement == 3) |>
+  select(internal_station_id, year_collected) |>
+  # Join back to original data to filter only good station-years, removing id column
+  inner_join(ccs_wellfleet_autumns, by = c("internal_station_id", "year_collected")) 
+
+
+# Calculate (autumn) mean & median for all water quality variables
+ccs_wellfleet_autumns <- ccs_wellfleet_full_autumns |> 
   group_by(internal_station_id, year_collected) |> 
   summarize(
     across(
@@ -243,6 +318,56 @@ ccs_wellfleet_full_summers <- ccs_wellfleet_full_summers |>
          log10_total_phosphorus_uM = log10(total_phosphorus_uM))
 
 ccs_wellfleet_summers <- ccs_wellfleet_summers |>
+  mutate(`log10_chlorophyll_ug/L_mean` = log10(`chlorophyll_ug/L_mean`),
+         `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`),
+         `log10_pheophytin_ug/L_mean` = log10(`pheophytin_ug/L_mean`),
+         `log10_pheophytin_ug/L_median` = log10(`pheophytin_ug/L_median`),
+         log10_nitrate_nitrite_uM_mean = log10(nitrate_nitrite_uM_mean), 
+         log10_nitrate_nitrite_uM_median = log10(nitrate_nitrite_uM_median),
+         log10_ammonium_uM_mean = log10(ammonium_uM_mean), 
+         log10_ammonium_uM_median = log10(ammonium_uM_median),
+         log10_ortho_phosphate_uM_mean = log10(ortho_phosphate_uM_mean), 
+         log10_ortho_phosphate_uM_median = log10(ortho_phosphate_uM_median), 
+         log10_total_nitrogen_uM_mean = log10(total_nitrogen_uM_mean),
+         log10_total_nitrogen_uM_median = log10(total_nitrogen_uM_median),
+         log10_total_phosphorus_uM_mean = log10(total_phosphorus_uM_mean),
+         log10_total_phosphorus_uM_median = log10(total_phosphorus_uM_median))
+
+ccs_wellfleet_full_springs <- ccs_wellfleet_full_springs |> 
+  mutate(`log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`),
+         `log10_pheophytin_ug/L` = log10(`pheophytin_ug/L`), 
+         log10_nitrate_nitrite_uM = log10(nitrate_nitrite_uM), 
+         log10_ammonium_uM = log10(ammonium_uM), 
+         log10_ortho_phosphate_uM = log10(ortho_phosphate_uM), 
+         log10_total_nitrogen_uM = log10(total_nitrogen_uM),
+         log10_total_phosphorus_uM = log10(total_phosphorus_uM))
+
+ccs_wellfleet_springs <- ccs_wellfleet_springs |>
+  mutate(`log10_chlorophyll_ug/L_mean` = log10(`chlorophyll_ug/L_mean`),
+         `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`),
+         `log10_pheophytin_ug/L_mean` = log10(`pheophytin_ug/L_mean`),
+         `log10_pheophytin_ug/L_median` = log10(`pheophytin_ug/L_median`),
+         log10_nitrate_nitrite_uM_mean = log10(nitrate_nitrite_uM_mean), 
+         log10_nitrate_nitrite_uM_median = log10(nitrate_nitrite_uM_median),
+         log10_ammonium_uM_mean = log10(ammonium_uM_mean), 
+         log10_ammonium_uM_median = log10(ammonium_uM_median),
+         log10_ortho_phosphate_uM_mean = log10(ortho_phosphate_uM_mean), 
+         log10_ortho_phosphate_uM_median = log10(ortho_phosphate_uM_median), 
+         log10_total_nitrogen_uM_mean = log10(total_nitrogen_uM_mean),
+         log10_total_nitrogen_uM_median = log10(total_nitrogen_uM_median),
+         log10_total_phosphorus_uM_mean = log10(total_phosphorus_uM_mean),
+         log10_total_phosphorus_uM_median = log10(total_phosphorus_uM_median))
+
+ccs_wellfleet_full_autumns <- ccs_wellfleet_full_autumns |> 
+  mutate(`log10_chlorophyll_ug/L` = log10(`chlorophyll_ug/L`),
+         `log10_pheophytin_ug/L` = log10(`pheophytin_ug/L`), 
+         log10_nitrate_nitrite_uM = log10(nitrate_nitrite_uM), 
+         log10_ammonium_uM = log10(ammonium_uM), 
+         log10_ortho_phosphate_uM = log10(ortho_phosphate_uM), 
+         log10_total_nitrogen_uM = log10(total_nitrogen_uM),
+         log10_total_phosphorus_uM = log10(total_phosphorus_uM))
+
+ccs_wellfleet_autumns <- ccs_wellfleet_autumns |>
   mutate(`log10_chlorophyll_ug/L_mean` = log10(`chlorophyll_ug/L_mean`),
          `log10_chlorophyll_ug/L_median` = log10(`chlorophyll_ug/L_median`),
          `log10_pheophytin_ug/L_mean` = log10(`pheophytin_ug/L_mean`),
@@ -356,6 +481,10 @@ adjust_label <- function(label, extra_text) {
 
 
 # ---- Plot All Data ----
+
+# Create an empty list to store plots generated in the loop below
+plots_all_data <- list()
+
 # For each relevant variable, plot all ~monthly data over time
 for (var in wq_variables) {
   
@@ -366,7 +495,7 @@ for (var in wq_variables) {
   y_max_buffered <- y_max + (range_size * 0.2)
   
   # Plot
-  p <- ggplot(ccs_data_wellfleet, aes(x = collected_at,
+  plots_all_data[[var]] <- ggplot(ccs_data_wellfleet, aes(x = collected_at,
                                       y = .data[[var]],
                                       color = as.factor(internal_station_id))) +
     geom_point() +
@@ -390,7 +519,9 @@ for (var in wq_variables) {
     scale_color_paletteer_d("yarrr::google") +
     
     # Add vertical padding
-    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    scale_y_continuous(limits = c(NA, y_max_buffered))
+  
+  p <- plots_all_data[[var]] +
     
     # Annotate plot with simple linear model p-values and R2 values
     # Since parse = TRUE, this will read the annotation as plotmath format
@@ -557,7 +688,10 @@ for (var in wq_variables) {
 }
 
 
-# ---- Plot All Summer Data ----
+# ---- Plot All autumn Data ----
+
+# Create an empty list to store plots generated in the loop below
+plots_all_summer_data <- list()
 
 # For each relevant variable, plot all Summer ~monthly data over time
 for (var in wq_variables) {
@@ -569,7 +703,7 @@ for (var in wq_variables) {
   y_max_buffered <- y_max + (range_size * 0.2)
   
   # Plot
-  p <- ggplot(ccs_wellfleet_full_summers, aes(x = collected_at,
+  plots_all_summer_data[[var]] <- ggplot(ccs_wellfleet_full_summers, aes(x = collected_at,
                                       y = .data[[var]],
                                       color = as.factor(internal_station_id))) +
     geom_point() +
@@ -615,7 +749,7 @@ for (var in wq_variables) {
       vstep = 0.04
     )
 
-  print(p)
+  print(plots_all_summer_data[[var]])
 }
 
 
@@ -746,7 +880,10 @@ for (var in wq_variables) {
 
 # ---- Plot Summer Mean ----
 
-# For each relevant variable, plot Summer mean and mean values
+# Create an empty list to store plots generated in the loop below
+plots_summer_mean <- list()
+
+# For each relevant variable, plot Summer mean values
 for (var in wq_variables) {
   
   var_name <- paste0(var, "_mean")
@@ -758,7 +895,7 @@ for (var in wq_variables) {
   y_max_buffered <- y_max + (range_size * 0.2)
   
   # Create summer mean plot
-  p_1 <- ggplot(ccs_wellfleet_summers, aes(x = year_collected,
+  plots_summer_mean[[var]] <- ggplot(ccs_wellfleet_summers, aes(x = year_collected,
                                            y = .data[[var_name]],
                                            color = as.factor(internal_station_id))) +
     geom_point() +
@@ -784,7 +921,9 @@ for (var in wq_variables) {
     scale_color_paletteer_d("yarrr::google") +
     
     # Add vertical padding
-    scale_y_continuous(limits = c(NA, y_max_buffered)) +
+    scale_y_continuous(limits = c(NA, y_max_buffered))
+  
+  p <- plots_summer_mean[[var]] +
     
     # Annotate plot with simple linear model p-values and R2 values
     # Since parse = TRUE, this will read the annotation as plotmath format
@@ -806,319 +945,264 @@ for (var in wq_variables) {
       vstep = 0.04
     ) 
   
-  print(p_1)
+  print(p)
+}
+
+# ---- Plot Spring Mean ----
+
+# Create an empty list to store plots generated in the loop below
+plots_spring_mean <- list()
+
+# For each relevant variable, plot spring mean values
+for (var in wq_variables) {
+  
+  var_name <- paste0(var, "_mean")
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_wellfleet_springs[[var_name]], na.rm = TRUE)
+  y_min <- min(ccs_wellfleet_springs[[var_name]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Create spring mean plot
+  plots_spring_mean[[var]] <- ggplot(ccs_wellfleet_springs, aes(x = year_collected,
+                                                                y = .data[[var_name]],
+                                                                color = as.factor(internal_station_id))) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    
+    # add threshold line, if available
+    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
+    
+    labs(
+      title = "Spring (March - June)",
+      x = "",
+      y = wq_variables_meta[[var]],
+      color = "CCS Station ID",
+    ) +
+    scale_x_continuous(
+      breaks = seq(
+        min(ccs_wellfleet_springs$year_collected), 
+        max(ccs_wellfleet_springs$year_collected), 
+        by = 2
+      )
+    ) +
+    scale_color_paletteer_d("yarrr::google") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered))
+  
+  p <- plots_spring_mean[[var]] +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
+    stat_poly_eq(
+      aes(label = after_stat(
+        paste0(
+          shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+          ":", "~~~",
+          ..p.value.label.., "~~~",
+          ..rr.label..
+        ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3, 
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.04
+    ) 
+  
+  print(p)
+}
+
+# ---- Plot Autumn Mean ----
+
+# Create an empty list to store plots generated in the loop below
+plots_autumn_mean <- list()
+
+# For each relevant variable, plot autumn mean values
+for (var in wq_variables) {
+  
+  var_name <- paste0(var, "_mean")
+  
+  # Determine y axis range and create vertical padded y_max so annotations will be visible
+  y_max <- max(ccs_wellfleet_autumns[[var_name]], na.rm = TRUE)
+  y_min <- min(ccs_wellfleet_autumns[[var_name]], na.rm = TRUE)
+  range_size = y_max - y_min
+  y_max_buffered <- y_max + (range_size * 0.2)
+  
+  # Create autumn mean plot
+  plots_autumn_mean[[var]] <- ggplot(ccs_wellfleet_autumns, aes(x = year_collected,
+                                                                y = .data[[var_name]],
+                                                                color = as.factor(internal_station_id))) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) +
+    
+    # add threshold line, if available
+    geom_hline(yintercept = thresholds[var], linetype = 'dotted', color = 'red', linewidth = 2) +
+    
+    labs(
+      title = "Autumn (October - December)",
+      x = "",
+      y = wq_variables_meta[[var]],
+      color = "CCS Station ID",
+      # title = paste(wq_variables_meta[[var]]),
+      # subtitle = "Annual autumn Mean Time Series - CCS Wellfleet"
+    ) +
+    scale_x_continuous(
+      breaks = seq(
+        min(ccs_wellfleet_autumns$year_collected), 
+        max(ccs_wellfleet_autumns$year_collected), 
+        by = 2
+      )
+    ) +
+    scale_color_paletteer_d("yarrr::google") +
+    
+    # Add vertical padding
+    scale_y_continuous(limits = c(NA, y_max_buffered))
+  
+  p <- plots_autumn_mean[[var]] +
+    
+    # Annotate plot with simple linear model p-values and R2 values
+    # Since parse = TRUE, this will read the annotation as plotmath format
+    # So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+    # correct station ID is passed to the annotation as a quote, which won't be parsed
+    stat_poly_eq(
+      aes(label = after_stat(
+        paste0(
+          shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+          ":", "~~~",
+          ..p.value.label.., "~~~",
+          ..rr.label..
+        ))),
+      # formula = y ~ x,
+      parse = TRUE,
+      size = 3, 
+      label.x = "left",
+      label.y = "top",
+      vstep = 0.04
+    ) 
+  
+  print(p)
 }
 
 
+# ---- Plots for Final Report ----
 
-# # ---- Plots by Variable (Incomplete) ----
-# 
-# # _____________________________ Temperature _____________________________
-# 
-# # All Data (~Monthly)
-# ggplot(data = ccs_data_wellfleet,
-#        mapping = aes(x = collected_at, 
-#                      y = temperature_C,
-#        color = as.factor(internal_station_id))) +
-#   geom_point() +
-#   
-#   # add 25 Celsius threshold line
-#   geom_hline(yintercept = 25, linetype = 'dotted', color = 'red', linewidth = 2) +
-#   labs(x = "Date",
-#        y = "Temperature (°C)",
-#        color = "CCS Station ID",
-#        title = paste("Temp (C) Time Series - CCS Wellfleet")) +
-#   scale_x_datetime(
-#     limits = c(start_year, end_year),
-#     date_breaks = "2 year", 
-#     date_labels = "%Y",
-#     labels = date_format("%Y")) + # extract just the year for the labels
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Mean
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = temperature_C_mean,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Year",
-#        y = "Annual Mean Temperature (°C)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Mean Temp (C) Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Median
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = temperature_C_median,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Date",
-#        y = "Annual Median Temperature (°C)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Median Temp (C) Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# # _____________________________ Dissolved Oxygen _____________________________
-# 
-# # All Data (~Monthly)
-# ggplot(data = ccs_data_wellfleet,
-#        mapping = aes(x = collected_at, 
-#                      y = `dissolved_oxygen_mg/L`,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point() +
-#   
-#   # add 6 mg/L threshold line
-#   geom_hline(yintercept = 6, linetype = 'dotted', color = 'red', linewidth = 2) +
-#   labs(x = "Date",
-#        y = "DO (mg/L)",
-#        color = "CCS Station ID",
-#        title = paste("DO Time Series - CCS Wellfleet")) +
-#   scale_x_datetime(
-#     limits = c(start_year, end_year),
-#     date_breaks = "2 year", 
-#     date_labels = "%Y",
-#     labels = date_format("%Y")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Mean
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = `dissolved_oxygen_mg/L_mean`,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Year",
-#        y = "Annual Mean DO (mg/L)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Mean DO Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Median
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = `dissolved_oxygen_mg/L_median`,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Date",
-#        y = "Annual Median DO (mg/L)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Median DO Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # _____________________________ Chlorophyll a _____________________________
-# 
-# # All Data (~Monthly)
-# ggplot(data = ccs_data_wellfleet,
-#        mapping = aes(x = collected_at, 
-#                      y = `chlorophyll_ug/L`,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point() +
-#   
-#   # add 5.1 u/L threshold line
-#   geom_hline(yintercept = 5.1, linetype = 'dotted', color = 'red', linewidth = 2) +
-#   labs(x = "Date",
-#        y = "Chlorophyll a (ug/L)",
-#        color = "CCS Station ID",
-#        title = paste("Chlorophyll Time Series - CCS Wellfleet")) +
-#   scale_x_datetime(
-#     limits = c(start_year, end_year),
-#     date_breaks = "2 year", 
-#     date_labels = "%Y",
-#     labels = date_format("%Y")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Mean
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = `chlorophyll_ug/L_mean`,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Year",
-#        y = "Annual Mean Chlorophyll a (ug/L)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Mean Chlorophyll a Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Median
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = `chlorophyll_ug/L_median`,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Date",
-#        y = "Annual Median Chlorophyll a (ug/L)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Median Chlorophyll a Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # _____________________________ Total Nitrogen _____________________________
-# # Data set units in uM (micromoles / L)
-# # Threshold value of 0.071 mg/L converted to 21.42 uM
-#   # MW N = 14.006720 µg/L N (https://www.ices.dk/data/tools/Pages/Unit-conversions.aspx)
-#   # 1 mg N/L = 71.394 µM/L
-# 
-# # All Data (~Monthly)
-# ggplot(data = ccs_data_wellfleet,
-#        mapping = aes(x = collected_at, 
-#                      y = total_nitrogen_uM,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point() +
-#   
-#   # add 21.42 uM threshold line
-#   geom_hline(yintercept = 21.42, linetype = 'dotted', color = 'red', linewidth = 2) +
-#   labs(x = "Date",
-#        y = "Total N (uM)",
-#        color = "CCS Station ID",
-#        title = paste("Total Nitrogen Time Series - CCS Wellfleet")) +
-#   scale_x_datetime(
-#     limits = c(start_year, end_year),
-#     date_breaks = "2 year", 
-#     date_labels = "%Y",
-#     labels = date_format("%Y")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Mean
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = total_nitrogen_uM_mean,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Year",
-#        y = "Annual Mean Total N (uM)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Mean Total N Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Median
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = total_nitrogen_uM_median,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Date",
-#        y = "Annual Median Total N (uM)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Median Total N Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # _____________________________ Total Phosphorus _____________________________
-# # Data set units in uM (micromoles / L)
-# # Threshold value of 0.071 mg/L converted to 2.29 uM
-#   # MW P = 30.973762 µg/L P (https://www.ices.dk/data/tools/Pages/Unit-conversions.aspx)
-#   # 1 mg P/L = 32.285 µM/L
-# 
-# # All Data (~Monthly)
-# ggplot(data = ccs_data_wellfleet,
-#        mapping = aes(x = collected_at, 
-#                      y = total_phosphorus_uM,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point() +
-#   
-#   # add 2.29 uM threshold line
-#   geom_hline(yintercept = 2.29, linetype = 'dotted', color = 'red', linewidth = 2) +
-#   labs(x = "Date",
-#        y = "Total P (uM)",
-#        color = "CCS Station ID",
-#        title = paste("Total Phorphorus Time Series - CCS Wellfleet")) +
-#   scale_x_datetime(
-#     limits = c(start_year, end_year),
-#     date_breaks = "2 year", 
-#     date_labels = "%Y",
-#     labels = date_format("%Y")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Mean
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = total_phosphorus_uM_mean,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Year",
-#        y = "Annual Mean Total P (uM)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Mean Total P Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Median
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = total_phosphorus_uM_median,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Date",
-#        y = "Annual Median Total P (uM)",
-#        color = "CCS Station ID",
-#        title = paste("Annual Median Total P Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # _____________________________ Turbidity _____________________________
-# 
-# # All Data (~Monthly)
-# ggplot(data = ccs_data_wellfleet,
-#        mapping = aes(x = collected_at, 
-#                      y = turbidty_NTU,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point() +
-#   
-#   # add 5 NTU threshold line
-#   geom_hline(yintercept = 5, linetype = 'dotted', color = 'red', linewidth = 2) +
-#   labs(x = "Date",
-#        y = "Turbidity (NTU)",
-#        color = "CCS Station ID",
-#        title = paste("Turbidity Time Series - CCS Wellfleet")) +
-#   scale_x_datetime(
-#     limits = c(start_year, end_year),
-#     date_breaks = "2 year", 
-#     date_labels = "%Y",
-#     labels = date_format("%Y")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # _____________________________ Salinity _____________________________
-# 
-# # All Data (~Monthly)
-# ggplot(data = ccs_data_wellfleet,
-#        mapping = aes(x = collected_at, 
-#                      y = salinity,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point() +
-#   
-#   labs(x = "Date",
-#        y = "Salinity",
-#        color = "CCS Station ID",
-#        title = paste("Salinity Time Series - CCS Wellfleet")) +
-#   scale_x_datetime(
-#     limits = c(start_year, end_year),
-#     date_breaks = "2 year", 
-#     date_labels = "%Y",
-#     labels = date_format("%Y")) +
-#   scale_color_brewer(palette = "Set2")
-# 
-# 
-# # Annual Mean
-# ggplot(data = ccs_wellfleet_annual,
-#        mapping = aes(x = year_collected, 
-#                      y = salinity_mean,
-#                      color = as.factor(internal_station_id))) +
-#   geom_point(size = 3.5) +
-#   labs(x = "Year",
-#        y = "Annual Mean Salinity",
-#        color = "CCS Station ID",
-#        title = paste("Annual Mean Salinity Time Series - CCS Wellfleet")) +
-#   scale_color_brewer(palette = "Set2")
+# Establish themes and layers for plotting
+theme_set(
+  theme_minimal() +
+    theme(
+      axis.text.x  = element_text(size = 12, angle = 45, hjust = 1),
+      axis.text.y  = element_text(size = 12),
+      axis.title.y = element_text(size = 14),
+      legend.title = element_text(size = 16),
+      legend.text  = element_text(size = 12)
+    )
+)
 
+# Annotate plot with simple linear model p-values and R2 values
+# Since parse = TRUE, this will read the annotation as plotmath format
+# So to include CCS site labels, shQuote(levels(factor(...))) ensures the
+# correct station ID is passed to the annotation as a quote, which won't be parsed
+plot_stat_annotation <- stat_poly_eq(
+    aes(label = after_stat(
+      paste0(
+        shQuote(levels(factor(ccs_data_wellfleet$internal_station_id))[as.integer(grp.label)]),
+        ":", "~~~",
+        ..p.value.label.., "~~~",
+        ..rr.label..
+      ))),
+    # formula = y ~ x,
+    parse = TRUE,
+    size = 4, 
+    label.x = "left",
+    label.y = "top",
+    vstep = 0.05
+  )
 
+# Create side-by-side figures showing a) all data and b) summertime means 
+
+# Chlorophyll (log transformed)
+p1 <- plots_all_data[["log10_chlorophyll_ug/L"]] +
+  theme(legend.position = "none") +
+  labs(tag = "a)") +
+  plot_stat_annotation
+    
+p2 <- plots_summer_mean[["log10_chlorophyll_ug/L"]] +
+  labs(tag = "b)", y = "") +
+  plot_stat_annotation
+
+p1 + p2
+
+p3 <- plots_spring_mean[["log10_chlorophyll_ug/L"]] + 
+  theme(legend.position = "none") +
+  labs(tag = "a)") +
+  plot_stat_annotation
+  
+p4 <- plots_autumn_mean[["log10_chlorophyll_ug/L"]] +
+  labs(tag = "b)", y = "") +
+  plot_stat_annotation
+
+p3 + p4
+
+# Pheophytin
+p1 <- plots_all_data[["pheophytin_ug/L"]] +
+  theme(legend.position = "none") +
+  labs(tag = "a)") +
+  plot_stat_annotation
+
+p2 <- plots_summer_mean[["pheophytin_ug/L"]] +
+  labs(tag = "b)", y = "") +
+  plot_stat_annotation
+
+p1 + p2
+
+p3 <- plots_spring_mean[["pheophytin_ug/L"]] + 
+  theme(legend.position = "none") +
+  labs(tag = "a)") +
+  plot_stat_annotation
+
+p4 <- plots_autumn_mean[["pheophytin_ug/L"]] +
+  labs(tag = "b)", y = "") +
+  plot_stat_annotation
+
+p3 + p4
+
+# Total Nitrogen
+p1 <- plots_all_data[["total_nitrogen_uM"]] +
+  theme(legend.position = "none") +
+  labs(tag = "a)") +
+  plot_stat_annotation
+
+p2 <- plots_summer_mean[["total_nitrogen_uM"]] +
+  labs(tag = "b)", y = "") +
+  plot_stat_annotation
+
+p1 + p2
+
+# Total Phosphorus
+p1 <- plots_all_data[["total_phosphorus_uM"]] +
+  theme(legend.position = "none") +
+  labs(tag = "a)") +
+  plot_stat_annotation
+
+p2 <- plots_summer_mean[["total_phosphorus_uM"]] +
+  labs(tag = "b)", y = "") +
+  plot_stat_annotation
+
+p1 + p2
+
+# Dissolved Oxygen
+p1 <- plots_all_data[["dissolved_oxygen_mg/L"]] +
+  theme(legend.position = "none") +
+  labs(tag = "a)") +
+  plot_stat_annotation
+
+p2 <- plots_summer_mean[["dissolved_oxygen_mg/L"]] +
+  labs(tag = "b)", y = "") +
+  plot_stat_annotation
+
+p1 + p2

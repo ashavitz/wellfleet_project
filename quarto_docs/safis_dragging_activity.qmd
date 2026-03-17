@@ -5,6 +5,13 @@ format:
   html:
     code-fold: true
     code-summary: "Show the code"
+    fig-format: png
+    fig-dpi: 300
+    
+execute:
+  dev: ragg_png
+  fig-width: 6.5
+  fig-height: 4
 ---
 [Return to Home Page (Index)](https://ashavitz.github.io/wellfleet_project/)
 
