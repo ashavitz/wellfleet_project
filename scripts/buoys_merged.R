@@ -119,26 +119,43 @@ buoy_colors <- c(
   "Cape Cod Bay" = "#E6352FFF"
 )
 
+# Wrapped display labels for the legend (keeps color mapping intact)
+buoy_labels <- c(
+  "Cape Cod Bay"        = "Cape Cod Bay",
+  "Massachusetts Bay"   = "Massachusetts\nBay",
+  "Outer Boston Harbor" = "Outer Boston\nHarbor"
+)
+
+scale_color_buoy <- function(...) {
+  scale_color_manual(values = buoy_colors, labels = buoy_labels, ...)
+}
+
 # Annotate plot with simple linear model p-values and R2 values
 # Since parse = TRUE, this will read the annotation as plotmath format
 # So to include site labels, shQuote(levels(factor(...))) ensures the
 # correct station ID is passed to the annotation as a quote, which won't be parsed
-plot_stat_annotation <- stat_poly_eq(
-  aes(
-    label = after_stat(
-    paste0(
-      shQuote(levels(factor(buoy_data_annual$location))[as.integer(grp.label)]),
-      ":", "~~~",
-      ..p.value.label.., "~~~",
-      ..rr.label..
-    ))),
-  # formula = y ~ x,
-  parse = TRUE,
-  size = 3, 
-  label.x = "left",
-  label.y = "top",
-  vstep = 0.04
+# `data` is captured in the function environment so that factor levels are derived
+# from the actual (possibly filtered) plot data, keeping labels aligned with colors.
+make_stat_annotation <- function(data, size = 3, vstep = 0.04) {
+  # Pre-compute factor levels from the actual plot data and inline them into the
+  # expression via bquote() + !! so they are resolved at function call time,
+  # avoiding shadowing of 'data' by ggplot2's internal evaluation context.
+  loc_levels <- levels(factor(data$location))
+  label_expr <- bquote(paste0(
+    shQuote(.(loc_levels)[as.integer(grp.label)]),
+    ":", "~~~",
+    ..p.value.label.., "~~~",
+    ..rr.label..
+  ))
+  stat_poly_eq(
+    aes(label = after_stat(!!label_expr)),
+    parse = TRUE,
+    size = size,
+    label.x = "left",
+    label.y = "top",
+    vstep = vstep
   )
+}
 
 # ---- Visualize Buoy Data ----
 
@@ -174,7 +191,7 @@ for (var in variables) {
       #               variables_meta[[var]], sep = "\n"),
       # caption = "(only years in which each month contains at least 80% complete daily data)"
       ) +
-    scale_color_manual(values = buoy_colors) +
+    scale_color_buoy() +
     scale_x_continuous(
       breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
     
@@ -182,7 +199,7 @@ for (var in variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
-    plot_stat_annotation
+    make_stat_annotation(plot_data)
   
   print(p)
 }
@@ -221,7 +238,7 @@ for (var in variables) {
       #               variables_meta[[var]], sep = "\n"),
       # caption = "(only years in which each month contains at least 80% complete daily data)"
       ) +
-    scale_color_manual(values = buoy_colors) +
+    scale_color_buoy() +
     scale_x_continuous(
       breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
     
@@ -229,7 +246,7 @@ for (var in variables) {
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
-    plot_stat_annotation
+    make_stat_annotation(plot_data)
   
   print(p)
 }
@@ -238,19 +255,25 @@ for (var in variables) {
 # Plot line graphs for wind direction up to 2014 (for comparison with previous reports)
 for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
   
+  plot_data <- buoy_data_annual |>
+    filter(year >= 2003, year <= 2014) |>
+    group_by(location) |>
+    filter(sum(!is.na(.data[[var]])) >= 2) |>
+    ungroup()
+  
   # Determine y axis range and create vertical padded y_max so annotations will be visible
-  y_max <- max(buoy_data_annual[[var]], na.rm = TRUE)
-  y_min <- min(buoy_data_annual[[var]], na.rm = TRUE)
+  y_max <- max(plot_data[[var]], na.rm = TRUE)
+  y_min <- min(plot_data[[var]], na.rm = TRUE)
   range_size = y_max - y_min
   y_max_buffered <- y_max + (range_size * 0.2)
   
   # Plot
-  p <- ggplot(buoy_data_annual |> filter(year >= 2003, year <= 2014),
+  p <- ggplot(plot_data,
               aes(x = year,
                   y = .data[[var]],
                   color = location)) +
     geom_point() +
-    geom_line(data = filter(buoy_data_annual, !is.na(.data[[var]]) & year %in% c(2003:2014))) +
+    geom_line(data = filter(plot_data, !is.na(.data[[var]]))) +
     geom_smooth(method = "lm", se = TRUE, alpha = 0.1, linetype = "dotted") +
     labs(x = "Date",
          y = variables_meta[[var]],
@@ -258,15 +281,15 @@ for (var in c("wind_direction_mean", "wind_direction_simple_mean")) {
                        variables_meta[[var]], sep = "\n"),
          caption = "(only years in which each month contains at least 80% complete daily data)"
     ) +
-    scale_color_manual(values = buoy_colors) +
+    scale_color_buoy() +
     scale_x_continuous(
-      breaks = seq(min(buoy_data_annual$year), max(buoy_data_annual$year), by = 2)) +
+      breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
     
     # Add vertical padding
     scale_y_continuous(limits = c(NA, y_max_buffered)) +
     
     # Annotate plot with simple linear model p-values and R2 values
-    plot_stat_annotation
+    make_stat_annotation(plot_data)
   
   print(p)
 }
@@ -285,25 +308,7 @@ theme_set(
     )
 )
 
-# Annotate plot with simple linear model p-values and R2 values
-# Since parse = TRUE, this will read the annotation as plotmath format
-# So to include site labels, shQuote(levels(factor(...))) ensures the
-# correct station ID is passed to the annotation as a quote, which won't be parsed
-plot_stat_annotation <- stat_poly_eq(
-  aes(
-    label = after_stat(
-      paste0(
-        shQuote(levels(factor(buoy_data_annual$location))[as.integer(grp.label)]),
-        ":", "~~~",
-        ..p.value.label.., "~~~",
-        ..rr.label..
-      ))),
-  parse = TRUE,
-  size = 4,
-  label.x = "left",
-  label.y = "top",
-  vstep = 0.05
-)
+# make_stat_annotation() is defined above; use size = 4 and vstep = 0.05 for final report plots
 
 
 # Plot time series of mean annual air temperature
@@ -334,7 +339,7 @@ p1 <- ggplot(plot_data, aes(x = year, y = air_temp_mean, color = location)) +
     color = "Buoy",
     tag = "a)"
     ) +
-  scale_color_manual(values = buoy_colors) +
+  scale_color_buoy() +
   scale_x_continuous(
     breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
 
@@ -342,7 +347,7 @@ p1 <- ggplot(plot_data, aes(x = year, y = air_temp_mean, color = location)) +
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
 
   # Annotate plot with simple linear model p-values and R2 values
-  plot_stat_annotation +
+  make_stat_annotation(plot_data, size = 4, vstep = 0.05) +
   theme(legend.position = "none")
 
 
@@ -374,7 +379,7 @@ p2 <- ggplot(plot_data, aes(x = year, y = sst_mean, color = location)) +
     color = "Buoy",
     tag = "b)"
   ) +
-  scale_color_manual(values = buoy_colors) +
+  scale_color_buoy() +
   scale_x_continuous(
     breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
   
@@ -382,7 +387,7 @@ p2 <- ggplot(plot_data, aes(x = year, y = sst_mean, color = location)) +
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
   # Annotate plot with simple linear model p-values and R2 values
-  plot_stat_annotation
+  make_stat_annotation(plot_data, size = 4, vstep = 0.05)
 
 p1 + p2
 
@@ -416,7 +421,7 @@ p3 <- ggplot(plot_data, aes(x = year, y = wind_speed_mean, color = location)) +
     color = "Buoy",
     tag = "a)"
   ) +
-  scale_color_manual(values = buoy_colors) +
+  scale_color_buoy() +
   scale_x_continuous(
     breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
   
@@ -424,7 +429,7 @@ p3 <- ggplot(plot_data, aes(x = year, y = wind_speed_mean, color = location)) +
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
   # Annotate plot with simple linear model p-values and R2 values
-  plot_stat_annotation +
+  make_stat_annotation(plot_data, size = 4, vstep = 0.05) +
   theme(legend.position = "none")
 
 
@@ -456,7 +461,7 @@ p4 <- ggplot(plot_data, aes(x = year, y = wind_direction_mean, color = location)
     color = "Buoy",
     tag = "b)"
   ) +
-  scale_color_manual(values = buoy_colors) +
+  scale_color_buoy() +
   scale_x_continuous(
     breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
   
@@ -464,7 +469,7 @@ p4 <- ggplot(plot_data, aes(x = year, y = wind_direction_mean, color = location)
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
   # Annotate plot with simple linear model p-values and R2 values
-  plot_stat_annotation
+  make_stat_annotation(plot_data, size = 4, vstep = 0.05)
 
 p3 + p4
 
@@ -499,7 +504,7 @@ p5 <- ggplot(plot_data, aes(x = year, y = avg_wave_period_mean, color = location
     color = "Buoy",
     tag = "a)"
   ) +
-  scale_color_manual(values = buoy_colors) +
+  scale_color_buoy() +
   scale_x_continuous(
     breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
   
@@ -507,7 +512,7 @@ p5 <- ggplot(plot_data, aes(x = year, y = avg_wave_period_mean, color = location
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
   # Annotate plot with simple linear model p-values and R2 values
-  plot_stat_annotation +
+  make_stat_annotation(plot_data, size = 4, vstep = 0.05) +
   theme(legend.position = "none")
 
 
@@ -539,7 +544,7 @@ p6 <- ggplot(plot_data, aes(x = year, y = sig_wave_height_mean, color = location
     color = "Buoy", 
     tag = "b)"
   ) +
-  scale_color_manual(values = buoy_colors) +
+  scale_color_buoy() +
   scale_x_continuous(
     breaks = seq(min(plot_data$year), max(plot_data$year), by = 2)) +
   
@@ -547,7 +552,7 @@ p6 <- ggplot(plot_data, aes(x = year, y = sig_wave_height_mean, color = location
   scale_y_continuous(limits = c(NA, y_max_buffered)) +
   
   # Annotate plot with simple linear model p-values and R2 values
-  plot_stat_annotation
+  make_stat_annotation(plot_data, size = 4, vstep = 0.05)
 
 p5 + p6
 
