@@ -1173,9 +1173,8 @@ p1 <- plots_all_data[["log10_chlorophyll_ug/L"]] +
   labs(title = "All Measurements", tag = "a)") +
   plot_stat_annotation
 
-p2 <- plots_spring_mean[["log10_chlorophyll_ug/L"]] + 
-  theme(y = "") +
-  labs(tag = "b)") +
+p2 <- plots_spring_mean[["log10_chlorophyll_ug/L"]] +
+  labs(tag = "b)", y = "") +
   plot_stat_annotation
 
 p3 <- plots_summer_mean[["log10_chlorophyll_ug/L"]] +
@@ -1203,8 +1202,7 @@ p1 <- plots_all_data[["pheophytin_ug/L"]] +
   plot_stat_annotation
 
 p2 <- plots_spring_mean[["pheophytin_ug/L"]] + 
-  theme(y = "") +
-  labs(tag = "b)") +
+  labs(tag = "b)", y = "") +
   plot_stat_annotation
 
 p3 <- plots_summer_mean[["pheophytin_ug/L"]] +
