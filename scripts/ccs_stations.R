@@ -1125,52 +1125,6 @@ plot_stat_annotation <- stat_poly_eq(
 
 # Create side-by-side figures showing a) all data and b) summertime means 
 
-# Chlorophyll (log transformed)
-p1 <- plots_all_data[["log10_chlorophyll_ug/L"]] +
-  theme(legend.position = "none") +
-  labs(tag = "a)") +
-  plot_stat_annotation
-    
-p2 <- plots_summer_mean[["log10_chlorophyll_ug/L"]] +
-  labs(tag = "b)", y = "") +
-  plot_stat_annotation
-
-p1 + p2
-
-p3 <- plots_spring_mean[["log10_chlorophyll_ug/L"]] + 
-  theme(legend.position = "none") +
-  labs(tag = "a)") +
-  plot_stat_annotation
-  
-p4 <- plots_autumn_mean[["log10_chlorophyll_ug/L"]] +
-  labs(tag = "b)", y = "") +
-  plot_stat_annotation
-
-p3 + p4
-
-# Pheophytin
-p1 <- plots_all_data[["pheophytin_ug/L"]] +
-  theme(legend.position = "none") +
-  labs(tag = "a)") +
-  plot_stat_annotation
-
-p2 <- plots_summer_mean[["pheophytin_ug/L"]] +
-  labs(tag = "b)", y = "") +
-  plot_stat_annotation
-
-p1 + p2
-
-p3 <- plots_spring_mean[["pheophytin_ug/L"]] + 
-  theme(legend.position = "none") +
-  labs(tag = "a)") +
-  plot_stat_annotation
-
-p4 <- plots_autumn_mean[["pheophytin_ug/L"]] +
-  labs(tag = "b)", y = "") +
-  plot_stat_annotation
-
-p3 + p4
-
 # Total Nitrogen
 p1 <- plots_all_data[["total_nitrogen_uM"]] +
   theme(legend.position = "none") +
@@ -1206,3 +1160,67 @@ p2 <- plots_summer_mean[["dissolved_oxygen_mg/L"]] +
   plot_stat_annotation
 
 p1 + p2
+
+
+# ---- Plots for Final Report - Pigments ----
+
+# Create grid of figures showing a) all data, b) spring means,
+# c) summertime means, d) autumn means
+
+# Chlorophyll (log transformed)
+p1 <- plots_all_data[["log10_chlorophyll_ug/L"]] +
+  theme(legend.position = "none") +
+  labs(title = "All Measurements", tag = "a)") +
+  plot_stat_annotation
+
+p2 <- plots_spring_mean[["log10_chlorophyll_ug/L"]] + 
+  theme(y = "") +
+  labs(tag = "b)") +
+  plot_stat_annotation
+
+p3 <- plots_summer_mean[["log10_chlorophyll_ug/L"]] +
+  theme(legend.position = "none") +
+  labs(title = "Summer (June - September)", tag = "c)") +
+  plot_stat_annotation
+
+p4 <- plots_autumn_mean[["log10_chlorophyll_ug/L"]] +
+  theme(legend.position = "none") +
+  labs(tag = "d)", y = "") +
+  plot_stat_annotation
+
+(p1 + p2) /
+(p3 + p4) +
+plot_layout(guides = "collect") &
+  theme(
+    legend.position = "right",
+    legend.justification = "center"
+  )
+
+# Pheophytin
+p1 <- plots_all_data[["pheophytin_ug/L"]] +
+  theme(legend.position = "none") +
+  labs(title = "All Measurements", tag = "a)") +
+  plot_stat_annotation
+
+p2 <- plots_spring_mean[["pheophytin_ug/L"]] + 
+  theme(y = "") +
+  labs(tag = "b)") +
+  plot_stat_annotation
+
+p3 <- plots_summer_mean[["pheophytin_ug/L"]] +
+  theme(legend.position = "none") +
+  labs(title = "Summer (June - September)", tag = "c)") +
+  plot_stat_annotation
+
+p4 <- plots_autumn_mean[["pheophytin_ug/L"]] +
+  theme(legend.position = "none") +
+  labs(tag = "d)", y = "") +
+  plot_stat_annotation
+
+(p1 + p2) /
+  (p3 + p4) +
+  plot_layout(guides = "collect") &
+  theme(
+    legend.position = "right",
+    legend.justification = "center"
+  )

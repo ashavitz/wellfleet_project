@@ -98,4 +98,6 @@ knitr::read_chunk("../scripts/ccs_stations.R")
 ```{r Plots for Final Report, message=FALSE, warning=FALSE, fig.width=13, fig.height=4}
 ```
 
-
+### Plots for Final Report - Pigments
+```{r Plots for Final Report - Pigments, message=FALSE, warning=FALSE, fig.width=13, fig.height=8}
+```
