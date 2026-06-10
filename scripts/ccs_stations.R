@@ -688,7 +688,7 @@ for (var in wq_variables) {
 }
 
 
-# ---- Plot All autumn Data ----
+# ---- Plot All Summer Data ----
 
 # Create an empty list to store plots generated in the loop below
 plots_all_summer_data <- list()
